@@ -1,22 +1,128 @@
-# Fubs
+# FUBS Microservices
 
-<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
+A microservices architecture project built with Nx monorepo, featuring Node.js services that complement a Python users-service.
 
-✨ Your new, shiny [Nx workspace](https://nx.dev) is almost ready ✨.
+## 🏗️ Architecture
 
-[Learn more about this workspace setup and its capabilities](https://nx.dev/nx-api/node?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
+```
+.
+├── users-service (Python, Django/FastAPI + PostgreSQL)  # External
+│   └── usuários, autenticação, times
+│
+├── projects-service (Node.js, NestJS + PostgreSQL)      # This repo
+│   └── projetos, tarefas, atribuição
+```
 
-## Finish your CI setup
+## 🚀 Tech Stack
 
-[Click here to finish setting up your workspace!](https://cloud.nx.app/connect/lCBDME5lP2)
+- **Monorepo**: Nx
+- **Framework**: NestJS (Node.js)
+- **Language**: TypeScript
+- **Database**: PostgreSQL
+- **ORM**: Prisma
+- **Authentication**: JWT with Passport
+- **Documentation**: Swagger
+- **Containerization**: Docker & Docker Compose
 
+## 📦 Project Structure
 
-## Run tasks
+```
+apps/
+├── projects/                 # Main NestJS application
+│   ├── src/
+│   ├── prisma/              # Database schema and migrations
+│   ├── Dockerfile
+│   └── .env
+├── projects-e2e/            # End-to-end tests
+libs/
+├── shared/                  # Shared libraries
+│   ├── types/              # TypeScript interfaces
+│   ├── auth/               # JWT validation utilities
+│   ├── database/           # Database configurations
+│   └── utils/              # Common utilities
+docker/
+├── nginx/                  # Nginx configuration
+└── ...
+```
 
-To run the dev server for your app, use:
+## 🐳 Docker Development
 
-```sh
-npx nx serve projects
+### Prerequisites
+
+- Docker & Docker Compose
+- Node.js 18+ (for local development)
+- Yarn
+
+### Quick Start with Docker
+
+1. **Start development environment:**
+
+   ```bash
+   yarn docker:dev:up
+   ```
+
+2. **Run database migrations:**
+
+   ```bash
+   yarn db:migrate
+   ```
+
+3. **Start the projects service locally:**
+
+   ```bash
+   yarn dev
+   ```
+
+4. **Access services:**
+   - Projects API: http://localhost:3000
+   - Swagger Docs: http://localhost:3000/api
+   - PostgreSQL: localhost:5433
+   - Redis: localhost:6380
+   - MailHog: http://localhost:8025
+
+### Docker Commands
+
+```bash
+# Development
+yarn docker:dev:up      # Start dev services
+yarn docker:dev:down    # Stop dev services
+yarn docker:dev:logs    # View logs
+
+# Production
+yarn docker:prod:build  # Build production images
+yarn docker:prod:up     # Start production services
+yarn docker:prod:down   # Stop production services
+
+# Database
+yarn db:migrate         # Run database migrations
+yarn db:generate        # Generate Prisma client
+yarn db:studio          # Open Prisma Studio
+```
+
+## 🗄️ Database
+
+The projects service uses PostgreSQL with Prisma ORM. The schema includes:
+
+- **Projects**: Main project entities
+- **Tasks**: Individual tasks within projects
+- **Milestones**: Project milestones and deadlines
+- **Comments**: Comments on projects and tasks
+- **ProjectAssignments**: User assignments to projects
+
+### Database Operations
+
+```bash
+# Create and apply migrations
+yarn db:migrate
+
+# Deploy migrations in production
+yarn db:migrate:deploy
+
+# Generate Prisma client
+yarn db:generate
+
+# Open Prisma Studio
+yarn db:studio
 ```
 
 To create a production bundle:
@@ -57,26 +163,4 @@ You can use `npx nx list` to get a list of installed plugins. Then, run `npx nx 
 
 [Learn more about Nx plugins &raquo;](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) | [Browse the plugin registry &raquo;](https://nx.dev/plugin-registry?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
 
-
 [Learn more about Nx on CI](https://nx.dev/ci/intro/ci-with-nx#ready-get-started-with-your-provider?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Install Nx Console
-
-Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
-
-[Install Nx Console &raquo;](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Useful links
-
-Learn more:
-
-- [Learn more about this workspace setup](https://nx.dev/nx-api/node?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects)
-- [Learn about Nx on CI](https://nx.dev/ci/intro/ci-with-nx?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Releasing Packages with Nx release](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [What are Nx plugins?](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-And join the Nx community:
-- [Discord](https://go.nx.dev/community)
-- [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
-- [Our Youtube channel](https://www.youtube.com/@nxdevtools)
-- [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)

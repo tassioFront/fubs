@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database for projects-service
+  projects-db-dev:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: projects_dev
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - projects_db_dev_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # TODO: Add these services when needed
+  #
+  # # Redis for caching and session storage
+  # redis-dev:
+  #   image: redis:7-alpine
+  #   restart: unless-stopped
+  #   ports:
+  #     - "6380:6379"
+  #   volumes:
+  #     - redis_dev_data:/data
+  #
+  # # Mailhog for email testing in development
+  # mailhog:
+  #   image: mailhog/mailhog:latest
+  #   restart: unless-stopped
+  #   ports:
+  #     - "1025:1025"  # SMTP
+  #     - "8025:8025"  # Web UI
+
+volumes:
+  projects_db_dev_data:
+  # redis_dev_data:

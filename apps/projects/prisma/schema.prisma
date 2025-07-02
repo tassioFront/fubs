@@ -1,0 +1,143 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  status      ProjectStatus @default(DRAFT)
+  priority    ProjectPriority @default(MEDIUM)
+  startDate   DateTime?
+  dueDate     DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // External reference to users-service
+  ownerId     String
+
+  // Relations
+  tasks       Task[]
+  milestones  Milestone[]
+  comments    Comment[]
+  assignments ProjectAssignment[]
+
+  @@map("projects")
+}
+
+model Task {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  status      TaskStatus @default(TODO)
+  priority    TaskPriority @default(MEDIUM)
+  estimatedHours Int?
+  actualHours    Int?
+  startDate   DateTime?
+  dueDate     DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  projectId   String
+  project     Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  // External reference to users-service
+  assigneeId  String?
+  createdById String
+
+  comments    Comment[]
+
+  @@map("tasks")
+}
+
+model Milestone {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  dueDate     DateTime
+  isCompleted Boolean @default(false)
+  completedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  projectId   String
+  project     Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("milestones")
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // External reference to users-service
+  authorId  String
+
+  // Relations - can belong to either project or task
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  taskId    String?
+  task      Task? @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@map("comments")
+}
+
+model ProjectAssignment {
+  id        String   @id @default(cuid())
+  role      String   // e.g., "developer", "designer", "manager"
+  createdAt DateTime @default(now())
+
+  // External reference to users-service
+  userId    String
+
+  // Relations
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, projectId])
+  @@map("project_assignments")
+}
+
+enum ProjectStatus {
+  DRAFT
+  PLANNING
+  IN_PROGRESS
+  ON_HOLD
+  COMPLETED
+  CANCELLED
+}
+
+enum ProjectPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  IN_REVIEW
+  DONE
+  CANCELLED
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
