@@ -37,6 +37,7 @@ testem.log
 # System Files
 .DS_Store
 Thumbs.db
+.env
 
 .nx/cache
 .nx/workspace-data
@@ -44,3 +45,5 @@ Thumbs.db
 .github/instructions/nx.instructions.md
 
 test-output
+
+/generated/prisma
