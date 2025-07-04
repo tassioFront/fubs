@@ -4,13 +4,13 @@
   "files": [],
   "references": [
     {
-      "path": "./apps/projects-e2e"
-    },
-    {
-      "path": "./apps/projects"
-    },
-    {
       "path": "./libs/shared"
+    },
+    {
+      "path": "./apps/workspaces-e2e"
+    },
+    {
+      "path": "./apps/workspaces"
     }
   ]
 }

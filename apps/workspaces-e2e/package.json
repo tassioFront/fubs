@@ -1,10 +1,10 @@
 {
-  "name": "@fubs/projects-e2e",
+  "name": "@fubs/workspaces-e2e",
   "version": "0.0.1",
   "private": true,
   "nx": {
     "implicitDependencies": [
-      "@fubs/projects"
+      "@fubs/workspaces"
     ],
     "targets": {
       "e2e": {
@@ -13,12 +13,12 @@
           "{projectRoot}/test-output/jest/coverage"
         ],
         "options": {
-          "jestConfig": "apps/projects-e2e/jest.config.ts",
+          "jestConfig": "apps/workspaces-e2e/jest.config.ts",
           "passWithNoTests": true
         },
         "dependsOn": [
-          "@fubs/projects:build",
-          "@fubs/projects:serve"
+          "@fubs/workspaces:build",
+          "@fubs/workspaces:serve"
         ]
       }
     }
