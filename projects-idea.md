@@ -1,161 +1,232 @@
-## 🧠 Recap: já temos
+## Proposal: project management service
 
-### ✅ Python microservice: `users-service`
+### 📦 Service responsibilities:
 
-**Responsável por:**
-
-- Cadastro de usuários (clientes e colegas)
-- Autenticação e autorização
-- Perfis, permissões, times
-- Auditoria e logging de identidade
-- Envio de e-mails de boas-vindas, redefinição de senha etc.
+> **users-service** (Python): Authentication & user management ✅ _Done_  
+> **projects-service** (Node.js): Workspaces, projects, member management  
+> **tasks-service** (Node.js): Tasks, comments, detailed work
 
 ---
 
-## 🔍 Agora: definir o microserviço Node.js
-
-### 🎯 Requisito: precisa ter responsabilidade clara e **complementar ao de usuários**, com potencial de expandir.
-
----
-
-## ✅ Proposta: `projects-service` em Node.js
-
-### 📦 Responsabilidade principal:
-
-> Gerenciar os projetos/entregas criadas por usuários (clientes ou times)
-
----
-
-### ✨ Funcionalidades
-
-- Criar/editar/excluir projetos
-- Atribuir usuários (vindo do `users-service`)
-- Definir status, deadlines, milestones
-- Relacionar tarefas, arquivos, comentários
-- Relatórios de produtividade (por time ou cliente)
-
----
-
-### 🔗 Integração entre serviços
-
-- `projects-service` usa o `users-service` via API REST (ou gRPC, ou event-based com RabbitMQ/Kafka) para:
-
-  - Buscar informações do dono/responsável do projeto
-  - Validar permissão de um usuário
-
----
-
-## 🧩 Estrutura de microserviços (inicial)
+### 🎯 **Updated Service Boundaries**
 
 ```
-.
-├── users-service (Python, Django/FastAPI + PostgreSQL)
-│   └── usuários, autenticação, times
+┌─────────────────┐
+│   users-service │    Authentication & User Management
+│   (Python)      │
+│ • User profiles │
+│ • Authentication│
+│ • JWT tokens    │
+└─────────────────┘
+         │
+         │ HTTP/REST
+         ▼
+┌─────────────────┐
+│projects-service │    Project Organization & Access
+│   (Node.js)     │
+│ • Workspaces    │
+│ • Projects      │
+│ • Members       │
+└─────────────────┘
+         │
+         │ HTTP/REST
+         ▼
+┌─────────────────┐
+│  tasks-service  │    Task Management & Collaboration
+│   (Node.js)     │
+│ • Tasks         │
+│ • Comments      │
+│   │
+└─────────────────┘
+```
+
+---
+
+### 🎯 **Core Entities & Relationships**
+
+```
+User (users-service)
 │
-├── projects-service (Node.js, NestJS + PostgreSQL)
-│   └── projetos, tarefas, atribuição
+├── Workspace (projects-service) - User owns many workspaces
+│   │
+│   ├── Project (projects-service) - Workspace has many projects
+│   │   │
+│   │   └── WorkspaceMember (projects-service) - N:N relationship
+│   │
+│   └── Task (tasks-service) - Project has many tasks
+│       │
+│       ├── Comment (tasks-service) - Task has many comments
 ```
 
-Futuramente você pode adicionar:
+### 🗄️ **Data Models by Service**
 
-- `notifications-service` (envio de e-mails, webhooks)
-- `files-service` (upload de arquivos)
-- `billing-service` (caso queira incluir planos/pagamentos)
+#### **Projects Service** (Workspaces & Projects)
+
+```typescript
+// Workspace - Top level container
+interface Workspace {
+  id: string;
+  name: string;
+  description?: string;
+  owner_id: number; // User from users-service
+  created_at: string;
+}
+
+// Project - Belongs to workspace
+interface Project {
+  id: string;
+  workspace_id: string;
+  name: string;
+  description?: string;
+  status: 'active' | 'completed' | 'archived';
+  created_at: string;
+}
+
+// Workspace members
+interface WorkspaceMember {
+  id: string;
+  workspace_id: string;
+  user_id: number; // User from users-service
+  role: 'admin' | 'member';
+  joined_at: string;
+}
+```
+
+#### **Tasks Service** (Tasks & Collaboration)
+
+```typescript
+// Task - References project from projects-service
+interface Task {
+  id: string;
+  project_id: string; // References projects-service
+  title: string;
+  description?: string;
+  status: 'todo' | 'in_progress' | 'done';
+  priority: 'low' | 'medium' | 'high';
+  assigned_to?: number; // User from users-service
+  due_date?: string;
+  created_at: string;
+}
+
+// Comments on tasks
+interface TaskComment {
+  id: string;
+  task_id: string;
+  user_id: number; // User from users-service
+  content: string;
+  created_at: string;
+}
+```
+
+### 🔗 Inter-service communication
+
+#### **Projects Service** needs:
+
+- `users-service`: Validate users, get user details for members
+- No dependency on tasks-service
+
+#### **Tasks Service** needs:
+
+- `users-service`: Validate users, get user details for assignments/comments
+- `projects-service`: Validate project exists, get project details
+
+#### **Communication Flow:**
+
+```typescript
+// User creates task
+1. POST /tasks → tasks-service
+2. tasks-service → GET /projects/{id} → projects-service (validate project)
+3. tasks-service → GET /users/{id} → users-service (validate user)
+4. Create task if all valid
+```
 
 ---
 
-## 📘 DDD (Domain-Driven Design) básico aplicado
+### 🎯 **Service Features:**
 
-| Serviço          | Bounded Context   | Linguagem | Banco      |
-| ---------------- | ----------------- | --------- | ---------- |
-| users-service    | Identidade        | Python    | PostgreSQL |
-| projects-service | Gestão de projeto | Node.js   | PostgreSQL |
+#### **Projects Service:**
+
+✅ **Workspaces** - Team organization  
+✅ **Projects** - Work containers  
+✅ **Member management** - Access control  
+✅ **Project metadata** - Status, descriptions
+
+#### **Tasks Service:**
+
+✅ **Tasks** - Individual work items  
+✅ **Comments** - Task discussions  
+✅ **Assignments** - User task assignments  
+✅ **Status tracking** - Todo/In Progress/Done
+
+### 🚀 **API Examples**
+
+#### **Projects Service APIs:**
+
+```typescript
+// Create workspace
+POST /api/workspaces
+{
+  "name": "My Company",
+  "description": "Main workspace"
+}
+
+// Create project in workspace
+POST /api/workspaces/:workspaceId/projects
+{
+  "name": "Website Redesign",
+  "description": "Q3 2025 redesign project"
+}
+
+// Add member to workspace
+POST /api/workspaces/:workspaceId/members
+{
+  "user_id": 123,
+  "role": "member"
+}
+```
+
+#### **Tasks Service APIs:**
+
+```typescript
+// Create task in project
+POST /api/tasks
+{
+  "project_id": "proj_123",
+  "title": "Design homepage mockup",
+  "description": "Create initial design concepts",
+  "assigned_to": 123,
+  "priority": "high",
+  "due_date": "2025-07-15"
+}
+
+// Add comment to task
+POST /api/tasks/:taskId/comments
+{
+  "content": "Looks great! Just need to adjust the header spacing."
+}
+
+```
 
 ---
 
-## ✅ Recommended Stack for `projects-service` (Node.js)
+## 🏗️ **3-Service Architecture**
 
-| Layer                  | Tool                                               | Why?                                                           |
-| ---------------------- | -------------------------------------------------- | -------------------------------------------------------------- |
-| **Monorepo**           | `Nx` 🔥                                            | Perfect for microservices, shared libraries, consistent tooling |
-| **Language**           | `TypeScript`                                       | Strong typing, standard in modern backend development          |
-| **Framework**          | `NestJS`                                           | Scalable architecture, modular design, ideal for microservices |
-| **ORM**                | `Prisma`                                           | Type-safe, productive, perfect for PostgreSQL                  |
-| **Database**           | `PostgreSQL`                                       | Already used in the Python service, relational and robust      |
-| **Validation**         | `class-validator` (via NestJS Pipes)               | Built-in support for DTO validation                            |
-| **Auth**               | JWT with `Passport`                                | Easy integration with external auth (`users-service`)          |
-| **Docs**               | Swagger (`@nestjs/swagger`)                        | Auto-generated from decorators                                 |
-| **Messaging (future)** | `Kafka` or `RabbitMQ` with `@nestjs/microservices` | For async/event-driven integration if needed                   |
-| **Deploy**             | Docker + Render or AWS ECS                         | Compatible with your current pipeline                          |
-
----
-
-## 🚀 Why Nx is Perfect for Your Microservices Architecture
-
-### ✨ **Key Benefits:**
-
-1. **Monorepo Management** 📦
-   - Single repository for all Node.js services
-   - Shared libraries between services
-   - Consistent tooling and dependencies
-
-2. **Smart Build System** ⚡
-   - Only builds what changed
-   - Cached builds for faster CI/CD
-   - Dependency graph awareness
-
-3. **Code Generation** 🔧
-   - `nx g @nestjs/schematics:service` - Generate services consistently
-   - `nx g @nestjs/schematics:module` - Create modules with best practices
-   - Custom generators for your domain
-
-4. **Testing & Linting** ✅
-   - Run tests only for affected projects
-   - Consistent linting across all services
-   - Integrated with Jest, ESLint, Prettier
-
-### 🏗️ **Proposed Structure with Nx:**
+### 📦 **High-Level Service Communication**
 
 ```
-nx-workspace/
-├── apps/
-│   ├── projects-service/          # Main NestJS application
-│   ├── notifications-service/     # Future service
-│   └── files-service/            # Future service
-├── libs/
-│   ├── shared/
-│   │   ├── types/                # Shared TypeScript interfaces
-│   │   ├── auth/                 # JWT validation utilities
-│   │   ├── database/             # Database configurations
-│   │   └── utils/                # Common utilities
-│   ├── projects/
-│   │   ├── data-access/          # Prisma models & services
-│   │   ├── feature/              # Business logic modules
-│   │   └── ui/                   # Future frontend components
-│   └── users-client/             # Client for users-service API
-├── tools/
-│   ├── docker/                   # Docker configurations
-│   └── scripts/                  # Build & deployment scripts
-└── nx.json                       # Nx configuration
-```
-
-### 🔗 **Integration Benefits:**
-
-- **Shared Types**: Define once, use everywhere
-- **API Client Libraries**: Reusable HTTP clients for service communication
-- **Common Auth Logic**: JWT validation shared across services
-- **Consistent Testing**: Same test patterns and utilities
-
-### 🎯 **Getting Started Command:**
-
-```bash
-# Create Nx workspace with NestJS
-npx create-nx-workspace@latest myorg --preset=nest --packageManager=npm
-
-# Add more NestJS apps
-nx g @nestjs/schematics:application notifications-service
-
-# Generate shared libraries
-nx g @nx/js:library shared-types
-nx g @nx/js:library users-client
+┌─────────────────┐
+│   users-service │    Authentication & User Data
+│   (Python)      │
+└─────────────────┘
+         ▲
+         │ HTTP/REST
+         │
+┌─────────────────┐    ┌─────────────────┐
+│projects-service │◄──►│  tasks-service  │
+│   (Node.js)     │    │   (Node.js)     │
+│                 │    │                 │
+│ • Workspaces    │    │ • Tasks         │
+│ • Projects      │    │ • Comments      │
+│ • Members       │    │    │
+└─────────────────┘    └─────────────────┘
 ```
