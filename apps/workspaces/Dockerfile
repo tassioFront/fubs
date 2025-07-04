@@ -20,10 +20,10 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 # Generate Prisma client
-RUN npx prisma generate --schema=./apps/projects/prisma/schema.prisma
+RUN npx prisma generate --schema=./apps/workspaces/prisma/schema.prisma
 
-# Build the projects application
-RUN npx nx build projects --prod
+# Build the workspaces application
+RUN npx nx build workspaces --prod
 
 # Production image, copy all the files and run the app
 FROM base AS runner
@@ -37,9 +37,9 @@ RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nestjs
 
 # Copy built application
-COPY --from=builder --chown=nestjs:nodejs /app/apps/projects/dist/ ./
+COPY --from=builder --chown=nestjs:nodejs /app/apps/workspaces/dist/ ./
 COPY --from=builder --chown=nestjs:nodejs /app/node_modules ./node_modules
-COPY --from=builder --chown=nestjs:nodejs /app/apps/projects/prisma ./prisma
+COPY --from=builder --chown=nestjs:nodejs /app/apps/workspaces/prisma ./prisma
 
 # Copy package.json for runtime
 COPY --from=builder /app/package.json ./package.json

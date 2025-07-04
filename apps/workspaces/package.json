@@ -1,5 +1,5 @@
 {
-  "name": "@fubs/projects",
+  "name": "@fubs/workspaces",
   "version": "0.0.1",
   "private": true,
   "nx": {
@@ -28,15 +28,15 @@
           "build"
         ],
         "options": {
-          "buildTarget": "@fubs/projects:build",
+          "buildTarget": "@fubs/workspaces:build",
           "runBuildTargetDependencies": false
         },
         "configurations": {
           "development": {
-            "buildTarget": "@fubs/projects:build:development"
+            "buildTarget": "@fubs/workspaces:build:development"
           },
           "production": {
-            "buildTarget": "@fubs/projects:build:production"
+            "buildTarget": "@fubs/workspaces:build:production"
           }
         }
       },
@@ -49,7 +49,7 @@
         "dependsOn": [
           "build"
         ],
-        "command": "docker build -f apps/projects/Dockerfile . -t fubs-projects"
+        "command": "docker build -f apps/workspaces/Dockerfile . -t fubs-workspaces"
       }
     }
   }
