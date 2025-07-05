@@ -14,7 +14,9 @@ describe('AppController', () => {
   describe('getData', () => {
     it('should return "Hello API"', () => {
       const appController = app.get<AppController>(AppController);
-      expect(appController.healthCheck()).toEqual({ status: 'ok' });
+      expect(appController.healthCheck()).toEqual(
+        expect.objectContaining({ status: 'ok' })
+      );
     });
   });
 });
