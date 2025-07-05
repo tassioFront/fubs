@@ -23,7 +23,7 @@
     "docker:up": "docker-compose up -d",
     "docker:down": "docker-compose down",
     "docker:logs": "docker-compose logs -f",
-    "docker:dev": "docker-compose up workspaces-db-dev -d && npm run dev",
+    "docker:dev": "docker-compose -f docker-compose.dev.yml up workspaces-db-dev -d && nx serve workspaces",
     "docker:prod": "docker-compose up workspaces-db workspaces-service -d"
   },
   "private": true,
