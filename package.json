@@ -80,6 +80,8 @@
   },
   "workspaces": [
     "apps/*",
-    "libs/*"
+    "libs/*",
+    "task",
+    "task-e2e"
   ]
 }

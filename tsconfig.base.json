@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "baseUrl": ".",
     "composite": true,
     "declarationMap": true,
     "emitDeclarationOnly": true,
@@ -13,6 +14,9 @@
     "noImplicitOverride": true,
     "noImplicitReturns": true,
     "noUnusedLocals": true,
+    "paths": {
+      "@fubs/shared/*": ["libs/shared/src/*"]
+    },
     "skipLibCheck": true,
     "strict": true,
     "target": "es2022",

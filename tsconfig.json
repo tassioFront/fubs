@@ -11,6 +11,18 @@
     },
     {
       "path": "./apps/workspaces"
+    },
+    {
+      "path": "./task-e2e"
+    },
+    {
+      "path": "./task"
+    },
+    {
+      "path": "./apps/task-e2e"
+    },
+    {
+      "path": "./apps/task"
     }
   ]
 }
