@@ -10,7 +10,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - workspaces_db_data:/var/lib/postgresql/data
       - ./apps/workspaces/prisma/init.sql:/docker-entrypoint-initdb.d/init.sql
@@ -28,7 +28,7 @@ services:
     environment:
       NODE_ENV: production
       DATABASE_URL: postgresql://postgres:postgres@workspaces-db:5432/workspaces_db?schema=public
-      JWT_SECRET: ${JWT_SECRET:-your-super-secure-jwt-secret}
+      JWT_SECRET: ${JWT_SECRET:-your-secret-key-for-development}
       JWT_EXPIRES_IN: 7d
       USERS_SERVICE_URL: http://users-service:8000
       API_TITLE: "Workspaces Service API"

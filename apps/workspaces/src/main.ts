@@ -8,7 +8,7 @@ import { AllExceptionsFilter } from '@fubs/shared';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  const globalPrefix = 'api';
+  const globalPrefix = '';
   app.setGlobalPrefix(globalPrefix);
 
   app.useGlobalPipes(validationPipeConfig);

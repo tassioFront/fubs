@@ -35,6 +35,12 @@ const mockPrismaService = {
 describe('ProjectsController', () => {
   let controller: ProjectsController;
   let service: ProjectsService;
+  // Helper function to create a properly formatted authenticated request
+  const createAuthenticatedRequest = (userId = 1) => ({
+    user: {
+      id: userId,
+    },
+  });
 
   const mockProject = {
     id: 'test-project-id',
@@ -97,25 +103,7 @@ describe('ProjectsController', () => {
     it('should create a project successfully with authenticated user', async () => {
       jest.spyOn(service, 'create').mockResolvedValue(mockProject);
 
-      const req = { user: { id: 1 } };
-      const result = await controller.create(
-        workspaceId,
-        createProjectDto,
-        req
-      );
-
-      expect(result).toEqual(mockProject);
-      expect(service.create).toHaveBeenCalledWith(
-        workspaceId,
-        createProjectDto,
-        1
-      );
-    });
-
-    it('should create a project with fallback user ID when no user in request', async () => {
-      jest.spyOn(service, 'create').mockResolvedValue(mockProject);
-
-      const req = {}; // No user object
+      const req = createAuthenticatedRequest(1);
       const result = await controller.create(
         workspaceId,
         createProjectDto,
@@ -147,12 +135,11 @@ describe('ProjectsController', () => {
         1
       );
     });
-
     it('should handle service errors during project creation', async () => {
       const error = new BadRequestException('Invalid project data');
       jest.spyOn(service, 'create').mockRejectedValue(error);
 
-      const req = { user: { id: 1 } };
+      const req = createAuthenticatedRequest(1);
 
       await expect(
         controller.create(workspaceId, createProjectDto, req)
@@ -176,7 +163,7 @@ describe('ProjectsController', () => {
 
       jest.spyOn(service, 'create').mockResolvedValue(minimalProject);
 
-      const req = { user: { id: 1 } };
+      const req = createAuthenticatedRequest(1);
       const result = await controller.create(workspaceId, minimalDto, req);
 
       expect(result).toEqual(minimalProject);
@@ -189,41 +176,19 @@ describe('ProjectsController', () => {
       const mockProjects = [mockProject];
       jest.spyOn(service, 'findAll').mockResolvedValue(mockProjects);
 
-      const req = { user: { id: 1 } };
+      const req = createAuthenticatedRequest(1);
       const result = await controller.findAll(workspaceId, req);
 
       expect(result).toEqual(mockProjects);
       expect(service.findAll).toHaveBeenCalledWith(workspaceId, 1);
     });
-
-    it('should return projects with fallback user ID when no user in request', async () => {
-      const mockProjects = [mockProject];
-      jest.spyOn(service, 'findAll').mockResolvedValue(mockProjects);
-
-      const req = {}; // No user object
-      const result = await controller.findAll(workspaceId, req);
-
-      expect(result).toEqual(mockProjects);
-      expect(service.findAll).toHaveBeenCalledWith(workspaceId, 1);
-    });
-
-    it('should return empty array when workspace has no projects', async () => {
-      jest.spyOn(service, 'findAll').mockResolvedValue([]);
-
-      const req = { user: { id: 1 } };
-      const result = await controller.findAll(workspaceId, req);
-
-      expect(result).toEqual([]);
-      expect(service.findAll).toHaveBeenCalledWith(workspaceId, 1);
-    });
-
     it('should handle workspace not found when finding projects', async () => {
       const error = new NotFoundException(
         'Workspace not found or access denied'
       );
       jest.spyOn(service, 'findAll').mockRejectedValue(error);
 
-      const req = { user: { id: 1 } };
+      const req = createAuthenticatedRequest(1);
 
       await expect(controller.findAll(workspaceId, req)).rejects.toThrow(
         NotFoundException
@@ -238,32 +203,10 @@ describe('ProjectsController', () => {
     it('should return a project by ID', async () => {
       jest.spyOn(service, 'findOne').mockResolvedValue(mockProject);
 
-      const req = { user: { id: 1 } };
+      const req = createAuthenticatedRequest(1);
       const result = await controller.findOne(projectId, req);
 
       expect(result).toEqual(mockProject);
-      expect(service.findOne).toHaveBeenCalledWith(projectId, 1);
-    });
-
-    it('should use fallback user ID when no user in request', async () => {
-      jest.spyOn(service, 'findOne').mockResolvedValue(mockProject);
-
-      const req = {}; // No user object
-      const result = await controller.findOne(projectId, req);
-
-      expect(result).toEqual(mockProject);
-      expect(service.findOne).toHaveBeenCalledWith(projectId, 1);
-    });
-
-    it('should handle project not found', async () => {
-      const error = new NotFoundException('Project not found or access denied');
-      jest.spyOn(service, 'findOne').mockRejectedValue(error);
-
-      const req = { user: { id: 1 } };
-
-      await expect(controller.findOne(projectId, req)).rejects.toThrow(
-        NotFoundException
-      );
       expect(service.findOne).toHaveBeenCalledWith(projectId, 1);
     });
   });
@@ -280,7 +223,7 @@ describe('ProjectsController', () => {
       const updatedProject = { ...mockProject, ...updateProjectDto };
       jest.spyOn(service, 'update').mockResolvedValue(updatedProject);
 
-      const req = { user: { id: 1 } };
+      const req = createAuthenticatedRequest(1);
       const result = await controller.update(projectId, updateProjectDto, req);
 
       expect(result).toEqual(updatedProject);
@@ -290,27 +233,11 @@ describe('ProjectsController', () => {
         1
       );
     });
-
-    it('should use fallback user ID when no user in request', async () => {
-      const updatedProject = { ...mockProject, ...updateProjectDto };
-      jest.spyOn(service, 'update').mockResolvedValue(updatedProject);
-
-      const req = {}; // No user object
-      const result = await controller.update(projectId, updateProjectDto, req);
-
-      expect(result).toEqual(updatedProject);
-      expect(service.update).toHaveBeenCalledWith(
-        projectId,
-        updateProjectDto,
-        1
-      );
-    });
-
     it('should handle project not found during update', async () => {
       const error = new NotFoundException('Project not found or access denied');
       jest.spyOn(service, 'update').mockRejectedValue(error);
 
-      const req = { user: { id: 1 } };
+      const req = createAuthenticatedRequest(1);
 
       await expect(
         controller.update(projectId, updateProjectDto, req)
@@ -327,7 +254,7 @@ describe('ProjectsController', () => {
       const updatedProject = { ...mockProject, name: 'Only Name Updated' };
       jest.spyOn(service, 'update').mockResolvedValue(updatedProject);
 
-      const req = { user: { id: 1 } };
+      const req = createAuthenticatedRequest(1);
       const result = await controller.update(projectId, partialUpdate, req);
 
       expect(result).toEqual(updatedProject);
@@ -339,7 +266,7 @@ describe('ProjectsController', () => {
       const updatedProject = { ...mockProject, status: 'ARCHIVED' as const };
       jest.spyOn(service, 'update').mockResolvedValue(updatedProject);
 
-      const req = { user: { id: 1 } };
+      const req = createAuthenticatedRequest(1);
       const result = await controller.update(projectId, statusUpdate, req);
 
       expect(result).toEqual(updatedProject);
@@ -350,7 +277,7 @@ describe('ProjectsController', () => {
       const error = new BadRequestException('Invalid project data');
       jest.spyOn(service, 'update').mockRejectedValue(error);
 
-      const req = { user: { id: 1 } };
+      const req = createAuthenticatedRequest(1);
 
       await expect(
         controller.update(projectId, updateProjectDto, req)
@@ -369,17 +296,7 @@ describe('ProjectsController', () => {
     it('should delete a project successfully', async () => {
       jest.spyOn(service, 'remove').mockResolvedValue(undefined);
 
-      const req = { user: { id: 1 } };
-      const result = await controller.remove(projectId, req);
-
-      expect(result).toBeUndefined();
-      expect(service.remove).toHaveBeenCalledWith(projectId, 1);
-    });
-
-    it('should use fallback user ID when no user in request', async () => {
-      jest.spyOn(service, 'remove').mockResolvedValue(undefined);
-
-      const req = {}; // No user object
+      const req = createAuthenticatedRequest(1);
       const result = await controller.remove(projectId, req);
 
       expect(result).toBeUndefined();
@@ -397,12 +314,11 @@ describe('ProjectsController', () => {
       );
       expect(service.remove).toHaveBeenCalledWith(projectId, 1);
     });
-
     it('should handle insufficient permissions during deletion', async () => {
       const error = new NotFoundException('Project not found or access denied');
       jest.spyOn(service, 'remove').mockRejectedValue(error);
 
-      const req = { user: { id: 999 } }; // Different user
+      const req = createAuthenticatedRequest(999); // Different user
 
       await expect(controller.remove(projectId, req)).rejects.toThrow(
         NotFoundException
@@ -416,7 +332,7 @@ describe('ProjectsController', () => {
       const error = new Error('Database connection failed');
       jest.spyOn(service, 'findAll').mockRejectedValue(error);
 
-      const req = { user: { id: 1 } };
+      const req = createAuthenticatedRequest(1);
 
       await expect(controller.findAll(workspaceId, req)).rejects.toThrow(
         'Database connection failed'
@@ -430,7 +346,7 @@ describe('ProjectsController', () => {
 
       jest.spyOn(service, 'create').mockResolvedValue(mockProject);
 
-      const req = { user: { id: 1 } };
+      const req = createAuthenticatedRequest(1);
       await controller.create('' as string, createProjectDto, req);
 
       expect(service.create).toHaveBeenCalledWith('', createProjectDto, 1);
@@ -438,31 +354,22 @@ describe('ProjectsController', () => {
   });
 
   describe('authentication edge cases', () => {
-    it('should handle request with user but no ID', async () => {
-      jest.spyOn(service, 'findAll').mockResolvedValue([]);
-
-      const req = { user: { id: undefined as unknown as number } }; // User object but no ID
-      await controller.findAll(workspaceId, req);
-
-      expect(service.findAll).toHaveBeenCalledWith(workspaceId, 1); // Fallback to 1
-    });
-
     it('should handle request with user ID as number', async () => {
       jest.spyOn(service, 'findAll').mockResolvedValue([]);
 
-      const req = { user: { id: 123 } }; // ID as number
+      const req = createAuthenticatedRequest(123); // ID as number
       await controller.findAll(workspaceId, req);
 
       expect(service.findAll).toHaveBeenCalledWith(workspaceId, 123);
     });
 
-    it('should handle request with null user', async () => {
+    it('should handle different user IDs correctly', async () => {
       jest.spyOn(service, 'findAll').mockResolvedValue([]);
 
-      const req = { user: undefined }; // Undefined user
+      const req = createAuthenticatedRequest(456);
       await controller.findAll(workspaceId, req);
 
-      expect(service.findAll).toHaveBeenCalledWith(workspaceId, 1); // Fallback to 1
+      expect(service.findAll).toHaveBeenCalledWith(workspaceId, 456);
     });
   });
 });

@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   Request,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -17,15 +18,10 @@ import {
 import { ProjectsService } from './projects.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import type { AuthenticatedRequest } from '@fubs/shared';
 
-interface AuthenticatedRequest {
-  user?: {
-    id: number;
-  };
-}
-
-// Note: You'll need to implement JwtAuthGuard based on your auth strategy
-// @UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard)
 @ApiTags('projects')
 @ApiBearerAuth()
 @Controller('api/workspaces/:workspaceId/projects')
@@ -42,8 +38,7 @@ export class ProjectsController {
     @Body() createProjectDto: CreateProjectDto,
     @Request() req: AuthenticatedRequest
   ) {
-    // TODO: Extract user ID from JWT token
-    const userId = req.user?.id || 1; // Mock user ID for now
+    const userId = req.user.id;
     return this.projectsService.create(workspaceId, createProjectDto, userId);
   }
 
@@ -55,8 +50,7 @@ export class ProjectsController {
     @Param('workspaceId') workspaceId: string,
     @Request() req: AuthenticatedRequest
   ) {
-    // TODO: Extract user ID from JWT token
-    const userId = req.user?.id || 1; // Mock user ID for now
+    const userId = req.user.id;
     return this.projectsService.findAll(workspaceId, userId);
   }
 
@@ -65,8 +59,7 @@ export class ProjectsController {
   @ApiResponse({ status: 200, description: 'Project details' })
   @ApiResponse({ status: 404, description: 'Project not found' })
   findOne(@Param('id') id: string, @Request() req: AuthenticatedRequest) {
-    // TODO: Extract user ID from JWT token
-    const userId = req.user?.id || 1; // Mock user ID for now
+    const userId = req.user.id;
     return this.projectsService.findOne(id, userId);
   }
 
@@ -80,8 +73,7 @@ export class ProjectsController {
     @Body() updateProjectDto: UpdateProjectDto,
     @Request() req: AuthenticatedRequest
   ) {
-    // TODO: Extract user ID from JWT token
-    const userId = req.user?.id || 1; // Mock user ID for now
+    const userId = req.user.id;
     return this.projectsService.update(id, updateProjectDto, userId);
   }
 
@@ -91,8 +83,7 @@ export class ProjectsController {
   @ApiResponse({ status: 404, description: 'Project not found' })
   @ApiResponse({ status: 403, description: 'Insufficient permissions' })
   remove(@Param('id') id: string, @Request() req: AuthenticatedRequest) {
-    // TODO: Extract user ID from JWT token
-    const userId = req.user?.id || 1; // Mock user ID for now
+    const userId = req.user.id;
     return this.projectsService.remove(id, userId);
   }
 }

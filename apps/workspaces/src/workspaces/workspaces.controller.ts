@@ -8,6 +8,7 @@ import {
   Delete,
   Request,
   ParseIntPipe,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -19,15 +20,10 @@ import { WorkspacesService } from './workspaces.service';
 import { CreateWorkspaceDto } from './dto/create-workspace.dto';
 import { UpdateWorkspaceDto } from './dto/update-workspace.dto';
 import { AddMemberDto } from './dto/add-member.dto';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import type { AuthenticatedRequest } from '@fubs/shared';
 
-interface AuthenticatedRequest {
-  user?: {
-    id: number;
-  };
-}
-
-// Note: You'll need to implement JwtAuthGuard based on your auth strategy
-// @UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard)
 @ApiTags('workspaces')
 @ApiBearerAuth()
 @Controller('api/workspaces')
@@ -42,8 +38,7 @@ export class WorkspacesController {
     @Body() createWorkspaceDto: CreateWorkspaceDto,
     @Request() req: AuthenticatedRequest
   ) {
-    // TODO: Extract user ID from JWT token
-    const userId = req.user?.id || 1; // Mock user ID for now
+    const userId = req.user.id;
     return this.workspacesService.create(createWorkspaceDto, userId);
   }
 
@@ -51,8 +46,7 @@ export class WorkspacesController {
   @ApiOperation({ summary: 'Get all workspaces for the current user' })
   @ApiResponse({ status: 200, description: 'List of workspaces' })
   findAll(@Request() req: AuthenticatedRequest) {
-    // TODO: Extract user ID from JWT token
-    const userId = req.user?.id || 1; // Mock user ID for now
+    const userId = req.user.id;
     return this.workspacesService.findAll(userId);
   }
 
@@ -61,8 +55,7 @@ export class WorkspacesController {
   @ApiResponse({ status: 200, description: 'Workspace details' })
   @ApiResponse({ status: 404, description: 'Workspace not found' })
   findOne(@Param('id') id: string, @Request() req: AuthenticatedRequest) {
-    // TODO: Extract user ID from JWT token
-    const userId = req.user?.id || 1; // Mock user ID for now
+    const userId = req.user.id;
     return this.workspacesService.findOne(id, userId);
   }
 
@@ -76,8 +69,7 @@ export class WorkspacesController {
     @Body() updateWorkspaceDto: UpdateWorkspaceDto,
     @Request() req: AuthenticatedRequest
   ) {
-    // TODO: Extract user ID from JWT token
-    const userId = req.user?.id || 1; // Mock user ID for now
+    const userId = req.user.id;
     return this.workspacesService.update(id, updateWorkspaceDto, userId);
   }
 
@@ -87,8 +79,7 @@ export class WorkspacesController {
   @ApiResponse({ status: 404, description: 'Workspace not found' })
   @ApiResponse({ status: 403, description: 'Insufficient permissions' })
   remove(@Param('id') id: string, @Request() req: AuthenticatedRequest) {
-    // TODO: Extract user ID from JWT token
-    const userId = req.user?.id || 1; // Mock user ID for now
+    const userId = req.user.id;
     return this.workspacesService.remove(id, userId);
   }
 
@@ -102,8 +93,7 @@ export class WorkspacesController {
     @Body() addMemberDto: AddMemberDto,
     @Request() req: AuthenticatedRequest
   ) {
-    // TODO: Extract user ID from JWT token
-    const userId = req.user?.id || 1; // Mock user ID for now
+    const userId = req.user.id;
     return this.workspacesService.addMember(id, addMemberDto, userId);
   }
 
@@ -112,8 +102,7 @@ export class WorkspacesController {
   @ApiResponse({ status: 200, description: 'List of workspace members' })
   @ApiResponse({ status: 404, description: 'Workspace not found' })
   getMembers(@Param('id') id: string, @Request() req: AuthenticatedRequest) {
-    // TODO: Extract user ID from JWT token
-    const userId = req.user?.id || 1; // Mock user ID for now
+    const userId = req.user.id;
     return this.workspacesService.getMembers(id, userId);
   }
 
@@ -127,8 +116,7 @@ export class WorkspacesController {
     @Param('userId', ParseIntPipe) memberUserId: number,
     @Request() req: AuthenticatedRequest
   ) {
-    // TODO: Extract user ID from JWT token
-    const userId = req.user?.id || 1; // Mock user ID for now
+    const userId = req.user.id;
     return this.workspacesService.removeMember(id, memberUserId, userId);
   }
 }
