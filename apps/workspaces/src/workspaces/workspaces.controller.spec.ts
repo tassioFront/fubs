@@ -5,6 +5,7 @@ import { WorkspacesService } from './workspaces.service';
 import { CreateWorkspaceDto } from './dto/create-workspace.dto';
 import { UpdateWorkspaceDto } from './dto/update-workspace.dto';
 import { AddMemberDto } from './dto/add-member.dto';
+import { PrismaService } from '@fubs/shared';
 
 jest.mock('@prisma/client', () => ({
   PrismaClient: jest.fn(),
@@ -76,7 +77,7 @@ describe('WorkspacesController', () => {
           },
         },
         {
-          provide: 'PrismaService',
+          provide: PrismaService,
           useValue: mockPrismaService,
         },
       ],

@@ -4,6 +4,7 @@ import { ProjectsController } from './projects.controller';
 import { ProjectsService } from './projects.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
+import { PrismaService } from '@fubs/shared';
 
 jest.mock('@prisma/client', () => ({
   PrismaClient: jest.fn(),
@@ -67,7 +68,7 @@ describe('ProjectsController', () => {
           },
         },
         {
-          provide: 'PrismaService',
+          provide: PrismaService,
           useValue: mockPrismaService,
         },
       ],
