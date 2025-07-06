@@ -27,4 +27,4 @@ jobs:
       - run: yarn install --frozen-lockfile
       - uses: nrwl/nx-set-shas@v4
         # ignore e2e until we have a stable e2e test
-      - run: npx nx affected -t lint test build --exclude="@fubs/workspaces-e2e"
+      - run: yarn nx affected -t lint test build --exclude="@fubs/workspaces-e2e"
