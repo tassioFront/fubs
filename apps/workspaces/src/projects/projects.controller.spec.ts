@@ -2,9 +2,34 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { ProjectsController } from './projects.controller';
 import { ProjectsService } from './projects.service';
-import { PrismaService } from '@fubs/shared';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
+
+jest.mock('@prisma/client', () => ({
+  PrismaClient: jest.fn(),
+  WorkspaceMemberRole: {
+    ADMIN: 'ADMIN',
+    MEMBER: 'MEMBER',
+  },
+  ProjectStatus: {
+    ACTIVE: 'ACTIVE',
+    COMPLETED: 'COMPLETED',
+    ARCHIVED: 'ARCHIVED',
+  },
+}));
+
+const mockPrismaService = {
+  project: {
+    create: jest.fn(),
+    findMany: jest.fn(),
+    findFirst: jest.fn(),
+    update: jest.fn(),
+    delete: jest.fn(),
+  },
+  workspace: {
+    findFirst: jest.fn(),
+  },
+};
 
 describe('ProjectsController', () => {
   let controller: ProjectsController;
@@ -42,19 +67,8 @@ describe('ProjectsController', () => {
           },
         },
         {
-          provide: PrismaService,
-          useValue: {
-            project: {
-              create: jest.fn(),
-              findMany: jest.fn(),
-              findFirst: jest.fn(),
-              update: jest.fn(),
-              delete: jest.fn(),
-            },
-            workspace: {
-              findFirst: jest.fn(),
-            },
-          },
+          provide: 'PrismaService',
+          useValue: mockPrismaService,
         },
       ],
     }).compile();

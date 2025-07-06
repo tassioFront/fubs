@@ -2,10 +2,38 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { WorkspacesController } from './workspaces.controller';
 import { WorkspacesService } from './workspaces.service';
-import { PrismaService } from '@fubs/shared';
 import { CreateWorkspaceDto } from './dto/create-workspace.dto';
 import { UpdateWorkspaceDto } from './dto/update-workspace.dto';
 import { AddMemberDto } from './dto/add-member.dto';
+
+jest.mock('@prisma/client', () => ({
+  PrismaClient: jest.fn(),
+  WorkspaceMemberRole: {
+    ADMIN: 'ADMIN',
+    MEMBER: 'MEMBER',
+  },
+  ProjectStatus: {
+    ACTIVE: 'ACTIVE',
+    COMPLETED: 'COMPLETED',
+    ARCHIVED: 'ARCHIVED',
+  },
+}));
+
+const mockPrismaService = {
+  workspace: {
+    create: jest.fn(),
+    findMany: jest.fn(),
+    findFirst: jest.fn(),
+    update: jest.fn(),
+    delete: jest.fn(),
+  },
+  workspaceMember: {
+    create: jest.fn(),
+    findUnique: jest.fn(),
+    delete: jest.fn(),
+    findMany: jest.fn(),
+  },
+};
 
 describe('WorkspacesController', () => {
   let controller: WorkspacesController;
@@ -48,22 +76,8 @@ describe('WorkspacesController', () => {
           },
         },
         {
-          provide: PrismaService,
-          useValue: {
-            workspace: {
-              create: jest.fn(),
-              findMany: jest.fn(),
-              findFirst: jest.fn(),
-              update: jest.fn(),
-              delete: jest.fn(),
-            },
-            workspaceMember: {
-              create: jest.fn(),
-              findUnique: jest.fn(),
-              delete: jest.fn(),
-              findMany: jest.fn(),
-            },
-          },
+          provide: 'PrismaService',
+          useValue: mockPrismaService,
         },
       ],
     }).compile();
@@ -308,7 +322,7 @@ describe('WorkspacesController', () => {
     const workspaceId = 'test-workspace-id';
     const addMemberDto: AddMemberDto = {
       userId: 2,
-      role: 'MEMBER',
+      role: 'MEMBER' as const,
     };
 
     it('should add a member to workspace successfully', async () => {
