@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "baseUrl": ".",
     "composite": true,
     "declarationMap": true,
     "emitDeclarationOnly": true,
@@ -11,12 +10,10 @@
     "moduleResolution": "nodenext",
     "noEmitOnError": true,
     "noFallthroughCasesInSwitch": true,
+    "strictPropertyInitialization": false,
     "noImplicitOverride": true,
     "noImplicitReturns": true,
     "noUnusedLocals": true,
-    "paths": {
-      "@fubs/shared/*": ["libs/shared/src/*"]
-    },
     "skipLibCheck": true,
     "strict": true,
     "target": "es2022",

@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsOptional, IsString, IsEnum, IsUUID } from 'class-validator';
-import { type UUID } from '@fubs/shared/utils/types/uuid';
+import { type UUID } from '@fubs/shared';
 
 export enum TaskStatus {
   TODO = 'todo',
