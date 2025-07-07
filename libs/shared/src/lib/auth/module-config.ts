@@ -10,7 +10,6 @@ export const authImports = [
     // We don't need to sign tokens here, just verify them
     // The users-service handles token creation
     secret: process.env.JWT_SECRET,
-    signOptions: { expiresIn: '24h' },
   }),
 ];
 export const authProviders = [JwtStrategy, UsersServiceClient, JwtAuthGuard];
