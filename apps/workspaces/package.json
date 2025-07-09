@@ -7,15 +7,17 @@
       "build": {
         "executor": "nx:run-commands",
         "options": {
-          "command": "webpack-cli build",
-          "args": [
-            "node-env=production"
-          ]
+          "commands": [
+            "npx tsc --project apps/workspaces/tsconfig.app.json --noEmit",
+            "cd apps/workspaces && webpack-cli build node-env=production"
+          ],
+          "parallel": false
         },
         "configurations": {
           "development": {
-            "args": [
-              "node-env=development"
+            "commands": [
+              "npx tsc --project apps/workspaces/tsconfig.app.json --noEmit",
+              "cd apps/workspaces && webpack-cli build node-env=development"
             ]
           }
         }
