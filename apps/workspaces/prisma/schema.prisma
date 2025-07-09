@@ -11,14 +11,14 @@ datasource db {
 }
 
 model Workspace {
-  id          String   @id @default(cuid())
+  id          String   @id @default(uuid())
   name        String
   description String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  // External reference to users-service
-  ownerId     Int
+  // External reference to users-service (UUID from users-service)
+  ownerId     String
 
   // Relations
   projects    Project[]
@@ -28,7 +28,7 @@ model Workspace {
 }
 
 model Project {
-  id          String        @id @default(cuid())
+  id          String        @id @default(uuid())
   name        String
   description String?
   status      ProjectStatus @default(ACTIVE)
@@ -43,12 +43,12 @@ model Project {
 }
 
 model WorkspaceMember {
-  id        String              @id @default(cuid())
+  id        String              @id @default(uuid())
   role      WorkspaceMemberRole @default(MEMBER)
   joinedAt  DateTime            @default(now())
 
-  // External reference to users-service
-  userId    Int
+  // External reference to users-service (UUID from users-service)
+  userId    String
 
   // Relations
   workspaceId String

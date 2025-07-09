@@ -96,7 +96,6 @@ export class WorkspacesService {
     updateWorkspaceDto: UpdateWorkspaceDto,
     userId: number
   ): Promise<Workspace> {
-    // Check if user is owner or admin
     const workspace = await this.prisma.workspace.findFirst({
       where: {
         id,
@@ -131,7 +130,6 @@ export class WorkspacesService {
   }
 
   async remove(id: string, userId: number): Promise<void> {
-    // Only owner can delete workspace
     const workspace = await this.prisma.workspace.findFirst({
       where: {
         id,
@@ -155,7 +153,6 @@ export class WorkspacesService {
     addMemberDto: AddMemberDto,
     currentUserId: number
   ): Promise<WorkspaceMember> {
-    // Check if current user is owner or admin
     const workspace = await this.prisma.workspace.findFirst({
       where: {
         id: workspaceId,
@@ -179,7 +176,6 @@ export class WorkspacesService {
       );
     }
 
-    // Check if user is already a member
     const existingMember = await this.prisma.workspaceMember.findUnique({
       where: {
         userId_workspaceId: {
@@ -212,7 +208,6 @@ export class WorkspacesService {
     userId: number,
     currentUserId: number
   ): Promise<void> {
-    // Check if current user is owner or admin
     const workspace = await this.prisma.workspace.findFirst({
       where: {
         id: workspaceId,
@@ -236,7 +231,6 @@ export class WorkspacesService {
       );
     }
 
-    // Cannot remove the owner
     if (workspace.ownerId === userId) {
       throw new BadRequestException('Cannot remove workspace owner');
     }
@@ -268,7 +262,6 @@ export class WorkspacesService {
     workspaceId: string,
     userId: number
   ): Promise<WorkspaceMember[]> {
-    // Check if user has access to workspace
     await this.findOne(workspaceId, userId);
 
     return this.prisma.workspaceMember.findMany({
@@ -277,6 +270,38 @@ export class WorkspacesService {
       },
       include: {
         workspace: true,
+      },
+    });
+  }
+
+  async userHasAccess(workspaceId: string, userId: number): Promise<boolean> {
+    const workspace = await this.prisma.workspace.findFirst({
+      where: {
+        id: workspaceId,
+        OR: [
+          { ownerId: userId },
+          {
+            members: {
+              some: {
+                userId,
+              },
+            },
+          },
+        ],
+      },
+    });
+
+    return !!workspace;
+  }
+
+  async getWorkspaceForOwnerCheck(
+    workspaceId: string
+  ): Promise<{ id: string; ownerId: number } | null> {
+    return this.prisma.workspace.findUnique({
+      where: { id: workspaceId },
+      select: {
+        id: true,
+        ownerId: true,
       },
     });
   }
