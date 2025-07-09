@@ -1,5 +1,14 @@
 # 🧪 Full Flow Validation: Users-Service ↔ Workspaces-Service (E2E will be created)
 
+## 🔗 Inter-Service Communication
+
+### Authentication Flow
+
+1. Client authenticates with **users-service** → receives JWT
+2. Client includes JWT in requests to **workspaces-service**
+3. **workspaces-service** validates JWT with **users-service**
+4. Authorized operations proceed with user context
+
 ## 📋 Test Overview
 
 This document outlines the comprehensive testing plan for validating the communication between:
