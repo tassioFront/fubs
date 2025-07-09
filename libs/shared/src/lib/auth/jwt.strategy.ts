@@ -4,7 +4,7 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { AuthenticatedUser } from '../types/authenticated-user.js';
 
 export interface JwtPayload {
-  user_id: number;
+  user_id: string;
   token_type: string;
   exp?: number;
   iat?: number;
@@ -24,18 +24,16 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   /**
-   * Validates the JWT token payload and fetches user data from users-service
+   * Validates the JWT token payload
    * This method is called automatically by Passport when a valid JWT is provided
    */
-  async validate(payload: JwtPayload): Promise<AuthenticatedUser> {
+  async validate(
+    payload: JwtPayload
+  ): Promise<Omit<AuthenticatedUser, 'email' | 'name'>> {
     try {
       if (!payload.user_id || payload.token_type !== 'access') {
         throw new UnauthorizedException('Invalid token payload');
       }
-
-      // For now, since we're using external auth service, we'll create a minimal user object
-      // In a production scenario, we need to validate with the users-service
-      // const user = await this.usersServiceClient.validateUser(payload.user_id);
 
       return {
         id: payload.user_id,

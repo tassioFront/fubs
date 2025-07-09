@@ -15,7 +15,7 @@ export class WorkspacesService {
 
   async create(
     createWorkspaceDto: CreateWorkspaceDto,
-    ownerId: number
+    ownerId: string
   ): Promise<Workspace> {
     return this.prisma.workspace.create({
       data: {
@@ -36,7 +36,7 @@ export class WorkspacesService {
     });
   }
 
-  async findAll(userId: number): Promise<Workspace[]> {
+  async findAll(userId: string): Promise<Workspace[]> {
     return this.prisma.workspace.findMany({
       where: {
         OR: [
@@ -63,7 +63,7 @@ export class WorkspacesService {
     });
   }
 
-  async findOne(id: string, userId: number): Promise<Workspace> {
+  async findOne(id: string, userId: string): Promise<Workspace> {
     const workspace = await this.prisma.workspace.findFirst({
       where: {
         id,
@@ -94,7 +94,7 @@ export class WorkspacesService {
   async update(
     id: string,
     updateWorkspaceDto: UpdateWorkspaceDto,
-    userId: number
+    userId: string
   ): Promise<Workspace> {
     const workspace = await this.prisma.workspace.findFirst({
       where: {
@@ -129,7 +129,7 @@ export class WorkspacesService {
     });
   }
 
-  async remove(id: string, userId: number): Promise<void> {
+  async remove(id: string, userId: string): Promise<void> {
     const workspace = await this.prisma.workspace.findFirst({
       where: {
         id,
@@ -151,7 +151,7 @@ export class WorkspacesService {
   async addMember(
     workspaceId: string,
     addMemberDto: AddMemberDto,
-    currentUserId: number
+    currentUserId: string
   ): Promise<WorkspaceMember> {
     const workspace = await this.prisma.workspace.findFirst({
       where: {
@@ -205,8 +205,8 @@ export class WorkspacesService {
 
   async removeMember(
     workspaceId: string,
-    userId: number,
-    currentUserId: number
+    userId: string,
+    currentUserId: string
   ): Promise<void> {
     const workspace = await this.prisma.workspace.findFirst({
       where: {
@@ -260,7 +260,7 @@ export class WorkspacesService {
 
   async getMembers(
     workspaceId: string,
-    userId: number
+    userId: string
   ): Promise<WorkspaceMember[]> {
     await this.findOne(workspaceId, userId);
 
@@ -274,7 +274,7 @@ export class WorkspacesService {
     });
   }
 
-  async userHasAccess(workspaceId: string, userId: number): Promise<boolean> {
+  async userHasAccess(workspaceId: string, userId: string): Promise<boolean> {
     const workspace = await this.prisma.workspace.findFirst({
       where: {
         id: workspaceId,
@@ -296,7 +296,7 @@ export class WorkspacesService {
 
   async getWorkspaceForOwnerCheck(
     workspaceId: string
-  ): Promise<{ id: string; ownerId: number } | null> {
+  ): Promise<{ id: string; ownerId: string } | null> {
     return this.prisma.workspace.findUnique({
       where: { id: workspaceId },
       select: {
