@@ -8,17 +8,22 @@
         "executor": "nx:run-commands",
         "options": {
           "commands": [
-            "npx tsc --project apps/workspaces/tsconfig.app.json --noEmit",
-            "cd apps/workspaces && webpack-cli build node-env=production"
+            "npx prisma generate",
+            "npx tsc --project tsconfig.app.json --noEmit",
+            "webpack-cli build node-env=production"
           ],
-          "parallel": false
+          "parallel": false,
+          "cwd": "apps/workspaces"
         },
         "configurations": {
           "development": {
             "commands": [
-              "npx tsc --project apps/workspaces/tsconfig.app.json --noEmit",
+              "npx prisma generate",
+              "npx tsc --project tsconfig.app.json --noEmit",
               "cd apps/workspaces && webpack-cli build node-env=development"
-            ]
+            ],
+            "parallel": false,
+            "cwd": "apps/workspaces"
           }
         }
       },
