@@ -4,6 +4,7 @@ import {
   ExecutionContext,
   ForbiddenException,
   NotFoundException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { WorkspacesService } from '../../workspaces/workspaces.service';
 
@@ -55,7 +56,10 @@ export class WorkspaceOwnerGuard implements CanActivate {
       ) {
         throw error;
       }
-      throw new ForbiddenException('Unable to verify workspace ownership');
+
+      throw new InternalServerErrorException(
+        'An unexpected error occurred while verifying workspace ownership'
+      );
     }
   }
 }

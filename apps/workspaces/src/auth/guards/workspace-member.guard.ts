@@ -4,6 +4,7 @@ import {
   ExecutionContext,
   ForbiddenException,
   NotFoundException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { WorkspacesService } from '../../workspaces/workspaces.service';
 
@@ -55,7 +56,9 @@ export class WorkspaceMemberGuard implements CanActivate {
       ) {
         throw error;
       }
-      throw new ForbiddenException('Unable to verify workspace access');
+      throw new InternalServerErrorException(
+        'Unable to verify workspace access'
+      );
     }
   }
 }
