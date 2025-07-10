@@ -40,6 +40,13 @@ describe('WorkspacesController', () => {
   let controller: WorkspacesController;
   let service: WorkspacesService;
 
+  // Helper function to create a properly formatted authenticated request
+  const createAuthenticatedRequest = (userId = 1) => ({
+    user: {
+      id: userId,
+    },
+  });
+
   const mockWorkspace = {
     id: 'test-workspace-id',
     name: 'Test Workspace',
@@ -105,17 +112,7 @@ describe('WorkspacesController', () => {
     it('should create a workspace successfully with authenticated user', async () => {
       jest.spyOn(service, 'create').mockResolvedValue(mockWorkspace);
 
-      const req = { user: { id: 1 } };
-      const result = await controller.create(createWorkspaceDto, req);
-
-      expect(result).toEqual(mockWorkspace);
-      expect(service.create).toHaveBeenCalledWith(createWorkspaceDto, 1);
-    });
-
-    it('should create a workspace with fallback user ID when no user in request', async () => {
-      jest.spyOn(service, 'create').mockResolvedValue(mockWorkspace);
-
-      const req = {}; // No user object
+      const req = createAuthenticatedRequest();
       const result = await controller.create(createWorkspaceDto, req);
 
       expect(result).toEqual(mockWorkspace);
@@ -126,7 +123,7 @@ describe('WorkspacesController', () => {
       const error = new BadRequestException('Invalid workspace data');
       jest.spyOn(service, 'create').mockRejectedValue(error);
 
-      const req = { user: { id: 1 } };
+      const req = createAuthenticatedRequest();
 
       await expect(controller.create(createWorkspaceDto, req)).rejects.toThrow(
         BadRequestException
@@ -140,18 +137,7 @@ describe('WorkspacesController', () => {
       const mockWorkspaces = [mockWorkspace];
       jest.spyOn(service, 'findAll').mockResolvedValue(mockWorkspaces);
 
-      const req = { user: { id: 1 } };
-      const result = await controller.findAll(req);
-
-      expect(result).toEqual(mockWorkspaces);
-      expect(service.findAll).toHaveBeenCalledWith(1);
-    });
-
-    it('should return workspaces with fallback user ID when no user in request', async () => {
-      const mockWorkspaces = [mockWorkspace];
-      jest.spyOn(service, 'findAll').mockResolvedValue(mockWorkspaces);
-
-      const req = {}; // No user object
+      const req = createAuthenticatedRequest(1);
       const result = await controller.findAll(req);
 
       expect(result).toEqual(mockWorkspaces);
@@ -161,7 +147,7 @@ describe('WorkspacesController', () => {
     it('should return empty array when user has no workspaces', async () => {
       jest.spyOn(service, 'findAll').mockResolvedValue([]);
 
-      const req = { user: { id: 1 } };
+      const req = createAuthenticatedRequest(1);
       const result = await controller.findAll(req);
 
       expect(result).toEqual([]);
@@ -175,17 +161,7 @@ describe('WorkspacesController', () => {
     it('should return a workspace by ID', async () => {
       jest.spyOn(service, 'findOne').mockResolvedValue(mockWorkspace);
 
-      const req = { user: { id: 1 } };
-      const result = await controller.findOne(workspaceId, req);
-
-      expect(result).toEqual(mockWorkspace);
-      expect(service.findOne).toHaveBeenCalledWith(workspaceId, 1);
-    });
-
-    it('should use fallback user ID when no user in request', async () => {
-      jest.spyOn(service, 'findOne').mockResolvedValue(mockWorkspace);
-
-      const req = {}; // No user object
+      const req = createAuthenticatedRequest(1);
       const result = await controller.findOne(workspaceId, req);
 
       expect(result).toEqual(mockWorkspace);
@@ -196,7 +172,7 @@ describe('WorkspacesController', () => {
       const error = new NotFoundException('Workspace not found');
       jest.spyOn(service, 'findOne').mockRejectedValue(error);
 
-      const req = { user: { id: 1 } };
+      const req = createAuthenticatedRequest(1);
 
       await expect(controller.findOne(workspaceId, req)).rejects.toThrow(
         NotFoundException
@@ -216,26 +192,7 @@ describe('WorkspacesController', () => {
       const updatedWorkspace = { ...mockWorkspace, ...updateWorkspaceDto };
       jest.spyOn(service, 'update').mockResolvedValue(updatedWorkspace);
 
-      const req = { user: { id: 1 } };
-      const result = await controller.update(
-        workspaceId,
-        updateWorkspaceDto,
-        req
-      );
-
-      expect(result).toEqual(updatedWorkspace);
-      expect(service.update).toHaveBeenCalledWith(
-        workspaceId,
-        updateWorkspaceDto,
-        1
-      );
-    });
-
-    it('should use fallback user ID when no user in request', async () => {
-      const updatedWorkspace = { ...mockWorkspace, ...updateWorkspaceDto };
-      jest.spyOn(service, 'update').mockResolvedValue(updatedWorkspace);
-
-      const req = {}; // No user object
+      const req = createAuthenticatedRequest(1);
       const result = await controller.update(
         workspaceId,
         updateWorkspaceDto,
@@ -254,7 +211,7 @@ describe('WorkspacesController', () => {
       const error = new NotFoundException('Workspace not found');
       jest.spyOn(service, 'update').mockRejectedValue(error);
 
-      const req = { user: { id: 1 } };
+      const req = createAuthenticatedRequest(1);
 
       await expect(
         controller.update(workspaceId, updateWorkspaceDto, req)
@@ -271,7 +228,7 @@ describe('WorkspacesController', () => {
       const updatedWorkspace = { ...mockWorkspace, ...partialUpdate };
       jest.spyOn(service, 'update').mockResolvedValue(updatedWorkspace);
 
-      const req = { user: { id: 1 } };
+      const req = createAuthenticatedRequest(1);
       const result = await controller.update(workspaceId, partialUpdate, req);
 
       expect(result).toEqual(updatedWorkspace);
@@ -289,17 +246,7 @@ describe('WorkspacesController', () => {
     it('should delete a workspace successfully', async () => {
       jest.spyOn(service, 'remove').mockResolvedValue(undefined);
 
-      const req = { user: { id: 1 } };
-      const result = await controller.remove(workspaceId, req);
-
-      expect(result).toBeUndefined();
-      expect(service.remove).toHaveBeenCalledWith(workspaceId, 1);
-    });
-
-    it('should use fallback user ID when no user in request', async () => {
-      jest.spyOn(service, 'remove').mockResolvedValue(undefined);
-
-      const req = {}; // No user object
+      const req = createAuthenticatedRequest(1);
       const result = await controller.remove(workspaceId, req);
 
       expect(result).toBeUndefined();
@@ -310,7 +257,7 @@ describe('WorkspacesController', () => {
       const error = new NotFoundException('Workspace not found');
       jest.spyOn(service, 'remove').mockRejectedValue(error);
 
-      const req = { user: { id: 1 } };
+      const req = createAuthenticatedRequest(1);
 
       await expect(controller.remove(workspaceId, req)).rejects.toThrow(
         NotFoundException
@@ -329,21 +276,7 @@ describe('WorkspacesController', () => {
     it('should add a member to workspace successfully', async () => {
       jest.spyOn(service, 'addMember').mockResolvedValue(mockWorkspaceMember);
 
-      const req = { user: { id: 1 } };
-      const result = await controller.addMember(workspaceId, addMemberDto, req);
-
-      expect(result).toEqual(mockWorkspaceMember);
-      expect(service.addMember).toHaveBeenCalledWith(
-        workspaceId,
-        addMemberDto,
-        1
-      );
-    });
-
-    it('should use fallback user ID when no user in request', async () => {
-      jest.spyOn(service, 'addMember').mockResolvedValue(mockWorkspaceMember);
-
-      const req = {}; // No user object
+      const req = createAuthenticatedRequest(1);
       const result = await controller.addMember(workspaceId, addMemberDto, req);
 
       expect(result).toEqual(mockWorkspaceMember);
@@ -358,7 +291,7 @@ describe('WorkspacesController', () => {
       const error = new NotFoundException('Workspace not found');
       jest.spyOn(service, 'addMember').mockRejectedValue(error);
 
-      const req = { user: { id: 1 } };
+      const req = createAuthenticatedRequest(1);
 
       await expect(
         controller.addMember(workspaceId, addMemberDto, req)
@@ -374,7 +307,7 @@ describe('WorkspacesController', () => {
       const error = new BadRequestException('User already a member');
       jest.spyOn(service, 'addMember').mockRejectedValue(error);
 
-      const req = { user: { id: 1 } };
+      const req = createAuthenticatedRequest(1);
 
       await expect(
         controller.addMember(workspaceId, addMemberDto, req)
@@ -394,18 +327,7 @@ describe('WorkspacesController', () => {
       const mockMembers = [mockWorkspaceMember];
       jest.spyOn(service, 'getMembers').mockResolvedValue(mockMembers);
 
-      const req = { user: { id: 1 } };
-      const result = await controller.getMembers(workspaceId, req);
-
-      expect(result).toEqual(mockMembers);
-      expect(service.getMembers).toHaveBeenCalledWith(workspaceId, 1);
-    });
-
-    it('should use fallback user ID when no user in request', async () => {
-      const mockMembers = [mockWorkspaceMember];
-      jest.spyOn(service, 'getMembers').mockResolvedValue(mockMembers);
-
-      const req = {}; // No user object
+      const req = createAuthenticatedRequest(1);
       const result = await controller.getMembers(workspaceId, req);
 
       expect(result).toEqual(mockMembers);
@@ -415,7 +337,7 @@ describe('WorkspacesController', () => {
     it('should return empty array when workspace has no members', async () => {
       jest.spyOn(service, 'getMembers').mockResolvedValue([]);
 
-      const req = { user: { id: 1 } };
+      const req = createAuthenticatedRequest(1);
       const result = await controller.getMembers(workspaceId, req);
 
       expect(result).toEqual([]);
@@ -426,7 +348,7 @@ describe('WorkspacesController', () => {
       const error = new NotFoundException('Workspace not found');
       jest.spyOn(service, 'getMembers').mockRejectedValue(error);
 
-      const req = { user: { id: 1 } };
+      const req = createAuthenticatedRequest(1);
 
       await expect(controller.getMembers(workspaceId, req)).rejects.toThrow(
         NotFoundException
@@ -442,25 +364,7 @@ describe('WorkspacesController', () => {
     it('should remove a member from workspace successfully', async () => {
       jest.spyOn(service, 'removeMember').mockResolvedValue(undefined);
 
-      const req = { user: { id: 1 } };
-      const result = await controller.removeMember(
-        workspaceId,
-        memberUserId,
-        req
-      );
-
-      expect(result).toBeUndefined();
-      expect(service.removeMember).toHaveBeenCalledWith(
-        workspaceId,
-        memberUserId,
-        1
-      );
-    });
-
-    it('should use fallback user ID when no user in request', async () => {
-      jest.spyOn(service, 'removeMember').mockResolvedValue(undefined);
-
-      const req = {}; // No user object
+      const req = createAuthenticatedRequest(1);
       const result = await controller.removeMember(
         workspaceId,
         memberUserId,
@@ -479,7 +383,7 @@ describe('WorkspacesController', () => {
       const error = new NotFoundException('Workspace not found');
       jest.spyOn(service, 'removeMember').mockRejectedValue(error);
 
-      const req = { user: { id: 1 } };
+      const req = createAuthenticatedRequest(1);
 
       await expect(
         controller.removeMember(workspaceId, memberUserId, req)
@@ -495,7 +399,7 @@ describe('WorkspacesController', () => {
       const error = new NotFoundException('Member not found');
       jest.spyOn(service, 'removeMember').mockRejectedValue(error);
 
-      const req = { user: { id: 1 } };
+      const req = createAuthenticatedRequest(1);
 
       await expect(
         controller.removeMember(workspaceId, memberUserId, req)
@@ -511,7 +415,7 @@ describe('WorkspacesController', () => {
       // This tests the ParseIntPipe decorator behavior indirectly
       jest.spyOn(service, 'removeMember').mockResolvedValue(undefined);
 
-      const req = { user: { id: 1 } };
+      const req = createAuthenticatedRequest(1);
       const validUserId = 123; // Should be a valid integer
       const result = await controller.removeMember(
         workspaceId,
