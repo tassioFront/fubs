@@ -1,4 +1,4 @@
-import { IsInt, IsEnum } from 'class-validator';
+import { IsEnum, IsUUID } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { WorkspaceMemberRole } from '@prisma/client';
 
@@ -7,8 +7,8 @@ export class AddMemberDto {
     description: 'User ID from users-service',
     example: 123,
   })
-  @IsInt({ message: 'User ID must be an integer' })
-  userId!: number;
+  @IsUUID('4', { message: 'User ID must be a valid uuid' })
+  userId!: string;
 
   @ApiProperty({
     description: 'Role for the new member',
