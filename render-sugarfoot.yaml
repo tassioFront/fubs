@@ -1,0 +1,29 @@
+services:
+  # Sugarfoot Service
+  - type: web
+    name: fubs-sugarfoot
+    plan: free
+    env: docker
+    dockerfilePath: ./apps/sugarfoot/Dockerfile
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: HOST
+        value: 0.0.0.0
+      - key: DATABASE_URL
+        fromService:
+          name: fubs-postgres
+          type: pserv
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 24h
+    healthCheckPath: /health
+
+databases:
+  - name: fubs-postgres
+    plan: free
+    databaseName: sugarfoot_db
