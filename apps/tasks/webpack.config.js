@@ -5,6 +5,10 @@ module.exports = {
   output: {
     path: join(__dirname, 'dist'),
   },
+  devServer: {
+    port: 4000,
+    host: 'localhost',
+  },
   resolve: {
     alias: {
       '@fubs/shared': join(__dirname, '../../libs/shared/dist/index.js'),

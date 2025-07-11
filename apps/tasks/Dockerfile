@@ -27,10 +27,11 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 ENV HOST=0.0.0.0
-ENV PORT=5000
+ENV PORT=4000
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nestjs
+
 
 # Copy built application
 COPY --from=builder --chown=nestjs:nodejs /app/apps/tasks/dist/ ./
@@ -42,7 +43,7 @@ COPY --from=builder /app/package.json ./package.json
 
 USER nestjs
 
-EXPOSE 3000
+EXPOSE 4000
 
 # Start the application with Prisma migration
-CMD ["sh", "-c", "npx prisma generate && npx prisma migrate deploy && node main.js"]
+CMD ["sh", "-c", "npx prisma migrate deploy --schema=./prisma/schema.prisma && node main.js"]
