@@ -1,5 +1,7 @@
 export interface AuthenticatedUser {
-  id: number;
+  id: string;
+  email: string;
+  name: string;
 }
 
 export interface AuthenticatedRequest {
@@ -7,7 +9,7 @@ export interface AuthenticatedRequest {
 }
 
 export interface User {
-  id: number;
+  id: string;
   email: string;
-  name?: string;
+  name: string;
 }

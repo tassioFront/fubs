@@ -7,7 +7,6 @@ import {
   Param,
   Delete,
   Request,
-  ParseIntPipe,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -113,7 +112,7 @@ export class WorkspacesController {
   @ApiResponse({ status: 403, description: 'Insufficient permissions' })
   removeMember(
     @Param('id') id: string,
-    @Param('userId', ParseIntPipe) memberUserId: number,
+    @Param('userId') memberUserId: string,
     @Request() req: AuthenticatedRequest
   ) {
     const userId = req.user.id;

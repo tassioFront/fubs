@@ -11,9 +11,8 @@ export class ProjectsService {
   async create(
     workspaceId: string,
     createProjectDto: CreateProjectDto,
-    userId: number
+    userId: string
   ): Promise<Project> {
-    // Check if user has access to the workspace
     const workspace = await this.prisma.workspace.findFirst({
       where: {
         id: workspaceId,
@@ -47,8 +46,7 @@ export class ProjectsService {
     });
   }
 
-  async findAll(workspaceId: string, userId: number): Promise<Project[]> {
-    // Check if user has access to the workspace
+  async findAll(workspaceId: string, userId: string): Promise<Project[]> {
     const workspace = await this.prisma.workspace.findFirst({
       where: {
         id: workspaceId,
@@ -82,7 +80,7 @@ export class ProjectsService {
     });
   }
 
-  async findOne(id: string, userId: number): Promise<Project> {
+  async findOne(id: string, userId: string): Promise<Project> {
     const project = await this.prisma.project.findFirst({
       where: {
         id,
@@ -114,9 +112,8 @@ export class ProjectsService {
   async update(
     id: string,
     updateProjectDto: UpdateProjectDto,
-    userId: number
+    userId: string
   ): Promise<Project> {
-    // Check if user has access to the project and can modify it
     const project = await this.prisma.project.findFirst({
       where: {
         id,
@@ -154,8 +151,7 @@ export class ProjectsService {
     });
   }
 
-  async remove(id: string, userId: number): Promise<void> {
-    // Check if user has admin access to the project
+  async remove(id: string, userId: string): Promise<void> {
     const project = await this.prisma.project.findFirst({
       where: {
         id,

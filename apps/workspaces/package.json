@@ -6,17 +6,26 @@
     "targets": {
       "build": {
         "executor": "nx:run-commands",
+        "dependsOn": ["@fubs:shared:build"],
         "options": {
-          "command": "webpack-cli build",
-          "args": [
-            "node-env=production"
-          ]
+          "commands": [
+            "npx prisma generate",
+            "npx tsc --project tsconfig.app.json --noEmit",
+            "webpack-cli build node-env=production"
+          ],
+          "parallel": false,
+          "cwd": "apps/workspaces"
         },
         "configurations": {
-          "development": {
-            "args": [
-              "node-env=development"
-            ]
+          "production": {
+            "dependsOn": ["@fubs:shared:build"],
+            "commands": [
+              "echo 'Building for production...'",
+              "npx prisma generate",
+              "webpack-cli build --mode=production"
+            ],
+            "parallel": false,
+            "cwd": "apps/workspaces"
           }
         }
       },
