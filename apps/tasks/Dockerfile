@@ -19,9 +19,7 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Build the application
-RUN NX_DAEMON=false yarn nx build shared
-RUN NODE_ENV=production NX_DAEMON=false yarn nx build tasks --configuration=production
+RUN NX_DAEMON=false yarn nx build tasks --configuration=production
 
 # Production image, copy all the files and run the app
 FROM base AS runner
@@ -31,8 +29,8 @@ ENV NODE_ENV=production
 ENV HOST=0.0.0.0
 ENV PORT=3000
 
-RUN addgroup --system --gid 1001 nodejs && \
-  adduser --system --uid 1001 nestjs
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nestjs
 
 # Copy built application
 COPY --from=builder --chown=nestjs:nodejs /app/apps/tasks/dist/ ./
