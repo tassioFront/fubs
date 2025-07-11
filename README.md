@@ -84,6 +84,7 @@ A scalable microservices architecture for project management built with Nx monor
 
 ```bash
 # workspaces example
+yarn docker:workspaces:build
 yarn docker:workspaces:up
 ```
 
