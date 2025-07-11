@@ -19,7 +19,7 @@ A scalable microservices architecture for project management built with Nx monor
          |
               HTTP/REST (temporary solution)
 ┌─────────────────┐     ┌─────────────────┐
-│workspaces-service│◄─ ─►│  tasks-service  │
+│sugarfoot-service│◄─ ─►│  tasks-service  │
 │   (Node.js)     │     │   (Node.js)     │
 │                 │     │                 │
 │ • Workspaces    │     │ • Tasks         │
@@ -31,7 +31,7 @@ A scalable microservices architecture for project management built with Nx monor
 ### Service Responsibilities
 
 - **users-service** (Python): Authentication & user management ✅ _External Service_
-- **workspaces-service** (Node.js): Workspaces, projects, member management - In progress
+- **sugarfoot-service** (Node.js): Workspaces, projects, member management - In progress
 - **tasks-service** (Node.js): Tasks, comments, detailed work tracking 🚧 _Planned_
 
 ## 🚀 Tech Stack
@@ -69,23 +69,23 @@ A scalable microservices architecture for project management built with Nx monor
    yarn db:migrate
    ```
 
-3. **Start the workspaces service locally:**
+3. **Start the sugarfoot service locally:**
 
    ```bash
    yarn dev
    ```
 
 4. **Access services:**
-   - Workspaces API: http://localhost:3000
+   - Sugarfoot API: http://localhost:3000
    - Swagger Docs: http://localhost:3000/api
    - PostgreSQL: localhost:5433
 
 ### Docker Commands
 
 ```bash
-# workspaces example
-yarn docker:workspaces:build
-yarn docker:workspaces:up
+# sugarfoot example
+yarn docker:sugarfoot:build
+yarn docker:sugarfoot:up
 ```
 
 ## 🧪 Testing
@@ -97,18 +97,18 @@ yarn docker:workspaces:up
 
 ```bash
 #example commands
-yarn nx test workspaces
+yarn nx test sugarfoot
 
 ```
 
 To create a production bundle:
 
 ```sh
-npx nx build workspaces
+npx nx build sugarfoot
 ```
 
 To see all available targets to run for a project, run:
 
 ```sh
-npx nx show project workspaces
+npx nx show project sugarfoot
 ```

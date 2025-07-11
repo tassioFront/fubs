@@ -16,7 +16,7 @@ async function bootstrap() {
   app.useGlobalFilters(new AllExceptionsFilter());
 
   const config = new DocumentBuilder()
-    .setTitle('Workspaces API')
+    .setTitle('Sugarfoot API')
     .setDescription('Project management workspaces and projects API')
     .setVersion('1.0')
     .addBearerAuth()
