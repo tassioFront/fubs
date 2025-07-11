@@ -12,7 +12,14 @@
     "db:sugarfoot:seed": "cd apps/sugarfoot && npx prisma db seed",
     "db:sugarfoot:generate": "cd apps/sugarfoot && npx prisma generate",
     "docker:sugarfoot:build": "docker build -t fubs-sugarfoot -f apps/sugarfoot/Dockerfile .",
-    "docker:sugarfoot:up": "docker-compose up sugarfoot-db -d && docker run --rm -p 3000:3000 --network fubs_microservices-network --env-file .env fubs-sugarfoot"
+    "docker:sugarfoot:up": "docker-compose up sugarfoot-db -d && docker run --rm -p 3000:3000 --network fubs_microservices-network --env-file .env fubs-sugarfoot",
+    "db:tasks:studio": "cd apps/tasks && npx prisma studio",
+    "db:tasks:migrate": "cd apps/tasks && npx prisma migrate dev",
+    "db:tasks:migrate:deploy": "cd apps/tasks && npx prisma migrate deploy",
+    "db:tasks:seed": "cd apps/tasks && npx prisma db seed",
+    "db:tasks:generate": "cd apps/tasks && npx prisma generate",
+    "docker:tasks:build": "docker build -t fubs-tasks -f apps/tasks/Dockerfile .",
+    "docker:tasks:up": "docker-compose up tasks-db -d && docker run --rm -p 3000:3000 --network fubs_microservices-network --env-file .env fubs-tasks"
   },
   "private": true,
   "dependencies": {
@@ -68,8 +75,10 @@
   },
   "sugarfoot": [
     "apps/*",
-    "libs/*",
-    "task",
-    "task-e2e"
+    "libs/*"
+  ],
+  "tasks": [
+    "apps/*",
+    "libs/*"
   ]
 }

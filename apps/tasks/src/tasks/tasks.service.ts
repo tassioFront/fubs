@@ -1,56 +1,48 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
-import { PrismaService } from "@fubs/shared";
-import { CreateTaskDto } from "./dto/create-task.dto";
-import { UpdateTaskDto } from "./dto/update-task.dto";
-import { type UUID } from "@fubs/shared";
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from '@fubs/shared';
+import { CreateTaskDto } from './dto/create-task.dto';
+import { UpdateTaskDto } from './dto/update-task.dto';
+import { type UUID } from '@fubs/shared';
 
 @Injectable()
 export class TasksService {
   constructor(private readonly prisma: PrismaService) {}
-  async create(
-    projectId: UUID,
-    createTaskDto: CreateTaskDto,
-    userId: string
-  ) {
-    const user = await this.prisma.user.findUnique({
-      where: {
-        id: userId,
-      },
-    });
+  async create(projectId: UUID, createTaskDto: CreateTaskDto, userId: string) {
+    try {
+      await this.prisma.user.findUnique({
+        where: {
+          id: userId,
+        },
+      });
 
-    if (!user) {
-      throw new NotFoundException("User not found");
+      await this.prisma.project.findFirst({
+        where: {
+          id: projectId,
+        },
+      });
+
+      const task = await this.prisma.task.create({
+        data: {
+          ...createTaskDto,
+          projectId,
+          createdBy: userId,
+        },
+        include: {
+          project: true,
+          createdByUser: true,
+          assignedUser: true,
+        },
+      });
+
+      return task;
+    } catch (error) {
+      console.error('Error creating task:', error);
+      throw new NotFoundException('Project not found or user not authorized');
     }
-
-    const project = await this.prisma.project.findFirst({
-      where: {
-        id: projectId,
-      },
-    });
-
-
-    if (!project) {
-      throw new NotFoundException("Project not found or access denied");
-    }
-
-    const task = await this.prisma.task.create({
-      data: {
-        ...createTaskDto,
-        projectId,
-        createdBy: userId,
-      },
-      include: {
-        project: true,
-        createdByUser: true,
-        assignedUser: true,
-      },
-    });
-
-    return task;
   }
 
   async findAllByProjectId(projectId: UUID) {
-    const tasks = await this.prisma.task.findMany({
+    return await this.prisma.task.findMany({
       where: {
         projectId,
       },
@@ -60,8 +52,6 @@ export class TasksService {
         assignedUser: true,
       },
     });
-
-    return tasks;
   }
 
   async assignTaskToUser(taskId: UUID, userId: string) {
@@ -78,10 +68,6 @@ export class TasksService {
         assignedUser: true,
       },
     });
-
-    if (!task) {
-      throw new NotFoundException("Task not found");
-    }
 
     return task;
   }
@@ -102,31 +88,20 @@ export class TasksService {
       },
     });
 
-    if (!task) {
-      throw new NotFoundException("Task not found");
-    }
-
     return task;
   }
 
   async deleteTask(taskId: UUID) {
-    const task = await this.prisma.task.delete({
+    await this.prisma.task.delete({
       where: {
         id: taskId,
       },
     });
 
-    if (!task) {
-      throw new NotFoundException("Task not found");
-    }
-
-    return { message: "Task deleted successfully" };
+    return { message: 'Task deleted successfully' };
   }
 
-  async updateTask(
-    taskId: UUID,
-    updateTaskDto: UpdateTaskDto
-  ) {
+  async updateTask(taskId: UUID, updateTaskDto: UpdateTaskDto) {
     const existingTask = await this.prisma.task.findUnique({
       where: {
         id: taskId,
@@ -134,9 +109,8 @@ export class TasksService {
     });
 
     if (!existingTask) {
-      throw new NotFoundException("Task not found");
+      throw new NotFoundException('Task not found');
     }
-
 
     const task = await this.prisma.task.update({
       where: {
@@ -149,10 +123,6 @@ export class TasksService {
         assignedUser: true,
       },
     });
-
-    if (!task) {
-      throw new NotFoundException("Task not found");
-    }
 
     return task;
   }

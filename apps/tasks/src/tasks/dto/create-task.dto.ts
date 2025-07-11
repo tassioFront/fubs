@@ -14,14 +14,14 @@ export enum TaskPriority {
 }
 
 interface Task {
-  project_id: UUID;
+  projectId: UUID;
   title: string;
   description?: string;
   status: TaskStatus;
   priority: TaskPriority;
-  assigned_to?: UUID;
-  due_date?: string;
-  created_at: string;
+  assignedTo?: UUID;
+  dueDate?: string;
+  createdAt: string;
 }
 
 
@@ -30,7 +30,7 @@ export class CreateTaskDto implements Task {
   @IsNotEmpty()
   @IsString()
   @IsUUID()
-  project_id: UUID;
+  projectId: UUID;
 
   @ApiProperty({ description: 'Title of the task', type: String, example: 'Implement authentication' })
   @IsNotEmpty()
@@ -56,15 +56,15 @@ export class CreateTaskDto implements Task {
   @IsOptional()
   @IsString()
   @IsUUID()
-  assigned_to?: UUID;
+  assignedTo?: UUID;
 
   @ApiProperty({ description: 'Due date of the task in ISO format', type: String, example: '2023-10-01T00:00:00Z', required: false })
   @IsOptional()
   @IsString()
-  due_date?: string;
+  dueDate?: string;
 
   @ApiProperty({ description: 'Creation date of the task in ISO format', type: String, example: '2023-09-01T00:00:00Z' })
   @IsNotEmpty()
   @IsString()
-  created_at: string;
+  createdAt: string;
 }
