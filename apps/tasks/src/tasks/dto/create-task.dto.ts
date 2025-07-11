@@ -3,35 +3,27 @@ import { IsNotEmpty, IsOptional, IsString, IsEnum, IsUUID } from 'class-validato
 import { type UUID } from '@fubs/shared';
 
 export enum TaskStatus {
-  TODO = 'todo',
-  IN_PROGRESS = 'in_progress',
-  DONE = 'done',
+  TODO = 'TODO',
+  IN_PROGRESS = 'IN_PROGRESS',
+  DONE = 'DONE',
 }
 export enum TaskPriority {
-  LOW = 'low',
-  MEDIUM = 'medium',
-  HIGH = 'high',
+  LOW = 'LOW',
+  MEDIUM = 'MEDIUM',
+  HIGH = 'HIGH',
 }
 
 interface Task {
-  projectId: UUID;
   title: string;
   description?: string;
-  status: TaskStatus;
+  status?: TaskStatus;
   priority: TaskPriority;
   assignedTo?: UUID;
   dueDate?: string;
-  createdAt: string;
 }
 
 
 export class CreateTaskDto implements Task {
-  @ApiProperty({ description: 'ID of the project that the task is being created', type: String, example: 'project-12312' })
-  @IsNotEmpty()
-  @IsString()
-  @IsUUID()
-  projectId: UUID;
-
   @ApiProperty({ description: 'Title of the task', type: String, example: 'Implement authentication' })
   @IsNotEmpty()
   @IsString()
@@ -43,9 +35,9 @@ export class CreateTaskDto implements Task {
   description?: string;
 
   @ApiProperty({ description: 'Status of the task', enum: TaskStatus, example: TaskStatus.TODO })
-  @IsNotEmpty()
+  @IsOptional()
   @IsEnum(TaskStatus)
-  status: TaskStatus;
+  status?: TaskStatus;
 
   @ApiProperty({ description: 'Priority of the task', enum: TaskPriority, example: TaskPriority.MEDIUM })
   @IsNotEmpty()
@@ -62,9 +54,4 @@ export class CreateTaskDto implements Task {
   @IsOptional()
   @IsString()
   dueDate?: string;
-
-  @ApiProperty({ description: 'Creation date of the task in ISO format', type: String, example: '2023-09-01T00:00:00Z' })
-  @IsNotEmpty()
-  @IsString()
-  createdAt: string;
 }
