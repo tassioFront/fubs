@@ -4,7 +4,10 @@
     "outDir": "./out-tsc/jest",
     "types": ["jest", "node"],
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
+    "emitDecoratorMetadata": true,
+    "paths": {
+      "@fubs/shared": ["../../libs/shared/dist/index"]
+    },
   },
   "include": [
     "jest.config.ts",
