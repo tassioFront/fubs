@@ -6,8 +6,8 @@ import {
   Request,
   UseGuards,
   Get,
-  Put,
   Delete,
+  Patch,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -21,6 +21,7 @@ import { CreateTaskDto } from './dto/create-task.dto';
 
 import { JwtAuthGuard } from '@fubs/shared';
 import { type UUID } from '@fubs/shared';
+import { UpdateTaskDto } from './dto/update-task.dto';
 interface JwtUser {
   id: string;
 }
@@ -68,7 +69,7 @@ export class TasksController {
     }
   }
 
-  @Put(':taskId/assign/:assignedUserId')
+  @Patch(':taskId/assign/:assignedUserId')
   @ApiOperation({ summary: 'Assign a task to a user' })
   @ApiResponse({ status: 200, description: 'Task assigned successfully' })
   @ApiResponse({ status: 404, description: 'Task or user not found' })
@@ -83,7 +84,7 @@ export class TasksController {
       throw error;
     }
   }
-  @Put(':taskId/unassign/:assignedUserId')
+  @Patch(':taskId/unassign/:assignedUserId')
   @ApiOperation({ summary: 'Unassign a task from a user' })
   @ApiResponse({ status: 200, description: 'Task unassigned successfully' })
   @ApiResponse({ status: 404, description: 'Task or user not found' })
@@ -108,6 +109,22 @@ export class TasksController {
       return await this.tasksService.deleteTask(taskId as UUID);
     } catch (error) {
       console.error("Error deleting task:", error);
+      throw error;
+    }
+  }
+
+  @Patch(':taskId')
+  @ApiOperation({ summary: 'Update a task' })
+  @ApiResponse({ status: 200, description: 'Task updated successfully' })
+  @ApiResponse({ status: 404, description: 'Task not found' })
+  async updateTask(
+    @Param('taskId') taskId: string,
+    @Body() updateTaskDto: UpdateTaskDto,
+  ) {
+    try {
+      return await this.tasksService.updateTask(taskId as UUID, updateTaskDto);
+    } catch (error) {
+      console.error("Error updating task:", error);
       throw error;
     }
   }
