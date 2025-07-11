@@ -3,6 +3,14 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
+    "build:ci": "yarn nx affected -t build --base=origin/main --head=HEAD --parallel=10 --verbose",
+    "test:ci": "yarn nx affected -t test --base=origin/main --head=HEAD --parallel=10 --verbose",
+    "lint:ci": "yarn nx affected -t lint --base=origin/main --head=HEAD --parallel=10 --verbose",
+    "db:workspaces:studio": "cd apps/workspaces && npx prisma studio",
+    "db:workspaces:migrate": "cd apps/workspaces && npx prisma migrate dev",
+    "db:workspaces:migrate:deploy": "cd apps/workspaces && npx prisma migrate deploy",
+    "db:workspaces:seed": "cd apps/workspaces && npx prisma db seed",
+    "db:workspaces:generate": "cd apps/workspaces && npx prisma generate",
     "docker:workspaces:build": "docker build -t fubs-workspaces -f apps/workspaces/Dockerfile .",
     "docker:workspaces:up": "docker-compose up workspaces-db -d && docker run --rm -p 3000:3000 --network fubs_microservices-network --env-file .env fubs-workspaces"
   },
