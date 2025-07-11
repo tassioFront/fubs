@@ -1,12 +1,21 @@
-# 🧪 Full Flow Validation: Users-Service ↔ Workspaces-Service (E2E will be created)
+<div align='center'>
+  
+<img width="200" alt="Sugarfoot logo" src="https://github.com/user-attachments/assets/30413105-2015-4064-b680-ef3f7f5ba80a" />
+</div>
 
-## 🔗 Inter-Service Communication
+<br/>
+
+[Sugarfoot](https://walterlantz.fandom.com/wiki/Sugarfoot) is a Node.js service designed to manage workspaces, projects, and members within an organization
+
+<br/>
+
+## 🧪 Full Flow Validation: Users-Service ↔ Sugarfoot-Service (E2E will be created)
 
 ### Authentication Flow
 
 1. Client authenticates with **users-service** → receives JWT
-2. Client includes JWT in requests to **workspaces-service**
-3. **workspaces-service** validates JWT with **users-service**
+2. Client includes JWT in requests to **sugarfoot-service**
+3. **sugarfoot-service** validates JWT with **users-service**
 4. Authorized operations proceed with user context
 
 ## 📋 Test Overview
@@ -14,7 +23,7 @@
 This document outlines the comprehensive testing plan for validating the communication between:
 
 - **Users-Service** (Python, port 8000) - Authentication & User Management
-- **Workspaces-Service** (Node.js, port 3000) - Workspace & Project Organization
+- **Sugarfoot-Service** (Node.js, port 3000) - Workspace & Project Organization
 
 ## 🎯 Test Scenarios
 
@@ -52,7 +61,7 @@ curl -X GET http://localhost:8000/api/users/validate-token/ \
 
 ```
 
-### 2. Workspaces Service with JWT Authentication
+### 2. Sugarfoot Service with JWT Authentication
 
 #### 2.1 Create Workspace with JWT
 
