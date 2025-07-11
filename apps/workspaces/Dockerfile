@@ -20,10 +20,8 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 # Generate Prisma client
-RUN npx prisma generate --schema=./apps/workspaces/prisma/schema.prisma
-
-# Build the workspaces application
-RUN npx nx build workspaces --prod
+RUN NX_DAEMON=false yarn nx build shared
+RUN NODE_ENV=production NX_DAEMON=false yarn nx build workspaces --configuration=production
 
 # Production image, copy all the files and run the app
 FROM base AS runner
