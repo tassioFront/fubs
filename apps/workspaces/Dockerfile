@@ -21,7 +21,7 @@ COPY . .
 
 # Generate Prisma client
 RUN NX_DAEMON=false yarn nx build shared
-RUN NODE_ENV=production NX_DAEMON=false yarn nx build workspaces --configuration=production
+RUN NX_DAEMON=false yarn nx build workspaces --configuration=production
 
 # Production image, copy all the files and run the app
 FROM base AS runner
