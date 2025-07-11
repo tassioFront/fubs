@@ -1,8 +1,11 @@
-# Sugarfoot Service
+<div align='center'>
+  
+<img width="200" alt="Sugarfoot logo" src="https://github.com/user-attachments/assets/30413105-2015-4064-b680-ef3f7f5ba80a" />
+</div>
+
+<br/>
 
 [Sugarfoot](https://walterlantz.fandom.com/wiki/Sugarfoot) is a Node.js service designed to manage workspaces, projects, and members within an organization
-
-<img src="https://raw.githubusercontent.com/tassioFront/fubs/main/apps/sugarfoot/assets/sugarfoot-logo.png" alt="Sugarfoot Logo" width="100%"/>
 
 <br/>
 
