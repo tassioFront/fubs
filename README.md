@@ -1,6 +1,16 @@
-# FUBS - Project Management Microservices
+# FUBS - Project Management Microservices (studying repo)
 
-A scalable microservices architecture for project management built with Nx monorepo, featuring specialized Node.js services that integrate with a Python [users-service](https://github.com/tassioFront/studying-python) for comprehensive team collaboration and task management.
+This is a study repository called Fubs. Then, its purpose is to learn and practice microservices architecture, but it does not follow all the rules by the book due to financial constraints. In the real world, its architecture would be more well-defined, respecting each boundary. For example, we could split the service like:
+
+| Microservice | Responsibility |
+|--------------|----------------|
+| **user** | Authentication, user profiles, roles |
+| **workspace** | Workspaces, permissions, team management |
+| **project** | Project and statuses |
+| **task** | Items (tasks), assignments, due dates, status changes |
+| **comment** | Comments, attachments, audit logs |
+
+It would increase the scalability, respecting the domain boundary, but also would require us to split our free account hosts. So, it was split like:
 
 ## 🏗️ Architecture Overview
 
@@ -30,7 +40,7 @@ A scalable microservices architecture for project management built with Nx monor
 
 ### Service Responsibilities
 
-- **users-service** (Python): Authentication & user management ✅ _External Service_
+- **users-service** (Python): Authentication & user management ✅ _External Service_ [see the source code here](https://github.com/tassioFront/studying-python)
 - **sugarfoot-service** (Node.js): Workspaces, projects, member management - In progress
 - **tasks-service** (Node.js): Tasks, comments, detailed work tracking 🚧 _Planned_
 
