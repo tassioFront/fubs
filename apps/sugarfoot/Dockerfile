@@ -32,6 +32,7 @@ ENV PORT=3000
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nestjs
 
+
 # Copy built application
 COPY --from=builder --chown=nestjs:nodejs /app/apps/sugarfoot/dist/ ./
 COPY --from=builder --chown=nestjs:nodejs /app/node_modules ./node_modules
@@ -45,4 +46,4 @@ USER nestjs
 EXPOSE 3000
 
 # Start the application with Prisma migration
-CMD ["sh", "-c", "npx prisma migrate deploy && node main.js"]
+CMD ["sh", "-c", "npx prisma migrate deploy --schema=./prisma/schema.prisma && node main.js"]

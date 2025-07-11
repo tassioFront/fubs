@@ -26,10 +26,6 @@ services:
     ports:
       - "3000:3000"
     environment:
-      NODE_ENV: production
-      DATABASE_URL: postgresql://postgres:postgres@sugarfoot-db:5432/sugarfoot_db?schema=public
-      JWT_SECRET: ${JWT_SECRET:-your-secret-key-for-development}
-      JWT_EXPIRES_IN: 7d
       USERS_SERVICE_URL: http://localhost:8000
       API_TITLE: "Sugarfoot Service API"
       API_DESCRIPTION: "API for managing workspaces, projects, and team members"
@@ -40,6 +36,40 @@ services:
       - microservices-network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # PostgreSQL for Tasks Service
+  tasks-db:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: tasks_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5434:5432"
+    volumes:
+      - tasks_db_data:/var/lib/postgresql/data
+      - ./apps/tasks/prisma/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - microservices-network
+
+  # Tasks Service (Node.js + NestJS)
+  tasks-service:
+    build:
+      context: .
+      dockerfile: apps/tasks/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    depends_on:
+      - tasks-db
+    networks:
+      - microservices-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4000/health"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -72,8 +102,10 @@ services:
 
 volumes:
   sugarfoot_db_data:
+  tasks_db_data:
   redis_data:
 
 networks:
   microservices-network:
+    name: fubs_microservices-network
     driver: bridge
