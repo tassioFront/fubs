@@ -19,11 +19,9 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Generate Prisma client
-RUN npx prisma generate --schema=./apps/task/prisma/schema.prisma
-
-# Build the task application
-RUN npx nx build task --prod
+# Build the application
+RUN NX_DAEMON=false yarn nx build shared
+RUN NODE_ENV=production NX_DAEMON=false yarn nx build tasks --configuration=production
 
 # Production image, copy all the files and run the app
 FROM base AS runner
@@ -33,13 +31,13 @@ ENV NODE_ENV=production
 ENV HOST=0.0.0.0
 ENV PORT=3000
 
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nestjs
+RUN addgroup --system --gid 1001 nodejs && \
+  adduser --system --uid 1001 nestjs
 
 # Copy built application
-COPY --from=builder --chown=nestjs:nodejs /app/apps/task/dist/ ./
+COPY --from=builder --chown=nestjs:nodejs /app/apps/tasks/dist/ ./
 COPY --from=builder --chown=nestjs:nodejs /app/node_modules ./node_modules
-COPY --from=builder --chown=nestjs:nodejs /app/apps/task/prisma ./prisma
+COPY --from=builder --chown=nestjs:nodejs /app/apps/tasks/prisma ./prisma
 
 # Copy package.json for runtime
 COPY --from=builder /app/package.json ./package.json
@@ -49,4 +47,4 @@ USER nestjs
 EXPOSE 3000
 
 # Start the application with Prisma migration
-CMD ["sh", "-c", "npx prisma migrate deploy && node main.js"]
+CMD ["sh", "-c", "npx prisma generate && npx prisma migrate deploy && node main.js"]

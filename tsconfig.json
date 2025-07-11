@@ -16,7 +16,7 @@
       "path": "./apps/task-e2e"
     },
     {
-      "path": "./apps/task"
+      "path": "./apps/tasks"
     }
   ]
 }

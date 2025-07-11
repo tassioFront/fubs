@@ -10,7 +10,7 @@ const swcJestConfig = JSON.parse(
 swcJestConfig.swcrc = false;
 
 export default {
-  displayName: '@fubs/task',
+  displayName: '@fubs/tasks',
   preset: '../../jest.preset.js',
   testEnvironment: 'node',
   transform: {

@@ -60,10 +60,12 @@ services:
   task-service:
     build:
       context: .
-      dockerfile: apps/task/Dockerfile
+      dockerfile: apps/tasks/Dockerfile
     restart: unless-stopped
     ports:
       - "3001:3000"
+    env_file:
+      - ./apps/tasks/.env
     environment:
       NODE_ENV: development
       DATABASE_URL: postgresql://postgres:postgres@task-db-dev:5432/task_dev?schema=public

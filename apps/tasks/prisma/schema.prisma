@@ -6,7 +6,6 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../src/generated/prisma"
 }
 
 datasource db {
@@ -35,13 +34,21 @@ model Task {
   updatedAt   DateTime   @updatedAt
 
   priority   TaskPriority @default(MEDIUM)
-  assignedTo String?      @db.Uuid
+  assignedTo String?
   dueDate    DateTime?
 
-  projectId String
-  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId  String
+  project    Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  assignedBy User?   @relation(fields: [assignedTo], references: [id], onDelete: SetNull)
 
   @@map("tasks")
+}
+
+model User {
+  id            String @id @default(uuid())
+  assignedTasks Task[]
+
+  @@map("users")
 }
 
 model Project {

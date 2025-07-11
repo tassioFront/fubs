@@ -1,10 +1,10 @@
 {
-  "name": "@fubs/task-e2e",
+  "name": "@fubs/tasks-e2e",
   "version": "0.0.1",
   "private": true,
   "nx": {
     "implicitDependencies": [
-      "@fubs/task"
+      "@fubs/tasks"
     ],
     "targets": {
       "e2e": {
@@ -17,8 +17,8 @@
           "passWithNoTests": true
         },
         "dependsOn": [
-          "@fubs/task:build",
-          "@fubs/task:serve"
+          "@fubs/tasks:build",
+          "@fubs/tasks:serve"
         ]
       }
     }

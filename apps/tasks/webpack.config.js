@@ -5,6 +5,12 @@ module.exports = {
   output: {
     path: join(__dirname, 'dist'),
   },
+  resolve: {
+    alias: {
+      '@fubs/shared': join(__dirname, '../../libs/shared/dist/index.js'),
+    },
+    conditionNames: ['import', 'default'],
+  },
   plugins: [
     new NxAppWebpackPlugin({
       target: 'node',
