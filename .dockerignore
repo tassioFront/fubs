@@ -108,3 +108,13 @@ README.md
 Dockerfile
 docker-compose*.yml
 .dockerignore
+
+# Development and build artifacts
+.nx/
+dist/
+.affected-apps.txt
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local

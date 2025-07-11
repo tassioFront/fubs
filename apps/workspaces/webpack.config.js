@@ -5,16 +5,22 @@ module.exports = {
   output: {
     path: join(__dirname, 'dist'),
   },
+  resolve: {
+    alias: {
+      '@fubs/shared': join(__dirname, '../../libs/shared/dist/index.js'),
+    },
+    conditionNames: ['import', 'default'],
+  },
   plugins: [
     new NxAppWebpackPlugin({
       target: 'node',
       compiler: 'tsc',
       main: './src/main.ts',
       tsConfig: './tsconfig.app.json',
-      assets: ["./src/assets"],
+      assets: ['./src/assets'],
       optimization: false,
       outputHashing: 'none',
       generatePackageJson: true,
-    })
+    }),
   ],
 };

@@ -83,38 +83,9 @@ A scalable microservices architecture for project management built with Nx monor
 ### Docker Commands
 
 ```bash
-# Development
-yarn docker:dev:up      # Start dev services
-yarn docker:dev:down    # Stop dev services
-yarn docker:dev:logs    # View logs
-
-# Production
-yarn docker:prod:build  # Build production images
-yarn docker:prod:up     # Start production services
-yarn docker:prod:down   # Stop production services
-
-# Database
-yarn db:migrate         # Run database migrations
-yarn db:generate        # Generate Prisma client
-yarn db:studio          # Open Prisma Studio
-```
-
-## 🗄️ Database
-
-The workspaces service uses PostgreSQL with Prisma ORM.
-
-```bash
-# Create and apply migrations
-yarn db:migrate
-
-# Deploy migrations in production
-yarn db:migrate:deploy
-
-# Generate Prisma client
-yarn db:generate
-
-# Open Prisma Studio
-yarn db:studio
+# workspaces example
+yarn docker:workspaces:build
+yarn docker:workspaces:up
 ```
 
 ## 🧪 Testing
