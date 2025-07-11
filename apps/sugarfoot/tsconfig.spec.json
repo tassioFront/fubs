@@ -6,7 +6,7 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "paths": {
-      "@fubs/shared": ["../../libs/shared/dist/index"]
+      "@fubs/shared": ["../../libs/shared/src/index.ts"]
     },
   },
   "include": [
