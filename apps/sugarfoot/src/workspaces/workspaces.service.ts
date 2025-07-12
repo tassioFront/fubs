@@ -3,11 +3,11 @@ import {
   NotFoundException,
   BadRequestException,
 } from '@nestjs/common';
-import { PrismaService } from '@fubs/shared';
+import { PrismaService } from '../common/prisma.service';
 import { CreateWorkspaceDto } from './dto/create-workspace.dto';
 import { UpdateWorkspaceDto } from './dto/update-workspace.dto';
 import { AddMemberDto } from './dto/add-member.dto';
-import { Workspace, WorkspaceMember } from '@prisma/client';
+import { Workspace, WorkspaceMember } from '@prisma/client-sugarfoot';
 
 @Injectable()
 export class WorkspacesService {

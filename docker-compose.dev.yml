@@ -38,6 +38,41 @@ services:
   #     - "1025:1025"  # SMTP
   #     - "8025:8025"  # Web UI
 
+  # PostgreSQL Database for task-service
+  task-db-dev:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: task_dev
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5434:5432"
+    volumes:
+      - task_db_dev_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Task Service (Node.js + NestJS)
+  task-service:
+    build:
+      context: .
+      dockerfile: apps/tasks/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "3001:3000"
+    env_file:
+      - ./apps/tasks/.env
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://postgres:postgres@task-db-dev:5432/task_dev?schema=public
+    depends_on:
+      - task-db-dev
+
 volumes:
   workspaces_db_dev_data:
+  task_db_dev_data:
   # redis_dev_data:

@@ -20,6 +20,7 @@ import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { JwtAuthGuard } from '@fubs/shared';
 import type { AuthenticatedRequest } from '@fubs/shared';
+import { WorkspaceMemberGuard } from '../auth/guards/workspace-member.guard';
 
 @UseGuards(JwtAuthGuard)
 @ApiTags('projects')
@@ -29,10 +30,15 @@ export class ProjectsController {
   constructor(private readonly projectsService: ProjectsService) {}
 
   @Post()
+  @UseGuards(WorkspaceMemberGuard)
   @ApiOperation({ summary: 'Create a new project in a workspace' })
   @ApiResponse({ status: 201, description: 'Project created successfully' })
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiResponse({ status: 404, description: 'Workspace not found' })
+  @ApiResponse({
+    status: 403,
+    description: 'Access denied - not a workspace member',
+  })
   create(
     @Param('workspaceId') workspaceId: string,
     @Body() createProjectDto: CreateProjectDto,
@@ -43,9 +49,14 @@ export class ProjectsController {
   }
 
   @Get()
+  @UseGuards(WorkspaceMemberGuard)
   @ApiOperation({ summary: 'Get all projects in a workspace' })
   @ApiResponse({ status: 200, description: 'List of projects' })
   @ApiResponse({ status: 404, description: 'Workspace not found' })
+  @ApiResponse({
+    status: 403,
+    description: 'Access denied - not a workspace member',
+  })
   findAll(
     @Param('workspaceId') workspaceId: string,
     @Request() req: AuthenticatedRequest
@@ -55,20 +66,34 @@ export class ProjectsController {
   }
 
   @Get(':id')
+  @UseGuards(WorkspaceMemberGuard)
   @ApiOperation({ summary: 'Get a project by ID' })
   @ApiResponse({ status: 200, description: 'Project details' })
   @ApiResponse({ status: 404, description: 'Project not found' })
-  findOne(@Param('id') id: string, @Request() req: AuthenticatedRequest) {
+  @ApiResponse({
+    status: 403,
+    description: 'Access denied - not a workspace member',
+  })
+  findOne(
+    @Param('workspaceId') workspaceId: string,
+    @Param('id') id: string,
+    @Request() req: AuthenticatedRequest
+  ) {
     const userId = req.user.id;
     return this.projectsService.findOne(id, userId);
   }
 
   @Patch(':id')
+  @UseGuards(WorkspaceMemberGuard)
   @ApiOperation({ summary: 'Update a project' })
   @ApiResponse({ status: 200, description: 'Project updated successfully' })
   @ApiResponse({ status: 404, description: 'Project not found' })
-  @ApiResponse({ status: 403, description: 'Insufficient permissions' })
+  @ApiResponse({
+    status: 403,
+    description: 'Access denied - not a workspace member',
+  })
   update(
+    @Param('workspaceId') workspaceId: string,
     @Param('id') id: string,
     @Body() updateProjectDto: UpdateProjectDto,
     @Request() req: AuthenticatedRequest
@@ -78,11 +103,19 @@ export class ProjectsController {
   }
 
   @Delete(':id')
+  @UseGuards(WorkspaceMemberGuard)
   @ApiOperation({ summary: 'Delete a project' })
   @ApiResponse({ status: 200, description: 'Project deleted successfully' })
   @ApiResponse({ status: 404, description: 'Project not found' })
-  @ApiResponse({ status: 403, description: 'Insufficient permissions' })
-  remove(@Param('id') id: string, @Request() req: AuthenticatedRequest) {
+  @ApiResponse({
+    status: 403,
+    description: 'Access denied - not a workspace member',
+  })
+  remove(
+    @Param('workspaceId') workspaceId: string,
+    @Param('id') id: string,
+    @Request() req: AuthenticatedRequest
+  ) {
     const userId = req.user.id;
     return this.projectsService.remove(id, userId);
   }
