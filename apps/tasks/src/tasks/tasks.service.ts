@@ -3,36 +3,10 @@ import { PrismaService } from '../common/prisma.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { type UUID } from '@fubs/shared';
-import type { ProjectCreatedEvent } from '../app/interfaces/project-events.interface';
 
 @Injectable()
 export class TasksService {
   constructor(private readonly prisma: PrismaService) {}
-
-  async createProject(projectData: ProjectCreatedEvent) {
-    try {
-      const project = await this.prisma.project.create({
-        data: {
-          id: projectData.id,
-        },
-      });
-
-      return project;
-    } catch (error: unknown) {
-      console.error('❌ [tasks-service] Error saving project:', error);
-      // If project already exists, just log and continue
-      if (
-        error &&
-        typeof error === 'object' &&
-        'code' in error &&
-        error.code === 'P2002'
-      ) {
-        console.log('⚠️ [tasks-service] Project already exists, skipping');
-        return null;
-      }
-      throw error;
-    }
-  }
 
   async create(projectId: UUID, createTaskDto: CreateTaskDto, userId: string) {
     try {

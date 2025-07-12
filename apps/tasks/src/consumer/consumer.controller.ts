@@ -1,15 +1,15 @@
 import { Controller } from '@nestjs/common';
 import { EventPattern, Payload } from '@nestjs/microservices';
-import { TasksService } from '../tasks/tasks.service';
-import type { ProjectCreatedEvent } from './interfaces/project-events.interface';
+import { ConsumerService } from './consumer.service';
+import type { ProjectCreatedEvent } from './project-events.interface';
 import { Events } from '@fubs/shared';
 
 @Controller()
 export class ProjectEventsConsumer {
-  constructor(private readonly tasksService: TasksService) {}
+  constructor(private readonly consumerService: ConsumerService) {}
 
   @EventPattern(Events.PROJECT_CREATED)
   async handleProjectCreated(@Payload() data: ProjectCreatedEvent) {
-    await this.tasksService.createProject(data);
+    await this.consumerService.createProject(data);
   }
 }

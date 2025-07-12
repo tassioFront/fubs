@@ -3,7 +3,7 @@ import { ProjectsService } from './projects.service';
 import { ProjectsController } from './projects.controller';
 import { PrismaService } from '../common/prisma.service';
 import { AuthModule } from '../auth/auth.module';
-import { EventsModule } from '../common/events.module';
+import { EventsModule } from '../events/events.module';
 
 @Module({
   imports: [AuthModule, EventsModule],

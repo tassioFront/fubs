@@ -3,7 +3,7 @@ import { PrismaService } from '../common/prisma.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { Project } from '@prisma/client-sugarfoot';
-import { EventsService } from '../common/events.service';
+import { EventsService } from '../events/events.service';
 
 @Injectable()
 export class ProjectsService {
