@@ -3,10 +3,14 @@ import { PrismaService } from '../common/prisma.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { Project } from '@prisma/client-sugarfoot';
+import { EventsService } from '../common/events.service';
 
 @Injectable()
 export class ProjectsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private eventsService: EventsService
+  ) {}
 
   async create(
     workspaceId: string,
@@ -33,7 +37,7 @@ export class ProjectsService {
       throw new NotFoundException('Workspace not found or access denied');
     }
 
-    return this.prisma.project.create({
+    const project = await this.prisma.project.create({
       data: {
         name: createProjectDto.name,
         description: createProjectDto.description,
@@ -44,6 +48,21 @@ export class ProjectsService {
         workspace: true,
       },
     });
+
+    // Publish event using EventsService
+    const event = {
+      id: project.id,
+      name: project.name,
+      description: project.description || undefined,
+      status: project.status,
+      workspaceId: project.workspaceId,
+      createdAt: project.createdAt,
+      userId: userId,
+    };
+
+    await this.eventsService.publishProjectCreated(event);
+
+    return project;
   }
 
   async findAll(workspaceId: string, userId: string): Promise<Project[]> {
