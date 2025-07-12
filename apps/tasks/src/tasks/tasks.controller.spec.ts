@@ -4,7 +4,7 @@ import { TasksController } from './tasks.controller';
 import { TasksService } from './tasks.service';
 import { CreateTaskDto, TaskStatus, TaskPriority } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
-import { PrismaService } from '@fubs/shared';
+import { PrismaService } from '../common/prisma.service';
 
 jest.mock('@prisma/client-tasks', () => ({
   PrismaClient: jest.fn(),
