@@ -49,15 +49,9 @@ export class ProjectsService {
       },
     });
 
-    // Publish event using EventsService
     const event = {
       id: project.id,
-      name: project.name,
-      description: project.description || undefined,
-      status: project.status,
-      workspaceId: project.workspaceId,
-      createdAt: project.createdAt,
-      userId: userId,
+      ownerId: userId,
     };
 
     await this.eventsService.publishProjectCreated(event);

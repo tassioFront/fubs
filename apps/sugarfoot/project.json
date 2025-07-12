@@ -48,11 +48,17 @@
         ],
         "options": {
           "buildTarget": "build",
-          "runBuildTargetDependencies": false
+          "watch": true,
+
+          "runBuildTargetDependencies": true
         },
         "configurations": {
           "development": {
-            "buildTarget": "build"
+            "buildTarget": "build",
+            "watch": true,
+            "runBuildTargetDependencies": true
+
+
           },
           "production": {
             "buildTarget": "build:production"

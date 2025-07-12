@@ -23,20 +23,15 @@ export class AppController {
   @ApiResponse({ status: 200, description: 'Event published successfully' })
   async testEvent() {
     const event = {
-      id: 'test-project-1',
-      name: 'Test Project',
-      description: 'A test project for event publishing',
-      status: 'ACTIVE',
-      workspaceId: 'test-workspace-123',
-      createdAt: new Date(),
-      userId: 'test-user-456',
+      id: Date.now().toString(), // for demonstration purposes
+      ownerId: 'test-user-456',
     };
 
     await this.eventsService.publishProjectCreated(event);
 
     return {
       status: 'success',
-      message: 'Event published successfully',
+      message: 'Event publisd successfully',
       event,
     };
   }

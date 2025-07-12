@@ -4,7 +4,7 @@ import { Events } from '@fubs/shared';
 
 export interface ProjectCreatedEvent {
   id: string;
-  userId: string;
+  ownerId: string;
 }
 
 @Injectable()
