@@ -17,7 +17,6 @@ export class TasksService {
         },
       });
 
-      console.log('✅ [tasks-service] Project saved:', project);
       return project;
     } catch (error: unknown) {
       console.error('❌ [tasks-service] Error saving project:', error);

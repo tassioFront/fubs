@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
-import { ProjectEventsConsumer } from './consumer';
+import { ProjectEventsConsumer } from './consumer.controller';
 import { TasksModule } from '../tasks/tasks.module';
 import { AuthModule } from '../auth/auth.module';
 import { TasksService } from '../tasks/tasks.service';

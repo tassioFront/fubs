@@ -10,9 +10,6 @@ export class ProjectEventsConsumer {
 
   @EventPattern(Events.PROJECT_CREATED)
   async handleProjectCreated(@Payload() data: ProjectCreatedEvent) {
-    console.log('📥 [tasks-service] Received project.created event:');
-    console.log(data);
-
     await this.tasksService.createProject(data);
   }
 }

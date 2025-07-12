@@ -14,8 +14,8 @@ async function bootstrap() {
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.RMQ,
     options: {
-      urls: [process.env.RABBITMQ_URL || 'amqp://guest:guest@localhost:5672'],
-      queue: process.env.RABBITMQ_QUEUE || 'sugarfoot-events',
+      urls: [process.env.RABBITMQ_URL as string],
+      queue: process.env.RABBITMQ_QUEUE as string,
       queueOptions: {
         durable: false,
       },

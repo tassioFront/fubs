@@ -1,12 +1,13 @@
 import { Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { EventsService } from './events.service';
+import { Names } from '@fubs/shared';
 
 @Module({
   imports: [
     ClientsModule.register([
       {
-        name: 'RABBITMQ_CLIENT',
+        name: Names.sugarfoot,
         transport: Transport.RMQ,
         options: {
           urls: [process.env.RABBITMQ_URL as string],
