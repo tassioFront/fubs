@@ -1,0 +1,77 @@
+{
+  "name": "sugarfoot",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "apps/sugarfoot/src",
+  "tags": ["type:app"],
+  "targets": {
+      "prisma-generate": {
+        "executor": "nx:run-commands",
+        "options": {
+          "commands": [
+            "npx prisma generate"
+          ],
+          "cwd": "apps/sugarfoot"
+        }
+      },
+      "build": {
+        "executor": "nx:run-commands",
+        "dependsOn": [
+          "@fubs/shared:build",
+          "prisma-generate"
+        ],
+        "options": {
+          "commands": [
+            "echo 'Building for development...'",
+            "npx tsc --project tsconfig.app.json --noEmit",
+            "webpack-cli build node-env=development"
+          ],
+          "parallel": false,
+          "cwd": "apps/sugarfoot"
+        },
+        "configurations": {
+          "production": {
+            "commands": [
+              "echo 'Building for production...'",
+              "webpack-cli build --mode=production"
+            ],
+            "parallel": false,
+            "cwd": "apps/sugarfoot"
+          }
+        }
+      },
+      "serve": {
+        "continuous": true,
+        "executor": "@nx/js:node",
+        "defaultConfiguration": "development",
+        "dependsOn": [
+          "build"
+        ],
+        "options": {
+          "buildTarget": "@fubs/sugarfoot:build",
+          "runBuildTargetDependencies": false
+        },
+        "configurations": {
+          "development": {
+            "buildTarget": "@fubs/sugarfoot:build:development"
+          },
+          "production": {
+            "buildTarget": "@fubs/sugarfoot:build:production"
+          }
+        }
+      },
+      "test": {
+        "options": {
+          "passWithNoTests": true
+        }
+      },
+      "docker-build": {
+        "executor": "nx:run-commands",
+        "options": {
+          "commands": [
+            "docker build -t fubs-sugarfoot -f apps/sugarfoot/Dockerfile ."
+          ]
+        }
+      }
+    }
+}

@@ -10,7 +10,7 @@
       "path": "./apps/workspaces-e2e"
     },
     {
-      "path": "./apps/workspaces"
+      "path": "./apps/sugarfoot"
     }
   ]
 }

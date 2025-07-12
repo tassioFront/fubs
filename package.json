@@ -3,28 +3,16 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "docker:dev:up": "docker-compose -f docker-compose.dev.yml up -d",
-    "docker:dev:down": "docker-compose -f docker-compose.dev.yml down",
-    "docker:dev:logs": "docker-compose -f docker-compose.dev.yml logs -f",
-    "docker:prod:build": "docker-compose build workspaces-service",
-    "docker:prod:up": "docker-compose up -d",
-    "docker:prod:down": "docker-compose down",
-    "docker:prod:logs": "docker-compose logs -f workspaces-service",
-    "db:migrate": "cd apps/workspaces && npx prisma migrate dev",
-    "db:migrate:deploy": "cd apps/workspaces && npx prisma migrate deploy",
-    "db:generate": "cd apps/workspaces && npx prisma generate",
-    "db:studio": "cd apps/workspaces && npx prisma studio",
-    "db:seed": "cd apps/workspaces && npx prisma db seed",
-    "dev": "nx serve workspaces",
     "build:ci": "yarn nx affected -t build --base=origin/main --head=HEAD --parallel=10 --verbose",
     "test:ci": "yarn nx affected -t test --base=origin/main --head=HEAD --parallel=10 --verbose",
     "lint:ci": "yarn nx affected -t lint --base=origin/main --head=HEAD --parallel=10 --verbose",
-    "docker:build": "docker-compose build",
-    "docker:up": "docker-compose up -d",
-    "docker:down": "docker-compose down",
-    "docker:logs": "docker-compose logs -f",
-    "docker:dev": "docker-compose -f docker-compose.dev.yml up workspaces-db-dev -d && nx serve workspaces",
-    "docker:prod": "docker-compose up workspaces-db workspaces-service -d"
+    "db:sugarfoot:studio": "cd apps/sugarfoot && npx prisma studio",
+    "db:sugarfoot:migrate": "cd apps/sugarfoot && npx prisma migrate dev",
+    "db:sugarfoot:migrate:deploy": "cd apps/sugarfoot && npx prisma migrate deploy",
+    "db:sugarfoot:seed": "cd apps/sugarfoot && npx prisma db seed",
+    "db:sugarfoot:generate": "cd apps/sugarfoot && npx prisma generate",
+    "docker:sugarfoot:build": "docker build -t fubs-sugarfoot -f apps/sugarfoot/Dockerfile .",
+    "docker:sugarfoot:up": "docker-compose up sugarfoot-db -d && docker run --rm -p 3000:3000 --network fubs_microservices-network --env-file .env fubs-sugarfoot"
   },
   "private": true,
   "dependencies": {
@@ -78,7 +66,7 @@
     "typescript-eslint": "^8.29.0",
     "webpack-cli": "^5.1.4"
   },
-  "workspaces": [
+  "sugarfoot": [
     "apps/*",
     "libs/*"
   ]

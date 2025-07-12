@@ -3,10 +3,13 @@
   "compilerOptions": {
     "outDir": "dist",
     "types": ["node", "@prisma/client"],
-    "rootDir": "src",
     "tsBuildInfoFile": "dist/tsconfig.app.tsbuildinfo",
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
+    "baseUrl": ".",
+    "paths": {
+      "@fubs/shared": ["../../libs/shared/dist/index"]
+    },
     "target": "es2021"
   },
   "include": ["src/**/*.ts"],
@@ -20,9 +23,5 @@
     "eslint.config.cjs",
     "eslint.config.mjs"
   ],
-  "references": [
-    {
-      "path": "../../libs/shared/tsconfig.lib.json"
-    }
-  ]
+  "references": []
 }
