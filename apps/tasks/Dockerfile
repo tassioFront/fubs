@@ -1,9 +1,8 @@
 # Multi-stage build for production optimization
-FROM docker.io/node:lts-alpine AS base
+FROM node:lts-slim AS base
 
 # Install dependencies only when needed
 FROM base AS deps
-RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 # Copy package files
@@ -24,6 +23,8 @@ RUN NX_DAEMON=false yarn nx build tasks --configuration=production
 # Production image, copy all the files and run the app
 FROM base AS runner
 WORKDIR /app
+
+RUN apt-get update && apt-get install -y openssl
 
 ENV NODE_ENV=production
 ENV HOST=0.0.0.0
