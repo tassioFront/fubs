@@ -7,13 +7,7 @@
       "path": "./libs/shared"
     },
     {
-      "path": "./apps/workspaces-e2e"
-    },
-    {
       "path": "./apps/sugarfoot"
-    },
-    {
-      "path": "./apps/task-e2e"
     },
     {
       "path": "./apps/tasks"
