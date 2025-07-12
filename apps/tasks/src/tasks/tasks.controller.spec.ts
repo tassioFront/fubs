@@ -6,7 +6,7 @@ import { CreateTaskDto, TaskStatus, TaskPriority } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { PrismaService } from '@fubs/shared';
 
-jest.mock('@prisma/client', () => ({
+jest.mock('@prisma/client-tasks', () => ({
   PrismaClient: jest.fn(),
   TaskStatus: {
     TODO: 'TODO',
@@ -128,19 +128,29 @@ describe('TasksController', () => {
       const result = await controller.create(projectId, createTaskDto, req);
 
       expect(result).toEqual(mockTask);
-      expect(service.create).toHaveBeenCalledWith(projectId, createTaskDto, 'user-123');
+      expect(service.create).toHaveBeenCalledWith(
+        projectId,
+        createTaskDto,
+        'user-123'
+      );
     });
 
     it('should handle service errors during task creation', async () => {
-      const error = new NotFoundException('Project not found or user not authorized');
+      const error = new NotFoundException(
+        'Project not found or user not authorized'
+      );
       jest.spyOn(service, 'create').mockRejectedValue(error);
 
       const req = createAuthenticatedRequest();
 
-      await expect(controller.create(projectId, createTaskDto, req)).rejects.toThrow(
-        NotFoundException
+      await expect(
+        controller.create(projectId, createTaskDto, req)
+      ).rejects.toThrow(NotFoundException);
+      expect(service.create).toHaveBeenCalledWith(
+        projectId,
+        createTaskDto,
+        'user-123'
       );
-      expect(service.create).toHaveBeenCalledWith(projectId, createTaskDto, 'user-123');
     });
 
     it('should create task with minimal required fields', async () => {
@@ -159,7 +169,11 @@ describe('TasksController', () => {
       const result = await controller.create(projectId, minimalTaskDto, req);
 
       expect(result).toEqual(minimalTask);
-      expect(service.create).toHaveBeenCalledWith(projectId, minimalTaskDto, 'user-123');
+      expect(service.create).toHaveBeenCalledWith(
+        projectId,
+        minimalTaskDto,
+        'user-123'
+      );
     });
   });
 
@@ -201,32 +215,43 @@ describe('TasksController', () => {
     const assignedUserId = 'user-456';
 
     it('should assign a task to a user successfully', async () => {
-      jest.spyOn(service, 'assignTaskToUser').mockResolvedValue(mockAssignedTask);
+      jest
+        .spyOn(service, 'assignTaskToUser')
+        .mockResolvedValue(mockAssignedTask);
 
       const result = await controller.assignTask(taskId, assignedUserId);
 
       expect(result).toEqual(mockAssignedTask);
-      expect(service.assignTaskToUser).toHaveBeenCalledWith(taskId, assignedUserId);
+      expect(service.assignTaskToUser).toHaveBeenCalledWith(
+        taskId,
+        assignedUserId
+      );
     });
 
     it('should handle task not found when assigning', async () => {
       const error = new NotFoundException('Task not found');
       jest.spyOn(service, 'assignTaskToUser').mockRejectedValue(error);
 
-      await expect(controller.assignTask(taskId, assignedUserId)).rejects.toThrow(
-        NotFoundException
+      await expect(
+        controller.assignTask(taskId, assignedUserId)
+      ).rejects.toThrow(NotFoundException);
+      expect(service.assignTaskToUser).toHaveBeenCalledWith(
+        taskId,
+        assignedUserId
       );
-      expect(service.assignTaskToUser).toHaveBeenCalledWith(taskId, assignedUserId);
     });
 
     it('should handle user not found when assigning', async () => {
       const error = new NotFoundException('User not found');
       jest.spyOn(service, 'assignTaskToUser').mockRejectedValue(error);
 
-      await expect(controller.assignTask(taskId, assignedUserId)).rejects.toThrow(
-        NotFoundException
+      await expect(
+        controller.assignTask(taskId, assignedUserId)
+      ).rejects.toThrow(NotFoundException);
+      expect(service.assignTaskToUser).toHaveBeenCalledWith(
+        taskId,
+        assignedUserId
       );
-      expect(service.assignTaskToUser).toHaveBeenCalledWith(taskId, assignedUserId);
     });
   });
 
@@ -235,7 +260,11 @@ describe('TasksController', () => {
     const assignedUserId = 'user-456';
 
     it('should unassign a task from a user successfully', async () => {
-      const unassignedTask = { ...mockAssignedTask, assignedTo: null, assignedUser: null };
+      const unassignedTask = {
+        ...mockAssignedTask,
+        assignedTo: null,
+        assignedUser: null,
+      };
       jest.spyOn(service, 'unassignTask').mockResolvedValue(unassignedTask);
 
       const result = await controller.unassignTask(taskId, assignedUserId);
@@ -248,9 +277,9 @@ describe('TasksController', () => {
       const error = new NotFoundException('Task not found');
       jest.spyOn(service, 'unassignTask').mockRejectedValue(error);
 
-      await expect(controller.unassignTask(taskId, assignedUserId)).rejects.toThrow(
-        NotFoundException
-      );
+      await expect(
+        controller.unassignTask(taskId, assignedUserId)
+      ).rejects.toThrow(NotFoundException);
       expect(service.unassignTask).toHaveBeenCalledWith(taskId, assignedUserId);
     });
 
@@ -258,9 +287,9 @@ describe('TasksController', () => {
       const error = new NotFoundException('User not assigned to this task');
       jest.spyOn(service, 'unassignTask').mockRejectedValue(error);
 
-      await expect(controller.unassignTask(taskId, assignedUserId)).rejects.toThrow(
-        NotFoundException
-      );
+      await expect(
+        controller.unassignTask(taskId, assignedUserId)
+      ).rejects.toThrow(NotFoundException);
       expect(service.unassignTask).toHaveBeenCalledWith(taskId, assignedUserId);
     });
   });
@@ -318,9 +347,9 @@ describe('TasksController', () => {
       const error = new NotFoundException('Task not found');
       jest.spyOn(service, 'updateTask').mockRejectedValue(error);
 
-      await expect(controller.updateTask(taskId, updateTaskDto)).rejects.toThrow(
-        NotFoundException
-      );
+      await expect(
+        controller.updateTask(taskId, updateTaskDto)
+      ).rejects.toThrow(NotFoundException);
       expect(service.updateTask).toHaveBeenCalledWith(taskId, updateTaskDto);
     });
 

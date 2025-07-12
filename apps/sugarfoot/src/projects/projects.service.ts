@@ -1,8 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '@fubs/shared';
+import { PrismaService } from '../common/prisma.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
-import { Project } from '@prisma/client';
+import { Project } from '@prisma/client-sugarfoot';
 
 @Injectable()
 export class ProjectsService {

@@ -4,9 +4,9 @@ import { ProjectsController } from './projects.controller';
 import { ProjectsService } from './projects.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
-import { PrismaService } from '@fubs/shared';
+import { PrismaService } from '../common/prisma.service';
 
-jest.mock('@prisma/client', () => ({
+jest.mock('@prisma/client-sugarfoot', () => ({
   PrismaClient: jest.fn(),
   WorkspaceMemberRole: {
     ADMIN: 'ADMIN',

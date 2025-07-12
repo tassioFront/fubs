@@ -5,9 +5,9 @@ import { WorkspacesService } from './workspaces.service';
 import { CreateWorkspaceDto } from './dto/create-workspace.dto';
 import { UpdateWorkspaceDto } from './dto/update-workspace.dto';
 import { AddMemberDto } from './dto/add-member.dto';
-import { PrismaService } from '@fubs/shared';
+import { PrismaService } from '../common/prisma.service';
 
-jest.mock('@prisma/client', () => ({
+jest.mock('@prisma/client-sugarfoot', () => ({
   PrismaClient: jest.fn(),
   WorkspaceMemberRole: {
     ADMIN: 'ADMIN',

@@ -13,7 +13,7 @@ module.exports = {
     alias: {
       '@fubs/shared': join(__dirname, '../../libs/shared/dist/index.js'),
     },
-    conditionNames: ['import', 'default'],
+    conditionNames: ['production', 'import', 'default'],
   },
   plugins: [
     new NxAppWebpackPlugin({
