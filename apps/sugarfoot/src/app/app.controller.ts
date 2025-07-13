@@ -31,7 +31,7 @@ export class AppController {
 
     return {
       status: 'success',
-      message: 'Event publisd successfully',
+      message: 'Event published successfully',
       event,
     };
   }

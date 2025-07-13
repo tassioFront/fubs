@@ -17,9 +17,9 @@ export class ConsumerService {
 
       return project;
     } catch (error) {
-      console.error('Error creating task:', error);
+      console.error('Error creating project:', error);
       throw new InternalServerErrorException(
-        'Unable to verify workspace access'
+        `Failed to create project with ID: ${projectData.id}`
       );
     }
   }

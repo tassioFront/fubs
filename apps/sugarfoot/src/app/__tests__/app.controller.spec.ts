@@ -49,7 +49,7 @@ describe('AppController', () => {
       expect(result).toEqual(
         expect.objectContaining({
           status: 'success',
-          message: 'Event publisd successfully',
+          message: 'Event published successfully',
           event: expect.objectContaining({
             id: expect.any(String),
             ownerId: 'test-user-456',
