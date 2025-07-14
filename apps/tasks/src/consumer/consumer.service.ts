@@ -7,6 +7,7 @@ export class ConsumerService {
   constructor(private readonly prisma: PrismaService) {}
 
   async createProject(projectData: ProjectCreatedEvent) {
+    console.log('fubs: Creating project with data:', projectData);
     try {
       const project = await this.prisma.project.create({
         data: {
