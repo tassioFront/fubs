@@ -47,4 +47,4 @@ USER nestjs
 EXPOSE 4000
 
 # Start the application with Prisma migration
-CMD ["sh", "-c", "npx prisma migrate deploy --schema=./prisma/schema.prisma"]
+CMD ["sh", "-c", "npx prisma migrate deploy --schema=./prisma/schema.prisma && node main.js"]
