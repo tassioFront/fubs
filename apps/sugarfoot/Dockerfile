@@ -19,6 +19,9 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
+# Generate Prisma client with correct binary targets for production
+RUN npx prisma generate --schema=./apps/sugarfoot/prisma/schema.prisma
+
 RUN NX_DAEMON=false yarn nx build sugarfoot --configuration=production
 
 # Production image, copy all the files and run the app
@@ -48,4 +51,4 @@ USER nestjs
 EXPOSE 3000
 
 # Regenerate Prisma Client in production environment and start the application
-CMD ["sh", "-c", "npx prisma generate --schema=./prisma/schema.prisma && npx prisma migrate deploy --schema=./prisma/schema.prisma && node main.js"]
+CMD ["sh", "-c", "npx prisma migrate deploy --schema=./prisma/schema.prisma && node main.js"]
