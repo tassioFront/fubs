@@ -20,8 +20,6 @@ services:
         generateValue: true
       - key: JWT_EXPIRES_IN
         value: 24h
-      - key: RABBITMQ_URL
-      - key: RABBITMQ_QUEUE
     healthCheckPath: /health
 
 databases:
