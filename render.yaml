@@ -1,10 +1,10 @@
 services:
-  # Tasks Service
+  # koda Service
   - type: web
-    name: fubs-tasks
+    name: fubs-koda
     plan: free
     env: docker
-    dockerfilePath: ./apps/tasks/Dockerfile
+    dockerfilePath: ./apps/koda/Dockerfile
     envVars:
       - key: NODE_ENV
         value: production
@@ -14,7 +14,7 @@ services:
         value: 0.0.0.0
       - key: DATABASE_URL
         fromDatabase:
-          name: tasks-db
+          name: koda-db
           property: connectionString
       - key: JWT_SECRET
         generateValue: true
@@ -25,5 +25,5 @@ services:
     healthCheckPath: /health
 
 databases:
-  - name: tasks-db
+  - name: koda-db
     plan: free
