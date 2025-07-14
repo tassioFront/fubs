@@ -34,13 +34,11 @@ ENV PORT=3000
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nestjs
 
-
 # Copy built application
 COPY --from=builder --chown=nestjs:nodejs /app/apps/sugarfoot/dist/ ./
 COPY --from=builder --chown=nestjs:nodejs /app/node_modules ./node_modules
 COPY --from=builder --chown=nestjs:nodejs /app/apps/sugarfoot/prisma ./prisma
 COPY --from=builder --chown=nestjs:nodejs /app/node_modules/@prisma/client-sugarfoot ./node_modules/@prisma/client-sugarfoot
-
 
 # Copy package.json for runtime
 COPY --from=builder /app/package.json ./package.json
@@ -49,5 +47,5 @@ USER nestjs
 
 EXPOSE 3000
 
-# Start the application with Prisma migration
-CMD ["sh", "-c", "npx prisma migrate deploy --schema=./prisma/schema.prisma && node main.js"]
+# Regenerate Prisma Client in production environment and start the application
+CMD ["sh", "-c", "npx prisma generate --schema=./prisma/schema.prisma && npx prisma migrate deploy --schema=./prisma/schema.prisma && node main.js"]
