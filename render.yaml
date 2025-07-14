@@ -4,7 +4,7 @@ services:
     name: fubs-koda
     plan: free
     env: docker
-    dockerfilePath: ./apps/koda/Dockerfile
+    dockerfilePath: ./apps/tasks/Dockerfile
     envVars:
       - key: NODE_ENV
         value: production
