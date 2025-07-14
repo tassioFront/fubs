@@ -53,7 +53,11 @@
       "options": {
         "targetName": "test"
       },
-      "exclude": ["apps/projects-e2e/**/*"]
+      "exclude": [
+        "apps/projects-e2e/**/*",
+        "task-e2e/**/*",
+        "apps/task-e2e/**/*"
+      ]
     }
   ],
   "targetDefaults": {

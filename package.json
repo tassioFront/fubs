@@ -12,25 +12,35 @@
     "db:sugarfoot:seed": "cd apps/sugarfoot && npx prisma db seed",
     "db:sugarfoot:generate": "cd apps/sugarfoot && npx prisma generate",
     "docker:sugarfoot:build": "docker build -t fubs-sugarfoot -f apps/sugarfoot/Dockerfile .",
-    "docker:sugarfoot:up": "docker-compose up sugarfoot-db -d && docker run --rm -p 3000:3000 --network fubs_microservices-network --env-file .env fubs-sugarfoot"
+    "docker:sugarfoot:up": "docker-compose up sugarfoot-db -d && docker run --rm -p 3000:3000 --network fubs_microservices-network -e DATABASE_URL=postgresql://postgres:postgres@sugarfoot-db:5432/sugarfoot_db?schema=public -e NODE_ENV=production -e JWT_SECRET=your-secret-key-for-development -e JWT_EXPIRES_IN=7d fubs-sugarfoot",
+    "db:tasks:studio": "cd apps/tasks && npx prisma studio",
+    "db:tasks:migrate": "cd apps/tasks && npx prisma migrate dev",
+    "db:tasks:migrate:deploy": "cd apps/tasks && npx prisma migrate deploy",
+    "db:tasks:seed": "cd apps/tasks && npx prisma db seed",
+    "db:tasks:generate": "cd apps/tasks && npx prisma generate",
+    "docker:tasks:build": "docker build -t fubs-tasks -f apps/tasks/Dockerfile .",
+    "docker:tasks:up": "docker-compose up tasks-db -d && docker run --rm -p 4000:4000 --network fubs_microservices-network -e DATABASE_URL=postgresql://postgres:postgres@tasks-db:5432/tasks_db?schema=public -e NODE_ENV=production -e JWT_SECRET=your-secret-key-for-development -e JWT_EXPIRES_IN=7d fubs-tasks"
   },
   "private": true,
   "dependencies": {
-    "@nestjs/common": "^11.0.0",
-    "@nestjs/core": "^11.0.0",
+    "@nestjs/common": "^11.1.3",
+    "@nestjs/core": "^11.1.3",
     "@nestjs/jwt": "^11.0.0",
+    "@nestjs/microservices": "^11.1.3",
     "@nestjs/passport": "^11.0.5",
-    "@nestjs/platform-express": "^11.0.0",
+    "@nestjs/platform-express": "^11.1.3",
     "@nestjs/swagger": "^11.2.0",
     "@prisma/client": "^6.11.0",
+    "amqp-connection-manager": "^4.1.14",
+    "amqplib": "^0.10.8",
     "axios": "^1.6.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.2",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "prisma": "^6.11.0",
-    "reflect-metadata": "^0.1.13",
-    "rxjs": "^7.8.0"
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.8.0",
@@ -67,6 +77,10 @@
     "webpack-cli": "^5.1.4"
   },
   "sugarfoot": [
+    "apps/*",
+    "libs/*"
+  ],
+  "tasks": [
     "apps/*",
     "libs/*"
   ]

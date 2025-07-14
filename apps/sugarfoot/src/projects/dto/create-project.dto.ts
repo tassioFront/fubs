@@ -6,7 +6,7 @@ import {
   IsEnum,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { ProjectStatus } from '@prisma/client';
+import { ProjectStatus } from '@prisma/client-sugarfoot';
 
 export class CreateProjectDto {
   @ApiProperty({

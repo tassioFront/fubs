@@ -40,23 +40,28 @@
           }
         }
       },
-      "serve": {
-        "continuous": true,
+       "serve": {
         "executor": "@nx/js:node",
         "defaultConfiguration": "development",
         "dependsOn": [
           "build"
         ],
         "options": {
-          "buildTarget": "@fubs/sugarfoot:build",
-          "runBuildTargetDependencies": false
+          "buildTarget": "build",
+          "watch": true,
+
+          "runBuildTargetDependencies": true
         },
         "configurations": {
           "development": {
-            "buildTarget": "@fubs/sugarfoot:build:development"
+            "buildTarget": "build",
+            "watch": true,
+            "runBuildTargetDependencies": true
+
+
           },
           "production": {
-            "buildTarget": "@fubs/sugarfoot:build:production"
+            "buildTarget": "build:production"
           }
         }
       },
