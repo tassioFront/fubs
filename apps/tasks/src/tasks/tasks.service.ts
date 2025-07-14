@@ -7,6 +7,7 @@ import { type UUID } from '@fubs/shared';
 @Injectable()
 export class TasksService {
   constructor(private readonly prisma: PrismaService) {}
+
   async create(projectId: UUID, createTaskDto: CreateTaskDto, userId: string) {
     try {
       await this.prisma.user.findUnique({
