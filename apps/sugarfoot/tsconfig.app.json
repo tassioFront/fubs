@@ -12,7 +12,7 @@
     },
     "target": "es2021"
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "../../libs/shared/src/lib/auth/guards/constants.ts"],
   "exclude": [
     "out-tsc",
     "dist",

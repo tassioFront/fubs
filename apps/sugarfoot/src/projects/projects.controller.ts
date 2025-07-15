@@ -18,9 +18,8 @@ import {
 import { ProjectsService } from './projects.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
-import { JwtAuthGuard } from '@fubs/shared';
+import { JwtAuthGuard, WorkspaceMemberGuard } from '@fubs/shared';
 import type { AuthenticatedRequest } from '@fubs/shared';
-import { WorkspaceMemberGuard } from '../auth/guards/workspace-member.guard';
 
 @UseGuards(JwtAuthGuard)
 @ApiTags('projects')

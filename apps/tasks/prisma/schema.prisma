@@ -62,3 +62,18 @@ model Project {
 
   @@map("projects")
 }
+
+model Workspace {
+  id         String   @id @default(uuid())
+  members    WorkspaceMember[]
+  @@map("workspaces")
+}
+
+model WorkspaceMember {
+  id        String   @id @default(uuid())
+  userId    String
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspaceId String
+
+  @@map("workspace_members")
+}
