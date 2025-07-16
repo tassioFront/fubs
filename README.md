@@ -55,7 +55,7 @@ Welcome to the FUBS project! This repository is designed to help you learn and p
 
 ## Conventions
 
-This is a study repository called Fubs. Then, its purpose is to learn and practice microservices architecture, but it does not follow all the rules by the book due to financial constraints. In the real world, its architecture would be more well-defined, respecting each boundary. For example, we could split the service like:
+Its purpose is to learn and practice microservices architecture, but it does not follow all the rules by the book due to financial constraints. In the real world, its architecture would be more well-defined, respecting each boundary. For example, we could split the service like:
 
 | Microservice  | Responsibility                                        |
 | ------------- | ----------------------------------------------------- |
