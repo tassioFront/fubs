@@ -23,4 +23,14 @@ export class ConsumerService {
       );
     }
   }
+
+  async getAllProjects() {
+    try {
+      const projects = await this.prisma.project.findMany();
+      return projects;
+    } catch (error) {
+      console.error('Error retrieving projects:', error);
+      throw new InternalServerErrorException('Failed to retrieve projects');
+    }
+  }
 }
