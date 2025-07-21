@@ -20,9 +20,9 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 # Generate Prisma client with correct binary targets for production
-RUN npx prisma generate --schema=./apps/tasks/prisma/schema.prisma
+RUN npx prisma generate --schema=./apps/koda/prisma/schema.prisma
 
-RUN NX_DAEMON=false yarn nx build tasks --configuration=production
+RUN NX_DAEMON=false yarn nx build koda --configuration=production
 
 # Production image, copy all the files and run the app
 FROM base AS runner
@@ -38,10 +38,10 @@ RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nestjs
 
 # Copy built application
-COPY --from=builder --chown=nestjs:nodejs /app/apps/tasks/dist/ ./
+COPY --from=builder --chown=nestjs:nodejs /app/apps/koda/dist/ ./
 COPY --from=builder --chown=nestjs:nodejs /app/node_modules ./node_modules
-COPY --from=builder --chown=nestjs:nodejs /app/apps/tasks/prisma ./prisma
-COPY --from=builder --chown=nestjs:nodejs /app/node_modules/@prisma/client-tasks ./node_modules/@prisma/client-tasks
+COPY --from=builder --chown=nestjs:nodejs /app/apps/koda/prisma ./prisma
+COPY --from=builder --chown=nestjs:nodejs /app/node_modules/@prisma/client-koda ./node_modules/@prisma/client-koda
 
 # Copy package.json for runtime
 COPY --from=builder /app/package.json ./package.json
