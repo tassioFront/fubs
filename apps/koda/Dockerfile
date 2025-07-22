@@ -38,7 +38,7 @@ RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nestjs
 
 # Copy built application
-COPY --from=builder --chown=nestjs:nodejs /app/apps/koda/dist/ ./
+COPY --from=builder --chown=nestjs:nodejs /app/dist/apps/koda/ ./
 COPY --from=builder --chown=nestjs:nodejs /app/node_modules ./node_modules
 COPY --from=builder --chown=nestjs:nodejs /app/apps/koda/prisma ./prisma
 COPY --from=builder --chown=nestjs:nodejs /app/node_modules/@prisma/client-koda ./node_modules/@prisma/client-koda
@@ -51,4 +51,5 @@ USER nestjs
 EXPOSE 4000
 
 # Regenerate Prisma Client in production environment and start the application
-CMD ["sh", "-c", "npx prisma migrate deploy --schema=./prisma/schema.prisma && node main.js"]
+CMD ["sh", "-c", "npx prisma migrate deploy --schema=./prisma/schema.prisma"]
+

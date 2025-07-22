@@ -19,9 +19,10 @@ import {
 import { TasksService } from './tasks.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 
-import { JwtAuthGuard, WorkspaceMemberGuard } from '@fubs/shared';
+import { JwtAuthGuard } from '@fubs/shared';
 import { type UUID } from '@fubs/shared';
 import { UpdateTaskDto } from './dto/update-task.dto';
+import { WorkspaceMemberGuard } from '../auth/guards/workspace-member.guard';
 interface JwtUser {
   id: string;
 }

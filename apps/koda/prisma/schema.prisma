@@ -57,15 +57,19 @@ model User {
 }
 
 model Project {
-  id    String @id
-  tasks Task[]
+  id          String    @id
+  tasks       Task[]
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@map("projects")
 }
 
 model Workspace {
-  id      String            @id @default(uuid())
-  members WorkspaceMember[]
+  id       String            @id @default(uuid())
+  ownerId  String
+  members  WorkspaceMember[]
+  projects Project[]
 
   @@map("workspaces")
 }

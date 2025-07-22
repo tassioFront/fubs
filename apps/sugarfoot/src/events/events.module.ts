@@ -10,8 +10,8 @@ import { Names } from '@fubs/shared';
         name: Names.sugarfoot,
         transport: Transport.RMQ,
         options: {
-          urls: [process.env.RABBITMQ_URL as string],
-          queue: process.env.RABBITMQ_QUEUE as string,
+          urls: ['amqp://guest:guest@localhost:5672'],
+          queue: 'sugarfoot-events',
           queueOptions: { durable: false },
         },
       },

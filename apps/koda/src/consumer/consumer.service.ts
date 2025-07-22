@@ -1,6 +1,10 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
-import type { ProjectCreatedEvent } from './project-events.interface';
+import type {
+  ProjectCreatedEvent,
+  WorkspaceCreatedEvent,
+  WorkspaceMemberAddedEvent
+} from './project-events.interface';
 
 @Injectable()
 export class ConsumerService {
@@ -10,11 +14,11 @@ export class ConsumerService {
     try {
       const project = await this.prisma.project.create({
         data: {
-          // we should update this
           id: projectData.id,
+          workspaceId: projectData.workspaceId,
         },
       });
-
+      console.log(`Project created: ${JSON.stringify(project)}`);
       return project;
     } catch (error) {
       console.error('Error creating project:', error);
@@ -31,6 +35,56 @@ export class ConsumerService {
     } catch (error) {
       console.error('Error retrieving projects:', error);
       throw new InternalServerErrorException('Failed to retrieve projects');
+    }
+  }
+
+  async createWorkspace(workspaceData: WorkspaceCreatedEvent) {
+    try {
+      const workspace = await this.prisma.workspace.create({
+        data: {
+          id: workspaceData.id,
+          ownerId: workspaceData.ownerId,
+        },
+      });
+
+      return workspace;
+    } catch (error) {
+      console.error('Error creating workspace:', error);
+      throw new InternalServerErrorException(
+        `Failed to create workspace with ID: ${workspaceData.id}`
+      );
+    }
+  }
+
+  async addWorkspaceMember(memberData: WorkspaceMemberAddedEvent) {
+    try {
+      const member = await this.prisma.workspaceMember.create({
+        data: {
+          userId: memberData.userId,
+          workspaceId: memberData.workspaceId,
+        },
+      });
+
+      return member;
+    } catch (error) {
+      console.error('Error adding workspace member:', error);
+      throw new InternalServerErrorException(
+        `Failed to add user ${memberData.userId} to workspace ${memberData.workspaceId}`
+      );
+    }
+  }
+
+  async getAllWorkspaces() {
+    try {
+      const workspaces = await this.prisma.workspace.findMany({
+        include: {
+          members: true,
+        },
+      });
+      return workspaces;
+    } catch (error) {
+      console.error('Error retrieving workspaces:', error);
+      throw new InternalServerErrorException('Failed to retrieve workspaces');
     }
   }
 }

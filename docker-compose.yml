@@ -30,6 +30,7 @@ services:
       API_TITLE: 'Sugarfoot Service API'
       API_DESCRIPTION: 'API for managing workspaces, projects, and team members'
       API_VERSION: '1.0.0'
+      DATABASE_URL: postgresql://postgres:postgres@sugarfoot-db:5432/sugarfoot_db?schema=public
     depends_on:
       - sugarfoot-db
     networks:
@@ -68,6 +69,8 @@ services:
       - koda-db
     networks:
       - microservices-network
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@koda-db:5432/koda_db?schema=public
     healthcheck:
       test: ['CMD', 'curl', '-f', 'http://localhost:4000/health']
       interval: 30s
