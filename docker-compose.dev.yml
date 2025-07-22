@@ -10,11 +10,11 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
-      - "5433:5432"
+      - '5433:5432'
     volumes:
       - workspaces_db_dev_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
       interval: 30s
       timeout: 10s
       retries: 3
@@ -38,41 +38,41 @@ services:
   #     - "1025:1025"  # SMTP
   #     - "8025:8025"  # Web UI
 
-  # PostgreSQL Database for task-service
-  task-db-dev:
+  # PostgreSQL Database for koda-service
+  koda-db-dev:
     image: postgres:15-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_DB: task_dev
+      POSTGRES_DB: koda_dev
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
-      - "5434:5432"
+      - '5434:5432'
     volumes:
-      - task_db_dev_data:/var/lib/postgresql/data
+      - koda_db_dev_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
       interval: 30s
       timeout: 10s
       retries: 3
 
-  # Task Service (Node.js + NestJS)
-  task-service:
+  # Koda Service (Node.js + NestJS)
+  koda-service:
     build:
       context: .
-      dockerfile: apps/tasks/Dockerfile
+      dockerfile: apps/koda/Dockerfile
     restart: unless-stopped
     ports:
-      - "3001:3000"
+      - '3001:3000'
     env_file:
-      - ./apps/tasks/.env
+      - ./apps/koda/.env
     environment:
       NODE_ENV: development
-      DATABASE_URL: postgresql://postgres:postgres@task-db-dev:5432/task_dev?schema=public
+      DATABASE_URL: postgresql://postgres:postgres@koda-db-dev:5432/koda_dev?schema=public
     depends_on:
-      - task-db-dev
+      - koda-db-dev
 
 volumes:
   workspaces_db_dev_data:
-  task_db_dev_data:
+  koda_db_dev_data:
   # redis_dev_data:
