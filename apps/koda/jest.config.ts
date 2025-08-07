@@ -1,4 +1,4 @@
-/* eslint-disable */
+ 
 import { readFileSync } from 'fs';
 
 // Reading the SWC compilation config for the spec files
@@ -10,7 +10,7 @@ const swcJestConfig = JSON.parse(
 swcJestConfig.swcrc = false;
 
 export default {
-  displayName: '@fubs/tasks',
+  displayName: '@fubs/koda',
   preset: '../../jest.preset.js',
   testEnvironment: 'node',
   transform: {

@@ -1,8 +1,8 @@
 {
-  "name": "tasks",
+  "name": "koda",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "projectType": "application",
-  "sourceRoot": "apps/tasks/src",
+  "sourceRoot": "apps/koda/src",
   "tags": ["type:app"],
   "targets": {
       "prisma-generate": {
@@ -11,7 +11,7 @@
           "commands": [
             "npx prisma generate"
           ],
-          "cwd": "apps/tasks"
+          "cwd": "apps/koda"
         }
       },
       "build": {
@@ -27,7 +27,7 @@
             "webpack-cli build node-env=development"
           ],
           "parallel": false,
-          "cwd": "apps/tasks"
+          "cwd": "apps/koda"
         },
         "configurations": {
           "production": {
@@ -36,7 +36,7 @@
               "webpack-cli build --mode=production"
             ],
             "parallel": false,
-            "cwd": "apps/tasks"
+            "cwd": "apps/koda"
           }
         }
       },
@@ -71,7 +71,7 @@
         "executor": "nx:run-commands",
         "options": {
           "commands": [
-            "docker build -t fubs-tasks -f apps/tasks/Dockerfile ."
+            "docker build -t fubs-koda -f apps/koda/Dockerfile ."
           ]
         }
       }

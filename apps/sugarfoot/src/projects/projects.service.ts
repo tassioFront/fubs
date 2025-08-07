@@ -51,7 +51,7 @@ export class ProjectsService {
 
     const event = {
       id: project.id,
-      ownerId: userId,
+      workspaceId: workspaceId,
     };
 
     await this.eventsService.publishProjectCreated(event);

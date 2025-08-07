@@ -10,17 +10,25 @@ export class TasksService {
 
   async create(projectId: UUID, createTaskDto: CreateTaskDto, userId: string) {
     try {
-      await this.prisma.user.findUnique({
+      const user = await this.prisma.user.findUnique({
         where: {
           id: userId,
         },
       });
 
-      await this.prisma.project.findFirst({
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+
+      const project = await this.prisma.project.findFirst({
         where: {
           id: projectId,
         },
       });
+
+      if (!project) {
+        throw new NotFoundException('Project not found');
+      }
 
       const task = await this.prisma.task.create({
         data: {
@@ -38,7 +46,10 @@ export class TasksService {
       return task;
     } catch (error) {
       console.error('Error creating task:', error);
-      throw new NotFoundException('Project not found or user not authorized');
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new NotFoundException('Failed to create task');
     }
   }
 
