@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
 import type {
   ProjectCreatedEvent,
@@ -10,6 +10,8 @@ import type {
 export class ConsumerService {
   constructor(private readonly prisma: PrismaService) {}
 
+    private readonly logger = new Logger(ConsumerService.name);
+
   async createProject(projectData: ProjectCreatedEvent) {
     try {
       const project = await this.prisma.project.create({
@@ -18,10 +20,10 @@ export class ConsumerService {
           workspaceId: projectData.workspaceId,
         },
       });
-      console.log(`Project created: ${JSON.stringify(project)}`);
+      this.logger.log(`Project created: ${JSON.stringify(project)}`);
       return project;
     } catch (error) {
-      console.error('Error creating project:', error);
+      this.logger.error('Error creating project:', error);
       throw new InternalServerErrorException(
         `Failed to create project with ID: ${projectData.id}`
       );

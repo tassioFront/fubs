@@ -22,9 +22,6 @@ export class WorkspaceMemberGuard implements CanActivate {
       throw new ForbiddenException('Authentication required');
     }
 
-    if (!workspace) {
-      throw new NotFoundException(`Workspace not found for project ID: ${projectId}`);
-    }
     try {
       const hasAccess = workspace.members.some(member => member.userId === user.id) || workspace.ownerId === user.id;
 
