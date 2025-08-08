@@ -4,6 +4,7 @@ import {
   ExecutionContext,
   ForbiddenException,
   InternalServerErrorException,
+  Logger,
 } from '@nestjs/common';
 import { AuthenticatedRequest, WorkspaceMemberRole } from '@fubs/shared';
 
@@ -21,25 +22,32 @@ import { AuthenticatedRequest, WorkspaceMemberRole } from '@fubs/shared';
  */
 @Injectable()
 export class WorkspacePermissionsByRoleControlGuard implements CanActivate {
-  // constructor(private readonly workspacesService: WorkspacesService) {}
+  private readonly logger = new Logger(
+    WorkspacePermissionsByRoleControlGuard.name
+  );
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-    const { role } = request.user as AuthenticatedRequest['user'];
+    const { role, id } = request.user as AuthenticatedRequest['user'];
     const isOwner = role === WorkspaceMemberRole.OWNER;
     const isMember = role === WorkspaceMemberRole.MEMBER;
 
     if (isOwner) {
+      this.logger.log(`User ${id} is an owner`);
       return true;
     }
 
     if (isMember) {
+      this.logger.log(`User ${id} is a member, no actions allowed`);
       throw new ForbiddenException(
         'Only workspace owners or admins can perform this action'
       );
     }
 
     if (request.method === 'DELETE' || request.method === 'POST') {
+      this.logger.log(
+        `User ${id} is trying to perform an not allowed ${request.method} action for their role ${role}`
+      );
       throw new ForbiddenException(
         'Only workspace owners can perform this action'
       );
