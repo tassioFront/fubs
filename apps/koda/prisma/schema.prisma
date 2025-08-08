@@ -6,7 +6,7 @@
 
 generator client {
   provider      = "prisma-client-js"
-  output        = "../../../node_modules/@prisma/client-tasks"
+  output        = "../../../node_modules/@prisma/client-koda"
   binaryTargets = ["native", "linux-arm64-openssl-3.0.x", "debian-openssl-3.0.x"]
 }
 
@@ -57,8 +57,28 @@ model User {
 }
 
 model Project {
-  id    String @id
-  tasks Task[]
+  id          String    @id
+  tasks       Task[]
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@map("projects")
+}
+
+model Workspace {
+  id       String            @id @default(uuid())
+  ownerId  String
+  members  WorkspaceMember[]
+  projects Project[]
+
+  @@map("workspaces")
+}
+
+model WorkspaceMember {
+  id          String    @id @default(uuid())
+  userId      String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspaceId String
+
+  @@map("workspace_members")
 }

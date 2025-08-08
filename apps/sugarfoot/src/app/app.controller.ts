@@ -24,7 +24,7 @@ export class AppController {
   async testEvent() {
     const event = {
       id: Date.now().toString(), // for demonstration purposes
-      ownerId: 'test-user-456',
+      workspaceId: 'test-workspace-456',
     };
 
     await this.eventsService.publishProjectCreated(event);
