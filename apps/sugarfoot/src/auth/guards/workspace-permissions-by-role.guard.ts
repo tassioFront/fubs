@@ -3,7 +3,6 @@ import {
   CanActivate,
   ExecutionContext,
   ForbiddenException,
-  InternalServerErrorException,
   Logger,
 } from '@nestjs/common';
 import { AuthenticatedRequest, WorkspaceMemberRole } from '@fubs/shared';
@@ -54,14 +53,5 @@ export class WorkspacePermissionsByRoleControlGuard implements CanActivate {
     }
 
     return true;
-  }
-  catch(error: unknown) {
-    if (error instanceof ForbiddenException) {
-      throw error;
-    }
-
-    throw new InternalServerErrorException(
-      'An unexpected error occurred while verifying workspace ownership'
-    );
   }
 }
