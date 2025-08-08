@@ -8,7 +8,7 @@ import { AllExceptionsFilter } from '@fubs/shared';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  const globalPrefix = '';
+  const globalPrefix = 'sugarfoot';
   app.setGlobalPrefix(globalPrefix);
 
   app.useGlobalPipes(validationPipeConfig);
@@ -22,7 +22,7 @@ async function bootstrap() {
     .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, document);
+  SwaggerModule.setup(globalPrefix + '/api/docs', app, document);
 
   app.enableCors({
     origin: process.env.CORS_ORIGIN || 'http://localhost:3001',
@@ -34,7 +34,9 @@ async function bootstrap() {
   Logger.log(
     `🚀 Application is running on: http://localhost:${port}/${globalPrefix}`
   );
-  Logger.log(`📚 Swagger documentation: http://localhost:${port}/api/docs`);
+  Logger.log(
+    `📚 Swagger documentation: http://localhost:${port}/${globalPrefix}/api/docs`
+  );
 }
 
 bootstrap();
