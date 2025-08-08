@@ -1,7 +1,8 @@
+import { WorkspaceMemberRole } from './user.js';
+
 export interface AuthenticatedUser {
   id: string;
-  email: string;
-  name: string;
+  role: WorkspaceMemberRole;
 }
 
 export interface AuthenticatedRequest {

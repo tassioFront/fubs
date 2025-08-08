@@ -9,6 +9,7 @@ import { UpdateWorkspaceDto } from './dto/update-workspace.dto';
 import { AddMemberDto } from './dto/add-member.dto';
 import { Workspace, WorkspaceMember } from '@prisma/client-sugarfoot';
 import { EventsService } from '../events/events.service';
+import { WorkspaceMemberRole } from '@fubs/shared';
 
 @Injectable()
 export class WorkspacesService {
@@ -29,7 +30,7 @@ export class WorkspacesService {
         members: {
           create: {
             userId: ownerId,
-            role: 'ADMIN',
+            role: WorkspaceMemberRole.OWNER,
           },
         },
       },
@@ -75,20 +76,10 @@ export class WorkspacesService {
     });
   }
 
-  async findOne(id: string, userId: string): Promise<Workspace> {
+  async findOne(id: string): Promise<Workspace> {
     const workspace = await this.prisma.workspace.findFirst({
       where: {
         id,
-        OR: [
-          { ownerId: userId },
-          {
-            members: {
-              some: {
-                userId,
-              },
-            },
-          },
-        ],
       },
       include: {
         members: true,
@@ -105,32 +96,8 @@ export class WorkspacesService {
 
   async update(
     id: string,
-    updateWorkspaceDto: UpdateWorkspaceDto,
-    userId: string
+    updateWorkspaceDto: UpdateWorkspaceDto
   ): Promise<Workspace> {
-    const workspace = await this.prisma.workspace.findFirst({
-      where: {
-        id,
-        OR: [
-          { ownerId: userId },
-          {
-            members: {
-              some: {
-                userId,
-                role: 'ADMIN',
-              },
-            },
-          },
-        ],
-      },
-    });
-
-    if (!workspace) {
-      throw new NotFoundException(
-        'Workspace not found or insufficient permissions'
-      );
-    }
-
     return this.prisma.workspace.update({
       where: { id },
       data: updateWorkspaceDto,
@@ -174,7 +141,7 @@ export class WorkspacesService {
             members: {
               some: {
                 userId: currentUserId,
-                role: 'ADMIN',
+                role: WorkspaceMemberRole.ADMIN,
               },
             },
           },
@@ -237,7 +204,7 @@ export class WorkspacesService {
             members: {
               some: {
                 userId: currentUserId,
-                role: 'ADMIN',
+                role: WorkspaceMemberRole.ADMIN,
               },
             },
           },
@@ -282,7 +249,7 @@ export class WorkspacesService {
     workspaceId: string,
     userId: string
   ): Promise<WorkspaceMember[]> {
-    await this.findOne(workspaceId, userId);
+    await this.findOne(workspaceId);
 
     return this.prisma.workspaceMember.findMany({
       where: {

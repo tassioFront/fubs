@@ -1,6 +1,6 @@
 import { IsEnum, IsUUID } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { WorkspaceMemberRole } from '@prisma/client-sugarfoot';
+import { WorkspaceMemberRole } from '@fubs/shared';
 
 export class AddMemberDto {
   @ApiProperty({

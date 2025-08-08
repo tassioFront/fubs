@@ -4,6 +4,7 @@ import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { Project } from '@prisma/client-sugarfoot';
 import { EventsService } from '../events/events.service';
+import { WorkspaceMemberRole } from '@fubs/shared';
 
 @Injectable()
 export class ProjectsService {
@@ -137,7 +138,7 @@ export class ProjectsService {
               members: {
                 some: {
                   userId,
-                  role: 'ADMIN',
+                  role: WorkspaceMemberRole.ADMIN,
                 },
               },
             },
@@ -175,7 +176,7 @@ export class ProjectsService {
               members: {
                 some: {
                   userId,
-                  role: 'ADMIN',
+                  role: WorkspaceMemberRole.ADMIN,
                 },
               },
             },

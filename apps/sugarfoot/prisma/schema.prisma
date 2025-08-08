@@ -46,7 +46,7 @@ model Project {
 
 model WorkspaceMember {
   id        String              @id @default(uuid())
-  role      WorkspaceMemberRole @default(MEMBER)
+  role      WorkspaceMemberRole @default(member)
   joinedAt  DateTime            @default(now())
 
   // External reference to users-service (UUID from users-service)
@@ -67,6 +67,7 @@ enum ProjectStatus {
 }
 
 enum WorkspaceMemberRole {
-  ADMIN
-  MEMBER
+  admin
+  member
+  owner
 }
