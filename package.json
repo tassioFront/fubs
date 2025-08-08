@@ -7,7 +7,7 @@
     "test:ci": "yarn nx affected -t test --base=origin/main --head=HEAD --parallel=10 --verbose",
     "lint:ci": "yarn nx affected -t lint --base=origin/main --head=HEAD --parallel=10 --verbose",
     "db:sugarfoot:studio": "cd apps/sugarfoot && npx prisma studio",
-    "db:sugarfoot:migrate": "cd apps/sugarfoot && npx prisma migrate dev",
+    "db:sugarfoot:migrate": "cd apps/sugarfoot && npx prisma generate && npx prisma migrate dev && npx prisma migrate deploy & cd ../../",
     "db:sugarfoot:migrate:deploy": "cd apps/sugarfoot && npx prisma migrate deploy",
     "db:sugarfoot:seed": "cd apps/sugarfoot && npx prisma db seed",
     "db:sugarfoot:generate": "cd apps/sugarfoot && npx prisma generate",
