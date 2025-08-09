@@ -11,7 +11,7 @@ export class AddMemberDto {
   userId!: string;
 
   @ApiProperty({
-    description: 'Role for the new member',
+    description: 'Role for the new member in the workspace',
     enum: WorkspaceMemberRole,
     example: WorkspaceMemberRole.MEMBER,
   })

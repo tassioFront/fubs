@@ -12,9 +12,9 @@ import { AuthenticatedRequest, WorkspaceMemberRole } from '@fubs/shared';
  *
  * This guard ensures that a authenticated user is requesting an allowed action on a workspace considering their role.
  * Use this guard for operations that require workspace membership:
- *   - _Owner Privileges_: Workspace owners have full control over workspace and projects resources (including deletion)
- *   - _Admin Privileges_: Workspace admins have full control over workspace resources (excluding deletion and creating workspaces) and can manage project settings (including deletion)
- *   - _Member Privileges_: Workspace members have read-only access to workspace and project resources. They can manage tasks within projects they have access to.
+ *   - _Owner Privileges_: Workspace owners have full control over workspace
+ *   - _Admin Privileges_: Workspace admins have full edition control over workspace resources (excluding deletion and creating workspaces)
+ *   - _Member Privileges_: Workspace members have read-only access to workspace
  *
  * Prerequisites: Must be used AFTER JwtAuthGuard
  * Usage: @UseGuards(JwtAuthGuard, WorkspacePermissionsByRoleControlGuard)
@@ -36,8 +36,8 @@ export class WorkspacePermissionsByRoleControlGuard implements CanActivate {
       return true;
     }
 
-    if (isMember) {
-      this.logger.log(`User ${id} is a member, no actions allowed`);
+    if (isMember && request.method !== 'GET') {
+      this.logger.log(`User ${id} is a member, this action is not allowed`);
       throw new ForbiddenException(
         'Only workspace owners or admins can perform this action'
       );
@@ -45,7 +45,7 @@ export class WorkspacePermissionsByRoleControlGuard implements CanActivate {
 
     if (request.method === 'DELETE' || request.method === 'POST') {
       this.logger.log(
-        `User ${id} is trying to perform an not allowed ${request.method} action for their role ${role}`
+        `User ${id} is trying to perform a not allowed ${request.method} action for their role ${role}`
       );
       throw new ForbiddenException(
         'Only workspace owners can perform this action'

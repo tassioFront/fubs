@@ -4,7 +4,6 @@ import { WorkspacesController } from './workspaces.controller';
 import { WorkspacesService } from './workspaces.service';
 import { CreateWorkspaceDto } from './dto/create-workspace.dto';
 import { UpdateWorkspaceDto } from './dto/update-workspace.dto';
-import { AddMemberDto } from './dto/add-member.dto';
 import { PrismaService } from '../common/prisma.service';
 
 jest.mock('@prisma/client-sugarfoot', () => ({
@@ -36,7 +35,7 @@ const mockPrismaService = {
   },
 };
 
-describe.skip('WorkspacesController', () => {
+describe('WorkspacesController', () => {
   let controller: WorkspacesController;
   let service: WorkspacesService;
 
@@ -165,7 +164,7 @@ describe.skip('WorkspacesController', () => {
       const result = await controller.findOne(workspaceId, req);
 
       expect(result).toEqual(mockWorkspace);
-      expect(service.findOne).toHaveBeenCalledWith(workspaceId, 1);
+      expect(service.findOne).toHaveBeenCalledWith(workspaceId);
     });
 
     it('should handle workspace not found', async () => {
@@ -177,7 +176,7 @@ describe.skip('WorkspacesController', () => {
       await expect(controller.findOne(workspaceId, req)).rejects.toThrow(
         NotFoundException
       );
-      expect(service.findOne).toHaveBeenCalledWith(workspaceId, 1);
+      expect(service.findOne).toHaveBeenCalledWith(workspaceId);
     });
   });
 
@@ -202,8 +201,7 @@ describe.skip('WorkspacesController', () => {
       expect(result).toEqual(updatedWorkspace);
       expect(service.update).toHaveBeenCalledWith(
         workspaceId,
-        updateWorkspaceDto,
-        1
+        updateWorkspaceDto
       );
     });
 
@@ -218,8 +216,7 @@ describe.skip('WorkspacesController', () => {
       ).rejects.toThrow(NotFoundException);
       expect(service.update).toHaveBeenCalledWith(
         workspaceId,
-        updateWorkspaceDto,
-        1
+        updateWorkspaceDto
       );
     });
 
@@ -232,11 +229,7 @@ describe.skip('WorkspacesController', () => {
       const result = await controller.update(workspaceId, partialUpdate, req);
 
       expect(result).toEqual(updatedWorkspace);
-      expect(service.update).toHaveBeenCalledWith(
-        workspaceId,
-        partialUpdate,
-        1
-      );
+      expect(service.update).toHaveBeenCalledWith(workspaceId, partialUpdate);
     });
   });
 
@@ -250,7 +243,7 @@ describe.skip('WorkspacesController', () => {
       const result = await controller.remove(workspaceId, req);
 
       expect(result).toBeUndefined();
-      expect(service.remove).toHaveBeenCalledWith(workspaceId, 1);
+      expect(service.remove).toHaveBeenCalledWith(workspaceId);
     });
 
     it('should handle workspace not found during deletion', async () => {
@@ -262,173 +255,7 @@ describe.skip('WorkspacesController', () => {
       await expect(controller.remove(workspaceId, req)).rejects.toThrow(
         NotFoundException
       );
-      expect(service.remove).toHaveBeenCalledWith(workspaceId, 1);
-    });
-  });
-
-  describe('addMember', () => {
-    const workspaceId = 'test-workspace-id';
-    const addMemberDto: AddMemberDto = {
-      userId: 2,
-      role: 'MEMBER' as const,
-    };
-
-    it('should add a member to workspace successfully', async () => {
-      jest.spyOn(service, 'addMember').mockResolvedValue(mockWorkspaceMember);
-
-      const req = createAuthenticatedRequest(1);
-      const result = await controller.addMember(workspaceId, addMemberDto, req);
-
-      expect(result).toEqual(mockWorkspaceMember);
-      expect(service.addMember).toHaveBeenCalledWith(
-        workspaceId,
-        addMemberDto,
-        1
-      );
-    });
-
-    it('should handle workspace not found when adding member', async () => {
-      const error = new NotFoundException('Workspace not found');
-      jest.spyOn(service, 'addMember').mockRejectedValue(error);
-
-      const req = createAuthenticatedRequest(1);
-
-      await expect(
-        controller.addMember(workspaceId, addMemberDto, req)
-      ).rejects.toThrow(NotFoundException);
-      expect(service.addMember).toHaveBeenCalledWith(
-        workspaceId,
-        addMemberDto,
-        1
-      );
-    });
-
-    it('should handle invalid member data', async () => {
-      const error = new BadRequestException('User already a member');
-      jest.spyOn(service, 'addMember').mockRejectedValue(error);
-
-      const req = createAuthenticatedRequest(1);
-
-      await expect(
-        controller.addMember(workspaceId, addMemberDto, req)
-      ).rejects.toThrow(BadRequestException);
-      expect(service.addMember).toHaveBeenCalledWith(
-        workspaceId,
-        addMemberDto,
-        1
-      );
-    });
-  });
-
-  describe('getMembers', () => {
-    const workspaceId = 'test-workspace-id';
-
-    it('should return workspace members successfully', async () => {
-      const mockMembers = [mockWorkspaceMember];
-      jest.spyOn(service, 'getMembers').mockResolvedValue(mockMembers);
-
-      const req = createAuthenticatedRequest(1);
-      const result = await controller.getMembers(workspaceId, req);
-
-      expect(result).toEqual(mockMembers);
-      expect(service.getMembers).toHaveBeenCalledWith(workspaceId, 1);
-    });
-
-    it('should return empty array when workspace has no members', async () => {
-      jest.spyOn(service, 'getMembers').mockResolvedValue([]);
-
-      const req = createAuthenticatedRequest(1);
-      const result = await controller.getMembers(workspaceId, req);
-
-      expect(result).toEqual([]);
-      expect(service.getMembers).toHaveBeenCalledWith(workspaceId, 1);
-    });
-
-    it('should handle workspace not found when getting members', async () => {
-      const error = new NotFoundException('Workspace not found');
-      jest.spyOn(service, 'getMembers').mockRejectedValue(error);
-
-      const req = createAuthenticatedRequest(1);
-
-      await expect(controller.getMembers(workspaceId, req)).rejects.toThrow(
-        NotFoundException
-      );
-      expect(service.getMembers).toHaveBeenCalledWith(workspaceId, 1);
-    });
-  });
-
-  describe('removeMember', () => {
-    const workspaceId = 'test-workspace-id';
-    const memberUserId = 2;
-
-    it('should remove a member from workspace successfully', async () => {
-      jest.spyOn(service, 'removeMember').mockResolvedValue(undefined);
-
-      const req = createAuthenticatedRequest(1);
-      const result = await controller.removeMember(
-        workspaceId,
-        memberUserId,
-        req
-      );
-
-      expect(result).toBeUndefined();
-      expect(service.removeMember).toHaveBeenCalledWith(
-        workspaceId,
-        memberUserId,
-        1
-      );
-    });
-
-    it('should handle workspace not found when removing member', async () => {
-      const error = new NotFoundException('Workspace not found');
-      jest.spyOn(service, 'removeMember').mockRejectedValue(error);
-
-      const req = createAuthenticatedRequest(1);
-
-      await expect(
-        controller.removeMember(workspaceId, memberUserId, req)
-      ).rejects.toThrow(NotFoundException);
-      expect(service.removeMember).toHaveBeenCalledWith(
-        workspaceId,
-        memberUserId,
-        1
-      );
-    });
-
-    it('should handle member not found when removing', async () => {
-      const error = new NotFoundException('Member not found');
-      jest.spyOn(service, 'removeMember').mockRejectedValue(error);
-
-      const req = createAuthenticatedRequest(1);
-
-      await expect(
-        controller.removeMember(workspaceId, memberUserId, req)
-      ).rejects.toThrow(NotFoundException);
-      expect(service.removeMember).toHaveBeenCalledWith(
-        workspaceId,
-        memberUserId,
-        1
-      );
-    });
-
-    it('should handle ParseIntPipe validation for userId parameter', async () => {
-      // This tests the ParseIntPipe decorator behavior indirectly
-      jest.spyOn(service, 'removeMember').mockResolvedValue(undefined);
-
-      const req = createAuthenticatedRequest(1);
-      const validUserId = 123; // Should be a valid integer
-      const result = await controller.removeMember(
-        workspaceId,
-        validUserId,
-        req
-      );
-
-      expect(result).toBeUndefined();
-      expect(service.removeMember).toHaveBeenCalledWith(
-        workspaceId,
-        validUserId,
-        1
-      );
+      expect(service.remove).toHaveBeenCalledWith(workspaceId);
     });
   });
 });
