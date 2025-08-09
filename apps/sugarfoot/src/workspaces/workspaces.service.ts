@@ -8,16 +8,20 @@ import { CreateWorkspaceDto } from './dto/create-workspace.dto';
 import { UpdateWorkspaceDto } from './dto/update-workspace.dto';
 import { AddMemberDto } from './dto/add-member.dto';
 import { Workspace, WorkspaceMember } from '@prisma/client-sugarfoot';
+import { EventsService } from '../events/events.service';
 
 @Injectable()
 export class WorkspacesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly eventsService: EventsService
+  ) {}
 
   async create(
     createWorkspaceDto: CreateWorkspaceDto,
     ownerId: string
   ): Promise<Workspace> {
-    return this.prisma.workspace.create({
+    const workspace = await this.prisma.workspace.create({
       data: {
         name: createWorkspaceDto.name,
         description: createWorkspaceDto.description,
@@ -34,6 +38,14 @@ export class WorkspacesService {
         projects: true,
       },
     });
+
+    // Emit workspace created event
+    await this.eventsService.publishWorkspaceCreated({
+      id: workspace.id,
+      ownerId: workspace.ownerId,
+    });
+
+    return workspace;
   }
 
   async findAll(userId: string): Promise<Workspace[]> {
@@ -191,7 +203,7 @@ export class WorkspacesService {
       );
     }
 
-    return this.prisma.workspaceMember.create({
+    const member = await this.prisma.workspaceMember.create({
       data: {
         userId: addMemberDto.userId,
         workspaceId,
@@ -201,6 +213,14 @@ export class WorkspacesService {
         workspace: true,
       },
     });
+
+    // Emit workspace member added event
+    await this.eventsService.publishWorkspaceMemberAdded({
+      workspaceId,
+      userId: addMemberDto.userId,
+    });
+
+    return member;
   }
 
   async removeMember(

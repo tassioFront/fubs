@@ -52,7 +52,7 @@ describe('AppController', () => {
           message: 'Event published successfully',
           event: expect.objectContaining({
             id: expect.any(String),
-            ownerId: 'test-user-456',
+            workspaceId: 'test-workspace-456',
           }),
         })
       );
@@ -60,7 +60,7 @@ describe('AppController', () => {
       expect(eventsService.publishProjectCreated).toHaveBeenCalledWith(
         expect.objectContaining({
           id: expect.any(String),
-          ownerId: 'test-user-456',
+          workspaceId: 'test-workspace-456',
         })
       );
     });

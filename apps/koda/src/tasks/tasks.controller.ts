@@ -22,6 +22,7 @@ import { CreateTaskDto } from './dto/create-task.dto';
 import { JwtAuthGuard } from '@fubs/shared';
 import { type UUID } from '@fubs/shared';
 import { UpdateTaskDto } from './dto/update-task.dto';
+import { WorkspaceMemberGuard } from '../auth/guards/workspace-member.guard';
 interface JwtUser {
   id: string;
 }
@@ -38,6 +39,7 @@ export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
 
   @Post()
+  @UseGuards(WorkspaceMemberGuard)
   @ApiOperation({ summary: 'Create a new task in a project' })
   @ApiResponse({ status: 201, description: 'Task created successfully' })
   @ApiResponse({ status: 400, description: 'Bad request' })

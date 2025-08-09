@@ -1,10 +1,10 @@
 services:
-  # koda Service
+  # Sugarfoot Service
   - type: web
-    name: fubs-koda
+    name: fubs-sugarfoot
     plan: free
     env: docker
-    dockerfilePath: ./apps/tasks/Dockerfile
+    dockerfilePath: ./apps/sugarfoot/Dockerfile
     envVars:
       - key: NODE_ENV
         value: production
@@ -14,7 +14,7 @@ services:
         value: 0.0.0.0
       - key: DATABASE_URL
         fromDatabase:
-          name: koda-db
+          name: fubs-db
           property: connectionString
       - key: JWT_SECRET
         generateValue: true
@@ -23,5 +23,5 @@ services:
     healthCheckPath: /health
 
 databases:
-  - name: koda-db
+  - name: fubs-db
     plan: free
