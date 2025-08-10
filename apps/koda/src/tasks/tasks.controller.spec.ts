@@ -5,18 +5,20 @@ import { TasksService } from './tasks.service';
 import { CreateTaskDto, TaskStatus, TaskPriority } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { PrismaService } from '../common/prisma.service';
+import { WorkspaceMemberGuard } from '../auth/guards/workspace-member.guard';
+import { WorkspaceMemberService } from '../auth/guards/workspace-member.service';
 
-jest.mock('@prisma/client-tasks', () => ({
+jest.mock('@prisma/client-koda', () => ({
   PrismaClient: jest.fn(),
-  TaskStatus: {
-    TODO: 'TODO',
-    IN_PROGRESS: 'IN_PROGRESS',
-    DONE: 'DONE',
-  },
-  TaskPriority: {
-    LOW: 'LOW',
-    MEDIUM: 'MEDIUM',
-    HIGH: 'HIGH',
+}));
+
+// Mock the shared library guards
+jest.mock('@fubs/shared', () => ({
+  ...jest.requireActual('@fubs/shared'),
+  JwtAuthGuard: class MockJwtAuthGuard {
+    canActivate() {
+      return true;
+    }
   },
 }));
 
@@ -61,6 +63,7 @@ describe('TasksController', () => {
     updatedAt: new Date('2023-01-01'),
     project: {
       id: 'test-project-id',
+      workspaceId: 'test-workspace-id',
     },
     createdByUser: {
       id: 'user-123',
@@ -94,6 +97,19 @@ describe('TasksController', () => {
         {
           provide: PrismaService,
           useValue: mockPrismaService,
+        },
+        {
+          provide: WorkspaceMemberGuard,
+          useValue: {
+            canActivate: jest.fn().mockReturnValue(true),
+          },
+        },
+        {
+          provide: WorkspaceMemberService,
+          useValue: {
+            getWorkspaceByProjectId: jest.fn(),
+            userHasAccess: jest.fn(),
+          },
         },
       ],
     }).compile();
