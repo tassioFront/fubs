@@ -1,14 +1,10 @@
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
 import { CreateWorkspaceDto } from './dto/create-workspace.dto';
 import { UpdateWorkspaceDto } from './dto/update-workspace.dto';
-import { AddMemberDto } from './dto/add-member.dto';
-import { Workspace, WorkspaceMember } from '@prisma/client-sugarfoot';
+import { Workspace } from '@prisma/client-sugarfoot';
 import { EventsService } from '../events/events.service';
+import { WorkspaceMemberRole } from '@fubs/shared';
 
 @Injectable()
 export class WorkspacesService {
@@ -29,7 +25,7 @@ export class WorkspacesService {
         members: {
           create: {
             userId: ownerId,
-            role: 'ADMIN',
+            role: WorkspaceMemberRole.OWNER,
           },
         },
       },
@@ -75,20 +71,10 @@ export class WorkspacesService {
     });
   }
 
-  async findOne(id: string, userId: string): Promise<Workspace> {
+  async findOne(id: string): Promise<Workspace> {
     const workspace = await this.prisma.workspace.findFirst({
       where: {
         id,
-        OR: [
-          { ownerId: userId },
-          {
-            members: {
-              some: {
-                userId,
-              },
-            },
-          },
-        ],
       },
       include: {
         members: true,
@@ -105,32 +91,8 @@ export class WorkspacesService {
 
   async update(
     id: string,
-    updateWorkspaceDto: UpdateWorkspaceDto,
-    userId: string
+    updateWorkspaceDto: UpdateWorkspaceDto
   ): Promise<Workspace> {
-    const workspace = await this.prisma.workspace.findFirst({
-      where: {
-        id,
-        OR: [
-          { ownerId: userId },
-          {
-            members: {
-              some: {
-                userId,
-                role: 'ADMIN',
-              },
-            },
-          },
-        ],
-      },
-    });
-
-    if (!workspace) {
-      throw new NotFoundException(
-        'Workspace not found or insufficient permissions'
-      );
-    }
-
     return this.prisma.workspace.update({
       where: { id },
       data: updateWorkspaceDto,
@@ -141,11 +103,10 @@ export class WorkspacesService {
     });
   }
 
-  async remove(id: string, userId: string): Promise<void> {
+  async remove(id: string): Promise<void> {
     const workspace = await this.prisma.workspace.findFirst({
       where: {
         id,
-        ownerId: userId,
       },
     });
 
@@ -160,141 +121,8 @@ export class WorkspacesService {
     });
   }
 
-  async addMember(
-    workspaceId: string,
-    addMemberDto: AddMemberDto,
-    currentUserId: string
-  ): Promise<WorkspaceMember> {
-    const workspace = await this.prisma.workspace.findFirst({
-      where: {
-        id: workspaceId,
-        OR: [
-          { ownerId: currentUserId },
-          {
-            members: {
-              some: {
-                userId: currentUserId,
-                role: 'ADMIN',
-              },
-            },
-          },
-        ],
-      },
-    });
-
-    if (!workspace) {
-      throw new NotFoundException(
-        'Workspace not found or insufficient permissions'
-      );
-    }
-
-    const existingMember = await this.prisma.workspaceMember.findUnique({
-      where: {
-        userId_workspaceId: {
-          userId: addMemberDto.userId,
-          workspaceId,
-        },
-      },
-    });
-
-    if (existingMember) {
-      throw new BadRequestException(
-        'User is already a member of this workspace'
-      );
-    }
-
-    const member = await this.prisma.workspaceMember.create({
-      data: {
-        userId: addMemberDto.userId,
-        workspaceId,
-        role: addMemberDto.role,
-      },
-      include: {
-        workspace: true,
-      },
-    });
-
-    // Emit workspace member added event
-    await this.eventsService.publishWorkspaceMemberAdded({
-      workspaceId,
-      userId: addMemberDto.userId,
-    });
-
-    return member;
-  }
-
-  async removeMember(
-    workspaceId: string,
-    userId: string,
-    currentUserId: string
-  ): Promise<void> {
-    const workspace = await this.prisma.workspace.findFirst({
-      where: {
-        id: workspaceId,
-        OR: [
-          { ownerId: currentUserId },
-          {
-            members: {
-              some: {
-                userId: currentUserId,
-                role: 'ADMIN',
-              },
-            },
-          },
-        ],
-      },
-    });
-
-    if (!workspace) {
-      throw new NotFoundException(
-        'Workspace not found or insufficient permissions'
-      );
-    }
-
-    if (workspace.ownerId === userId) {
-      throw new BadRequestException('Cannot remove workspace owner');
-    }
-
-    const member = await this.prisma.workspaceMember.findUnique({
-      where: {
-        userId_workspaceId: {
-          userId,
-          workspaceId,
-        },
-      },
-    });
-
-    if (!member) {
-      throw new NotFoundException('Member not found in this workspace');
-    }
-
-    await this.prisma.workspaceMember.delete({
-      where: {
-        userId_workspaceId: {
-          userId,
-          workspaceId,
-        },
-      },
-    });
-  }
-
-  async getMembers(
-    workspaceId: string,
-    userId: string
-  ): Promise<WorkspaceMember[]> {
-    await this.findOne(workspaceId, userId);
-
-    return this.prisma.workspaceMember.findMany({
-      where: {
-        workspaceId,
-      },
-      include: {
-        workspace: true,
-      },
-    });
-  }
-
   async userHasAccess(workspaceId: string, userId: string): Promise<boolean> {
+    if (!workspaceId || !userId) return false;
     const workspace = await this.prisma.workspace.findFirst({
       where: {
         id: workspaceId,
@@ -310,7 +138,6 @@ export class WorkspacesService {
         ],
       },
     });
-
     return !!workspace;
   }
 

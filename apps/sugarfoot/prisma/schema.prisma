@@ -2,8 +2,8 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
-  output   = "../../../node_modules/@prisma/client-sugarfoot"
+  provider      = "prisma-client-js"
+  output        = "../../../node_modules/@prisma/client-sugarfoot"
   binaryTargets = ["native", "linux-arm64-openssl-3.0.x", "debian-openssl-3.0.x"]
 }
 
@@ -20,11 +20,11 @@ model Workspace {
   updatedAt   DateTime @updatedAt
 
   // External reference to users-service (UUID from users-service)
-  ownerId     String
+  ownerId String
 
   // Relations
-  projects    Project[]
-  members     WorkspaceMember[]
+  projects Project[]
+  members  WorkspaceMember[]
 
   @@map("workspaces")
 }
@@ -41,16 +41,20 @@ model Project {
   workspaceId String
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
+  // List of task IDs from Koda service
+  taskIds       String[]
+  ProjectMember ProjectMember[]
+
   @@map("projects")
 }
 
 model WorkspaceMember {
-  id        String              @id @default(uuid())
-  role      WorkspaceMemberRole @default(MEMBER)
-  joinedAt  DateTime            @default(now())
+  id       String              @id @default(uuid())
+  role     WorkspaceMemberRole @default(member)
+  joinedAt DateTime            @default(now())
 
   // External reference to users-service (UUID from users-service)
-  userId    String
+  userId String
 
   // Relations
   workspaceId String
@@ -67,6 +71,29 @@ enum ProjectStatus {
 }
 
 enum WorkspaceMemberRole {
-  ADMIN
-  MEMBER
+  admin
+  member
+  owner
+}
+
+model ProjectMember {
+  id       String            @id @default(uuid())
+  role     ProjectMemberRole @default(member)
+  joinedAt DateTime          @default(now())
+
+  // External reference to users-service (UUID from users-service)
+  userId String
+
+  // Relations
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, projectId])
+  @@map("project_members")
+}
+
+enum ProjectMemberRole {
+  admin
+  member
+  owner
 }

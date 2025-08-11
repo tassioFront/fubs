@@ -37,6 +37,7 @@
             ],
             "parallel": false,
             "cwd": "apps/sugarfoot"
+
           }
         }
       },
@@ -49,7 +50,6 @@
         "options": {
           "buildTarget": "build",
           "watch": true,
-
           "runBuildTargetDependencies": true
         },
         "configurations": {
@@ -57,8 +57,6 @@
             "buildTarget": "build",
             "watch": true,
             "runBuildTargetDependencies": true
-
-
           },
           "production": {
             "buildTarget": "build:production"

@@ -1,0 +1,370 @@
+{
+	"info": {
+		"name": "Fubs",
+		"description": "Test workspace creation and management with JWT authentication.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+	},
+	"item": [
+		{
+			"name": "Sugarfoot - Workspace",
+			"item": [
+				{
+					"name": "Get",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{fubs_owner_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Test Member Workspace\",\n  \"description\": \"Testing workspace with real JWT\"\n}"
+						},
+						"url": {
+							"raw": "{{fubs_sugarfoot_url}}sugarfoot/api/workspaces",
+							"host": [
+								"{{fubs_sugarfoot_url}}sugarfoot"
+							],
+							"path": [
+								"api",
+								"workspaces"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetById",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{fubs_admin_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Test Member Workspace\",\n  \"description\": \"Testing workspace with real JWT\"\n}"
+						},
+						"url": {
+							"raw": "{{fubs_sugarfoot_url}}sugarfoot/api/workspaces/e16e27d2-8e5b-4385-8693-085395a74ddd",
+							"host": [
+								"{{fubs_sugarfoot_url}}sugarfoot"
+							],
+							"path": [
+								"api",
+								"workspaces",
+								"e16e27d2-8e5b-4385-8693-085395a74ddd"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{fubs_owner_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"New workspace\",\n  \"description\": \"Testing workspace with real JWT\"\n}"
+						},
+						"url": {
+							"raw": "{{fubs_sugarfoot_url}}sugarfoot/api/workspaces",
+							"host": [
+								"{{fubs_sugarfoot_url}}sugarfoot"
+							],
+							"path": [
+								"api",
+								"workspaces"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{fubs_owner_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"New workspace Name\",\n  \"description\": \"Testing workspace with new name\"\n}"
+						},
+						"url": {
+							"raw": "{{fubs_sugarfoot_url}}sugarfoot/api/workspaces/e16e27d2-8e5b-4385-8693-085395a74ddd",
+							"host": [
+								"{{fubs_sugarfoot_url}}sugarfoot"
+							],
+							"path": [
+								"api",
+								"workspaces",
+								"e16e27d2-8e5b-4385-8693-085395a74ddd"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{fubs_auth_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Test Member Workspace\",\n  \"description\": \"Testing workspace with real JWT\"\n}"
+						},
+						"url": {
+							"raw": "{{fubs_sugarfoot_url}}sugarfoot/api/workspaces",
+							"host": [
+								"{{fubs_sugarfoot_url}}sugarfoot"
+							],
+							"path": [
+								"api",
+								"workspaces"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Project in Workspace",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{fubs_auth_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Test Project\",\n  \"description\": \"Testing project creation with JWT\"\n}"
+						},
+						"url": {
+							"raw": "{{fubs_sugarfoot_url}}sugarfoot/api/workspaces/5d5827b9-f317-4492-b67a-e74379b3edf6/projects",
+							"host": [
+								"{{fubs_sugarfoot_url}}sugarfoot"
+							],
+							"path": [
+								"api",
+								"workspaces",
+								"5d5827b9-f317-4492-b67a-e74379b3edf6",
+								"projects"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Member to Workspace",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{fubs_auth_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": \"USER_UUID_HERE\",\n  \"role\": \"member\"\n}"
+						},
+						"url": {
+							"raw": "{{fubs_sugarfoot_url}}sugarfoot/api/workspaces/5d5827b9-f317-4492-b67a-e74379b3edf6/members",
+							"host": [
+								"{{fubs_sugarfoot_url}}sugarfoot"
+							],
+							"path": [
+								"api",
+								"workspaces",
+								"5d5827b9-f317-4492-b67a-e74379b3edf6",
+								"members"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List User's Workspaces",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer <JWT_TOKEN>",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{fubs_sugarfoot_url}}api/api/workspaces",
+							"host": [
+								"{{fubs_sugarfoot_url}}api"
+							],
+							"path": [
+								"api",
+								"workspaces"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "User Service",
+			"item": [
+				{
+					"name": "login - member",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"member@member.com\",\n    \"password\": \"member123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{fubs_user_url}}api/users/login/",
+							"host": [
+								"{{fubs_user_url}}api"
+							],
+							"path": [
+								"users",
+								"login",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "login - admin",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"admin@admin.com\",\n    \"password\": \"admin1234\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{fubs_user_url}}api/users/login/",
+							"host": [
+								"{{fubs_user_url}}api"
+							],
+							"path": [
+								"users",
+								"login",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "login - owner",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"owner@owner.com\",\n    \"password\": \"owner123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{fubs_user_url}}api/users/login/",
+							"host": [
+								"{{fubs_user_url}}api"
+							],
+							"path": [
+								"users",
+								"login",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
