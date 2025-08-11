@@ -5,6 +5,7 @@ import {
   NotFoundException,
   InternalServerErrorException,
   Logger,
+  BadRequestException,
 } from '@nestjs/common';
 import { WorkspacesService } from '../../workspaces/workspaces.service';
 import { AuthenticatedRequest } from '@fubs/shared';
@@ -26,12 +27,21 @@ export class WorkspacePrivilegesGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const user = request.user as AuthenticatedRequest['user'];
     const workspaceId = request.params.workspaceId || request.params.id;
+    const isAllowedUrlWithoutId =
+      !workspaceId && request.url === '/sugarfoot/api/workspaces';
 
-    if (!workspaceId) {
+    if (isAllowedUrlWithoutId) {
       this.logger.log(
-        `Workspace ID is missing in the request parameters, for user.id: ${user.id}`
+        `Workspace ID is missing, assuming creation or get all workspaces, for user.id: ${user.id}`
       );
       return true;
+    }
+
+    if (!workspaceId) {
+      this.logger.warn(
+        `Workspace ID is missing in the request parameters, for user.id: ${user.id}`
+      );
+      throw new BadRequestException('Workspace ID is required');
     }
 
     try {

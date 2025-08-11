@@ -18,10 +18,8 @@ import {
 import { WorkspacesService } from './workspaces.service';
 import { CreateWorkspaceDto } from './dto/create-workspace.dto';
 import { UpdateWorkspaceDto } from './dto/update-workspace.dto';
-import { AddMemberDto } from './dto/add-member.dto';
 import { JwtAuthGuard } from '@fubs/shared';
 import type { AuthenticatedRequest } from '@fubs/shared';
-import { WorkspaceMemberGuard } from '../auth/guards/workspace-member.guard';
 import { WorkspacePermissionsByRoleControlGuard } from '../auth/guards/workspace-permissions-by-role.guard';
 import { WorkspacePrivilegesGuard } from '../auth/guards/workspace-privileges.guard';
 
@@ -91,57 +89,7 @@ export class WorkspacesController {
     status: 403,
     description: 'Insufficient permissions - not workspace owner',
   })
-  remove(@Param('id') id: string, @Request() req: AuthenticatedRequest) {
-    const userId = req.user.id;
-    return this.workspacesService.remove(id, userId);
-  }
-
-  @Post(':id/members')
-  @ApiOperation({ summary: 'Add a member to the workspace' })
-  @ApiResponse({ status: 201, description: 'Member added successfully' })
-  @ApiResponse({ status: 400, description: 'Bad request' })
-  @ApiResponse({ status: 404, description: 'Workspace not found' })
-  @ApiResponse({
-    status: 403,
-    description: 'Insufficient permissions - not workspace owner',
-  })
-  addMember(
-    @Param('id') id: string,
-    @Body() addMemberDto: AddMemberDto,
-    @Request() req: AuthenticatedRequest
-  ) {
-    const userId = req.user.id;
-    return this.workspacesService.addMember(id, addMemberDto, userId);
-  }
-
-  @Get(':id/members')
-  @UseGuards(WorkspaceMemberGuard)
-  @ApiOperation({ summary: 'Get all members of a workspace' })
-  @ApiResponse({ status: 200, description: 'List of workspace members' })
-  @ApiResponse({ status: 404, description: 'Workspace not found' })
-  @ApiResponse({
-    status: 403,
-    description: 'Access denied - not a workspace member',
-  })
-  getMembers(@Param('id') id: string, @Request() req: AuthenticatedRequest) {
-    const userId = req.user.id;
-    return this.workspacesService.getMembers(id, userId);
-  }
-
-  @Delete(':id/members/:userId')
-  @ApiOperation({ summary: 'Remove a member from the workspace' })
-  @ApiResponse({ status: 200, description: 'Member removed successfully' })
-  @ApiResponse({ status: 404, description: 'Workspace or member not found' })
-  @ApiResponse({
-    status: 403,
-    description: 'Insufficient permissions - not workspace owner',
-  })
-  removeMember(
-    @Param('id') id: string,
-    @Param('userId') memberUserId: string,
-    @Request() req: AuthenticatedRequest
-  ) {
-    const userId = req.user.id;
-    return this.workspacesService.removeMember(id, memberUserId, userId);
+  remove(@Param('id') id: string) {
+    return this.workspacesService.remove(id);
   }
 }
