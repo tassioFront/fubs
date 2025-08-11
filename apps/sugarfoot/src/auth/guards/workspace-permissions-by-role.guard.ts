@@ -45,7 +45,7 @@ export class WorkspacePermissionsByRoleControlGuard implements CanActivate {
 
     if (request.method === 'DELETE' || request.method === 'POST') {
       this.logger.log(
-        `User ${id} is trying to perform a not allowed ${request.method} action for their role ${role}`
+        `User ${id} is trying to perform a disallowed ${request.method} action for their role ${role}`
       );
       throw new ForbiddenException(
         'Only workspace owners can perform this action'
