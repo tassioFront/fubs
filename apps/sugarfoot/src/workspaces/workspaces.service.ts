@@ -4,7 +4,7 @@ import { CreateWorkspaceDto } from './dto/create-workspace.dto';
 import { UpdateWorkspaceDto } from './dto/update-workspace.dto';
 import { Workspace } from '@prisma/client-sugarfoot';
 import { AuthenticatedRequest, WorkspaceMemberRole } from '@fubs/shared';
-import { EventsService } from 'src/events/events.service';
+import { EventsService } from '../events/events.service';
 
 @Injectable()
 export class WorkspacesService {
