@@ -3,7 +3,7 @@ import { WorkspaceMembersController } from './workspace-members.controller';
 import { WorkspaceMembersService } from './workspace-members.service';
 import { PrismaService } from '../common/prisma.service';
 import { EventsModule } from '../events/events.module';
-import { WorkspacesModule } from './workspaces.module'; // adjust path if needed
+import { WorkspacesModule } from './workspaces.module';
 import { UsersServiceClient } from '@fubs/shared';
 
 @Module({

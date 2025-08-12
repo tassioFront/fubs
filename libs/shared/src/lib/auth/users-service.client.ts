@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import axios, { AxiosInstance } from 'axios';
 import { User, UserByEmail } from '../types/index.js';
+import * as jwt from 'jsonwebtoken';
 
 @Injectable()
 export class UsersServiceClient {
@@ -10,7 +11,6 @@ export class UsersServiceClient {
 
   constructor() {
     this.usersServiceUrl = process.env.USERS_SERVICE_URL as string;
-
     this.httpClient = axios.create({
       baseURL: this.usersServiceUrl,
       timeout: 5000,
@@ -30,7 +30,9 @@ export class UsersServiceClient {
       },
       (error) => {
         this.logger.error('Request error:', error.message);
-        return Promise.reject(error);
+        return Promise.reject(
+          error instanceof Error ? error : new Error(error)
+        );
       }
     );
 
@@ -45,9 +47,18 @@ export class UsersServiceClient {
         this.logger.error(
           `Users-service error: ${error.response?.status} ${error.message}`
         );
-        return Promise.reject(error);
+        return Promise.reject(
+          error instanceof Error ? error : new Error(error)
+        );
       }
     );
+  }
+
+  getToken(): string {
+    const secret = process.env.INTERNAL_JWT_SECRET_KEY as string;
+    return jwt.sign({ service: 'sugarfoot' }, secret, {
+      expiresIn: '10m',
+    });
   }
 
   /**
@@ -141,8 +152,14 @@ export class UsersServiceClient {
     email: string;
   }): Promise<UserByEmail | null> {
     try {
+      const token = this.getToken();
       const response = await this.httpClient.get<User>(
-        `/api/users/by-email/${email}`
+        `/api/users/internal/by-email/${email}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
 
       if (response.status === 200 && response.data) {
