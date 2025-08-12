@@ -17,6 +17,6 @@ export interface User {
   type: WorkspaceMemberRole;
 }
 
-export interface UserByEmail extends Omit<User, 'role'> {
+export interface UserByEmail extends Omit<User, 'type'> {
   role: WorkspaceMemberRole;
 }
