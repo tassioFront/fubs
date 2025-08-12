@@ -1,22 +1,11 @@
-import { IsEnum, IsUUID } from 'class-validator';
+import { IsEmail } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { WorkspaceMemberRole } from '@fubs/shared';
 
 export class AddMemberDto {
   @ApiProperty({
-    description: 'User ID from users-service',
-    example: 123,
+    description: 'Email of the user to add',
+    example: 'user@example.com',
   })
-  @IsUUID('4', { message: 'User ID must be a valid uuid' })
-  userId!: string;
-
-  @ApiProperty({
-    description: 'Role for the new member in the workspace',
-    enum: WorkspaceMemberRole,
-    example: WorkspaceMemberRole.MEMBER,
-  })
-  @IsEnum(WorkspaceMemberRole, {
-    message: 'Role must be either ADMIN or MEMBER',
-  })
-  role!: WorkspaceMemberRole;
+  @IsEmail({}, { message: 'Email must be a valid email address' })
+  email!: string;
 }

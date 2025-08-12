@@ -1,10 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
 import { CreateWorkspaceDto } from './dto/create-workspace.dto';
 import { UpdateWorkspaceDto } from './dto/update-workspace.dto';
 import { Workspace } from '@prisma/client-sugarfoot';
-import { EventsService } from '../events/events.service';
-import { WorkspaceMemberRole } from '@fubs/shared';
+import { AuthenticatedRequest, WorkspaceMemberRole } from '@fubs/shared';
+import { EventsService } from 'src/events/events.service';
 
 @Injectable()
 export class WorkspacesService {
@@ -15,16 +15,19 @@ export class WorkspacesService {
 
   async create(
     createWorkspaceDto: CreateWorkspaceDto,
-    ownerId: string
+    user: AuthenticatedRequest['user']
   ): Promise<Workspace> {
+    if (user.role !== WorkspaceMemberRole.OWNER) {
+      throw new ForbiddenException('Only owners can create workspaces');
+    }
     const workspace = await this.prisma.workspace.create({
       data: {
         name: createWorkspaceDto.name,
         description: createWorkspaceDto.description,
-        ownerId,
+        ownerId: user.id,
         members: {
           create: {
-            userId: ownerId,
+            userId: user.id,
             role: WorkspaceMemberRole.OWNER,
           },
         },
@@ -72,7 +75,7 @@ export class WorkspacesService {
   }
 
   async findOne(id: string): Promise<Workspace> {
-    const workspace = await this.prisma.workspace.findFirst({
+    return (await this.prisma.workspace.findFirst({
       where: {
         id,
       },
@@ -80,13 +83,7 @@ export class WorkspacesService {
         members: true,
         projects: true,
       },
-    });
-
-    if (!workspace) {
-      throw new NotFoundException('Workspace not found or access denied');
-    }
-
-    return workspace;
+    })) as Workspace;
   }
 
   async update(
@@ -104,18 +101,6 @@ export class WorkspacesService {
   }
 
   async remove(id: string): Promise<void> {
-    const workspace = await this.prisma.workspace.findFirst({
-      where: {
-        id,
-      },
-    });
-
-    if (!workspace) {
-      throw new NotFoundException(
-        'Workspace not found or insufficient permissions'
-      );
-    }
-
     await this.prisma.workspace.delete({
       where: { id },
     });

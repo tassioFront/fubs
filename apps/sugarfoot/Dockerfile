@@ -52,4 +52,4 @@ EXPOSE 3000
 
 # Regenerate Prisma Client in production environment and start the application
 
-CMD ["sh", "-c", "npx prisma migrate deploy --schema=./prisma/schema.prisma"]
+CMD ["sh", "-c", "npx prisma migrate deploy --schema=./prisma/schema.prisma && node main.js"]

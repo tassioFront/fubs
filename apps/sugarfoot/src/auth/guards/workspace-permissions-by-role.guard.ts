@@ -43,7 +43,7 @@ export class WorkspacePermissionsByRoleControlGuard implements CanActivate {
       );
     }
 
-    if (request.method === 'DELETE' || request.method === 'POST') {
+    if (request.method === 'DELETE') {
       this.logger.log(
         `User ${id} is trying to perform a not allowed ${request.method} action for their role ${role}`
       );

@@ -28,7 +28,7 @@ export class WorkspacePrivilegesGuard implements CanActivate {
     const user = request.user as AuthenticatedRequest['user'];
     const workspaceId = request.params.workspaceId || request.params.id;
     const isAllowedUrlWithoutId =
-      !workspaceId && request.url === '/sugarfoot/api/workspaces';
+      !workspaceId && request.url === '/sugarfoot/workspaces';
 
     if (isAllowedUrlWithoutId) {
       this.logger.log(

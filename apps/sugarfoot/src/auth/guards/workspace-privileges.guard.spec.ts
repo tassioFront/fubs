@@ -15,7 +15,7 @@ const mockContext = (
   userId = 'user-1',
   workspaceId,
   method = 'GET',
-  url = '/sugarfoot/api/workspaces'
+  url = '/sugarfoot/workspaces'
 ) => {
   return {
     switchToHttp: () => ({

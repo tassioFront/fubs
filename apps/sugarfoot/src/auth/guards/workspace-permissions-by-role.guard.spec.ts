@@ -64,13 +64,6 @@ describe('WorkspacePermissionsByRoleControlGuard', () => {
     );
   });
 
-  it('should forbid admin for POST', async () => {
-    const context = mockContext(WorkspaceMemberRole.ADMIN, 'POST');
-    await expect(guard.canActivate(context)).rejects.toThrow(
-      ForbiddenException
-    );
-  });
-
   it('should allow admin for GET', async () => {
     const context = mockContext(WorkspaceMemberRole.ADMIN, 'GET');
     await expect(guard.canActivate(context)).resolves.toBe(true);
