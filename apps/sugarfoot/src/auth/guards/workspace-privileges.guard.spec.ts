@@ -1,4 +1,4 @@
-import { ExecutionContext } from '@nestjs/common';
+import { ExecutionContext, ForbiddenException } from '@nestjs/common';
 import { WorkspacePrivilegesGuard } from './workspace-privileges.guard';
 import { WorkspacesService } from '../../workspaces/workspaces.service';
 import {
@@ -9,6 +9,7 @@ import {
 
 const mockWorkspacesService = {
   userHasAccess: jest.fn(),
+  findOne: jest.fn(),
 };
 
 const mockContext = (
@@ -73,8 +74,9 @@ describe('WorkspacePrivilegesGuard', () => {
     );
   });
 
-  it('should throw NotFoundException if user does not have access', async () => {
+  it('should throw NotFoundException if workspace was not found', async () => {
     mockWorkspacesService.userHasAccess.mockResolvedValue(false);
+    mockWorkspacesService.findOne.mockResolvedValue(false);
     const context = mockContext('user-2', 'ws-2');
     let err = null;
     try {
@@ -84,6 +86,20 @@ describe('WorkspacePrivilegesGuard', () => {
     }
     expect(err).toBeInstanceOf(NotFoundException);
     expect(err.message).toBe('Workspace not found');
+  });
+
+  it('should throw ForbiddenException if workspace exists and user does not have access', async () => {
+    mockWorkspacesService.userHasAccess.mockResolvedValue(false);
+    mockWorkspacesService.findOne.mockResolvedValue(true);
+    const context = mockContext('user-2', 'ws-2');
+    let err = null;
+    try {
+      await guard.canActivate(context);
+    } catch (error) {
+      err = error;
+    }
+    expect(err).toBeInstanceOf(ForbiddenException);
+    expect(err.message).toBe('Access denied');
   });
 
   it('should throw InternalServerErrorException on unexpected error', async () => {
