@@ -35,6 +35,11 @@ export class WebhookController {
   ) {
     let event;
     try {
+      console.log(
+        '🚀 ~ WebhookController ~ handleStripeWebhook ~ req:',
+        (req as any).rawBody,
+        req
+      );
       event = this.stripeService.validateWebhookSignature(
         (req as unknown as { rawBody: Buffer }).rawBody,
         signature
