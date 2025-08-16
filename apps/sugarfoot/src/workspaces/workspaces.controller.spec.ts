@@ -50,7 +50,7 @@ describe('WorkspacesController', () => {
     id: 'test-workspace-id',
     name: 'Test Workspace',
     description: 'Test Description',
-    ownerId: 1,
+    ownerId: '1',
     createdAt: new Date('2023-01-01'),
     updatedAt: new Date('2023-01-01'),
     members: [],
@@ -61,7 +61,7 @@ describe('WorkspacesController', () => {
     id: 'test-workspace-id',
     name: 'Test Workspace',
     description: 'Test Description',
-    ownerId: 1,
+    ownerId: '1',
     memberIds: [],
   };
 
