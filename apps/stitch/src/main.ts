@@ -4,9 +4,19 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app/app.module';
 import { validationPipeConfig } from './common/validation.config';
 import { AllExceptionsFilter } from '@fubs/shared';
+import * as bodyParser from 'body-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.use(
+    '/stripe/webhook',
+    bodyParser.raw({
+      type: 'application/json',
+      verify: (req, res, buf) => {
+        (req as any).rawBody = buf;
+      },
+    })
+  );
   app.enableShutdownHooks();
 
   const globalPrefix = 'stitch';
