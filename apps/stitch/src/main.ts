@@ -13,7 +13,7 @@ async function bootstrap() {
     bodyParser.raw({
       type: 'application/json',
       verify: (req, res, buf) => {
-        (req as any).rawBody = buf;
+        (req as unknown as { rawBody: Buffer }).rawBody = buf;
       },
     })
   );

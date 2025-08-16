@@ -35,7 +35,10 @@ export class WebhookController {
   ) {
     let event;
     try {
-      event = this.stripeService.validateWebhookSignature(req.body, signature);
+      event = this.stripeService.validateWebhookSignature(
+        (req as unknown as { rawBody: Buffer }).rawBody,
+        signature
+      );
       await this.webhookService.handleStripeEvent(event);
       return res.json({ received: true });
     } catch (err) {
