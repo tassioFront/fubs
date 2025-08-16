@@ -16,11 +16,9 @@ services:
         fromDatabase:
           name: stitch-db
           property: connectionString
-      - key: JWT_SECRET
-        generateValue: true
       - key: JWT_EXPIRES_IN
         value: 24h
-    healthCheckPath: /health
+    healthCheckPath: /stitch
 
 databases:
   - name: stitch-db
