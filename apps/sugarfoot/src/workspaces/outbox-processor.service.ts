@@ -16,7 +16,7 @@ export class OutboxProcessorService {
   async processOutboxEvents(batchSize = 10): Promise<void> {
     const events = await this.prisma.outbox.findMany({
       where: { processed: false },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: 'asc' },
       take: batchSize,
     });
 
