@@ -12,7 +12,10 @@ import {
 import type { Request, Response } from 'express';
 import { StripeService } from '../common/stripe/stripe.service';
 import { WebhookService } from './webhook.service';
-import type { CreateCheckoutSessionDto } from '../common/stripe/stripe.entity';
+import type {
+  CreateCheckoutSessionDto,
+  CreateCustomerDto,
+} from '../common/stripe/stripe.entity';
 
 @Controller('webhook')
 export class WebhookController {
@@ -48,5 +51,11 @@ export class WebhookController {
   async createTestCheckoutUrl(@Body() dto: CreateCheckoutSessionDto) {
     const session = await this.stripeService.createCheckoutSession(dto);
     return { url: session.url };
+  }
+
+  @Post('test-customer')
+  async createTestCustomer(@Body() dto: CreateCustomerDto) {
+    const customer = await this.stripeService.createCustomer(dto);
+    return { id: customer.id };
   }
 }
