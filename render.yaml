@@ -1,0 +1,27 @@
+services:
+  # stitch Service
+  - type: web
+    name: fubs-stitch
+    plan: free
+    env: docker
+    dockerfilePath: ./apps/stitch/Dockerfile
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: HOST
+        value: 0.0.0.0
+      - key: DATABASE_URL
+        fromDatabase:
+          name: stitch-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 24h
+    healthCheckPath: /health
+
+databases:
+  - name: stitch-db
+    plan: free

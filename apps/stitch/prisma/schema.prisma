@@ -1,9 +1,6 @@
-// This is your Prisma schema file for Stitch service
-// Minimal config, using stitch as base
 
 generator client {
   provider      = "prisma-client-js"
-
   output        = "../../../node_modules/@prisma/client-stitch"
   binaryTargets = ["native", "linux-arm64-openssl-3.0.x", "debian-openssl-3.0.x"]
 }
@@ -13,6 +10,43 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Order {
+  id                    String      @id @default(uuid())
+  ownerId               String
+  stripeCustomerId      String? // Stripe customer ID for this owner
+  planType              PlanType
+  amount                Decimal
+  currency              String
+  status                OrderStatus @default(PENDING)
+  stripeSessionId       String?
+  stripePaymentIntentId String?
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+  expiresAt             DateTime
+}
+
+enum PlanType {
+  FREE
+  SOLO
+  ENTERPRISE
+}
+
+model WebhookEvent {
+  id         String   @id @default(uuid())
+  type       String
+  payload    String
+  processed  Boolean  @default(false)
+  receivedAt DateTime @default(now())
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  FAILED
+  CANCELLED
+  EXPIRED
+}
+
 model Outbox {
   id          String   @id @default(uuid())
   type        String
@@ -20,4 +54,19 @@ model Outbox {
   processed   Boolean  @default(false)
   createdAt   DateTime @default(now())
   processedAt DateTime?
+}
+
+model Plan {
+  id             String   @id @default(uuid())
+  type           PlanType
+  name           String
+  description    String
+  priceCents     Int
+  workspaceLimit Int?
+  features       String[]
+  billingPeriod  String   // 'month' or 'year'
+  stripeProductId String?
+  stripePriceId   String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
