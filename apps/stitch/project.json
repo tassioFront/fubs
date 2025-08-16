@@ -63,12 +63,10 @@
       }
     },
     "test": {
-      "executor": "@nrwl/jest:jest",
-      "options": {
-        "jestConfig": "apps/stitch/jest.config.ts",
-        "passWithNoTests": true
-      }
-    },
+        "options": {
+          "passWithNoTests": true
+        }
+      },
     "docker-build": {
       "executor": "nx:run-commands",
       "options": {

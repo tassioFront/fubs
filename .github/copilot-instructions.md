@@ -2,6 +2,7 @@
 
 ## Role Switching Convention
 
+- always write in the chat which role you are using, considering the rule as follows:
 - [C-BE] = Backend Specialist
 - [C-FE] = Frontend Specialist
 - [C-DEVOPS] = DevOps Specialist
