@@ -1,6 +1,6 @@
 <div align='center'>
   
-<img width="200" alt="Sugarfoot logo" src="" />
+<img width="200" alt="Sugarfoot logo" src="https://github.com/user-attachments/assets/50103fc3-3902-44e5-ae14-c06b82c053b4" />
 </div>
 
 <br/>
