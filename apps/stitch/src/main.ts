@@ -9,7 +9,7 @@ import * as bodyParser from 'body-parser';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.use(
-    '/stripe/webhook',
+    '/webhook/stripe',
     bodyParser.raw({
       type: 'application/json',
       verify: (req, res, buf) => {
