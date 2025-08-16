@@ -1,6 +1,41 @@
 version: '3.8'
 
 services:
+  # PostgreSQL Database for Stitch Service
+  stitch-db:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: stitch_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - '5435:5432'
+    volumes:
+      - stitch_db_data:/var/lib/postgresql/data
+      - ./apps/stitch/prisma/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - microservices-network
+
+  # Stitch Service (Node.js + NestJS)
+  stitch-service:
+    build:
+      context: .
+      dockerfile: apps/stitch/Dockerfile
+    restart: unless-stopped
+    ports:
+      - '4001:4001'
+    depends_on:
+      - stitch-db
+    networks:
+      - microservices-network
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@stitch-db:5432/stitch_db?schema=public
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:4001/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
   # PostgreSQL Database for Sugarfoot Service
   sugarfoot-db:
     image: postgres:15-alpine
@@ -119,6 +154,7 @@ volumes:
   sugarfoot_db_data:
   koda_db_data:
   redis_data:
+  stitch_db_data:
 
 networks:
   microservices-network:

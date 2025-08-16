@@ -9,16 +9,15 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableShutdownHooks();
 
-  const globalPrefix = 'sugarfoot';
+  const globalPrefix = 'stitch';
   app.setGlobalPrefix(globalPrefix);
 
   app.useGlobalPipes(validationPipeConfig);
-
   app.useGlobalFilters(new AllExceptionsFilter());
 
   const config = new DocumentBuilder()
-    .setTitle('Sugarfoot API')
-    .setDescription('Project management workspaces and projects API')
+    .setTitle('Stitch API')
+    .setDescription('Checkout and payment integration API')
     .setVersion('1.0')
     .addBearerAuth()
     .build();
@@ -26,7 +25,7 @@ async function bootstrap() {
   SwaggerModule.setup(globalPrefix + '/api/docs', app, document);
 
   app.enableCors({
-    origin: process.env.CORS_ORIGIN || 'http://localhost:3001',
+    origin: process.env.CORS_ORIGIN,
     credentials: true,
   });
 

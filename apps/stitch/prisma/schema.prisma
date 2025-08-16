@@ -1,0 +1,23 @@
+// This is your Prisma schema file for Stitch service
+// Minimal config, using stitch as base
+
+generator client {
+  provider      = "prisma-client-js"
+
+  output        = "../../../node_modules/@prisma/client-stitch"
+  binaryTargets = ["native", "linux-arm64-openssl-3.0.x", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Outbox {
+  id          String   @id @default(uuid())
+  type        String
+  payload     String
+  processed   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  processedAt DateTime?
+}

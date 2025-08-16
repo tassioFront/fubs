@@ -43,6 +43,7 @@ Welcome to the FUBS project! This repository is designed to help you learn and p
 - _JWT Validation_: All services must validate JWT tokens from users-service
 - _User Context_: Extract user ID from JWT for all operations
 - _Permission Checks_: Verify user has access to requested resources
+- _Role-Based Access Control_: Users have different permissions based on their roles (Owner, Admin, Member)
 
 #### _Data Access Control_
 
@@ -50,7 +51,7 @@ Welcome to the FUBS project! This repository is designed to help you learn and p
 - _Project Inheritance_: Users can only access projects they're members of
 - _Task Permissions_: Task access is controlled by project membership
 - _Owner Privileges_: Workspace owners have full control over workspace and projects resources (including deletion)
-- _Admin Privileges_: Workspace admins have full control over workspace resources (excluding deletion) and can manage project settings (including deletion)
+- _Admin Privileges_: Workspace admins have full control over workspace resources (excluding deletion and creating workspaces) and can manage project settings (including deletion)
 - _Member Privileges_: Workspace members have read-only access to workspace and project resources. They can manage tasks within projects they have access to.
 
 ## Conventions
@@ -82,22 +83,33 @@ It would increase the scalability, respecting the domain boundary, but also woul
          │
          │
          |
-              HTTP/REST (temporary solution)
+              event driven
 ┌─────────────────┐     ┌─────────────────┐
-│sugarfoot-service│◄─ ─►│  tasks-service  │
+│sugarfoot-service│◄─ ─►│  koda-service  │
 │   (Node.js)     │     │   (Node.js)     │
 │                 │     │                 │
 │ • Workspaces    │     │ • Tasks         │
 │ • Projects      │     │ • Comments      │
 │ • Members       │     │ • Assignments   │
 └─────────────────┘     └─────────────────┘
+   ▲
+   │ event driven
+   │
+   ▼
+┌─────────────────────┐
+│  stitch-service     │
+│   (Node.js)         │
+│ • Checkout/Payments │
+│ • Stripe integration│
+└─────────────────────┘
 ```
 
 ### Service Responsibilities
 
 - **users-service** (Python): Authentication & user management ✅ _External Service_ [see the source code here](https://github.com/tassioFront/studying-python)
 - **sugarfoot-service** (Node.js): Workspaces, projects, member management - In progress
-- **tasks-service** (Node.js): Tasks, comments, detailed work tracking 🚧 _Planned_
+- **koda-service** (Node.js): Tasks, comments, detailed work tracking 🚧 _Planned_
+- **stitch-service** (Node.js): Checkout and payment microservice 🚧 _Planned_
 
 ## 🚀 Tech Stack
 
@@ -142,8 +154,8 @@ It would increase the scalability, respecting the domain boundary, but also woul
 
 4. **Access services:**
    - Sugarfoot API: http://localhost:3000
-   - Swagger Docs: http://localhost:3000/api
-   - PostgreSQL: localhost:5433
+   - Koda API: http://localhost:4000
+   - Stitch API: http://localhost:4001
 
 ### Docker Commands
 
