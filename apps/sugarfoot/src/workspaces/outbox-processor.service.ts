@@ -16,7 +16,7 @@ export class OutboxProcessorService {
   async processOutboxEvents(batchSize = 10): Promise<void> {
     const events = await this.prisma.outbox.findMany({
       where: { processed: false },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: 'asc' },
       take: batchSize,
     });
 
@@ -48,7 +48,7 @@ export class OutboxProcessorService {
     }
   }
 
-  @Cron('*/10 * * * * *')
+  @Cron(process.env.OUTBOX_CRON_EXPRESSION || '*/30 * * * * *')
   async handleCron() {
     await this.processOutboxEvents();
   }
