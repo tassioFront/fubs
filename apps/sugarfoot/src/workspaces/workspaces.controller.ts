@@ -30,7 +30,7 @@ import { WorkspacePrivilegesGuard } from '../auth/guards/workspace-privileges.gu
   WorkspacePermissionsByRoleControlGuard,
   WorkspacePrivilegesGuard
 )
-@Controller('api/workspaces')
+@Controller('workspaces')
 export class WorkspacesController {
   constructor(private readonly workspacesService: WorkspacesService) {}
 
@@ -38,17 +38,24 @@ export class WorkspacesController {
   @ApiOperation({ summary: 'Create a new workspace' })
   @ApiResponse({ status: 201, description: 'Workspace created successfully' })
   @ApiResponse({ status: 400, description: 'Bad request' })
+  @ApiResponse({
+    status: 403,
+    description: 'Access denied - require authentication',
+  })
   create(
     @Body() createWorkspaceDto: CreateWorkspaceDto,
     @Request() req: AuthenticatedRequest
   ) {
-    const userId = req.user.id;
-    return this.workspacesService.create(createWorkspaceDto, userId);
+    return this.workspacesService.create(createWorkspaceDto, req.user);
   }
 
   @Get()
   @ApiOperation({ summary: 'Get all workspaces for the current user' })
   @ApiResponse({ status: 200, description: 'List of workspaces' })
+  @ApiResponse({
+    status: 403,
+    description: 'Access denied - require authentication',
+  })
   findAll(@Request() req: AuthenticatedRequest) {
     const userId = req.user.id;
     return this.workspacesService.findAll(userId);
@@ -72,7 +79,7 @@ export class WorkspacesController {
   @ApiResponse({ status: 404, description: 'Workspace not found' })
   @ApiResponse({
     status: 403,
-    description: 'Insufficient permissions - not workspace owner',
+    description: 'Insufficient permissions - user not workspace owner or admin',
   })
   update(
     @Param('id') id: string,
@@ -87,7 +94,7 @@ export class WorkspacesController {
   @ApiResponse({ status: 404, description: 'Workspace not found' })
   @ApiResponse({
     status: 403,
-    description: 'Insufficient permissions - not workspace owner',
+    description: 'Insufficient permissions - user not workspace owner',
   })
   remove(@Param('id') id: string) {
     return this.workspacesService.remove(id);

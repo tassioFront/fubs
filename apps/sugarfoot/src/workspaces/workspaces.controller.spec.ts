@@ -115,7 +115,9 @@ describe('WorkspacesController', () => {
       const result = await controller.create(createWorkspaceDto, req);
 
       expect(result).toEqual(mockWorkspace);
-      expect(service.create).toHaveBeenCalledWith(createWorkspaceDto, 1);
+      expect(service.create).toHaveBeenCalledWith(createWorkspaceDto, {
+        id: 1,
+      });
     });
 
     it('should handle service errors during workspace creation', async () => {
@@ -127,7 +129,9 @@ describe('WorkspacesController', () => {
       await expect(controller.create(createWorkspaceDto, req)).rejects.toThrow(
         BadRequestException
       );
-      expect(service.create).toHaveBeenCalledWith(createWorkspaceDto, 1);
+      expect(service.create).toHaveBeenCalledWith(createWorkspaceDto, {
+        id: 1,
+      });
     });
   });
 

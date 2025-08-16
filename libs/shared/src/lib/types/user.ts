@@ -3,3 +3,9 @@ export enum WorkspaceMemberRole {
   MEMBER = 'member',
   OWNER = 'owner',
 }
+
+export enum WorkspaceMemberStatus {
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
+  SUSPENDED = 'suspended',
+}
