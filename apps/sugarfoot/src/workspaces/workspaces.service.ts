@@ -2,52 +2,61 @@ import { ForbiddenException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
 import { CreateWorkspaceDto } from './dto/create-workspace.dto';
 import { UpdateWorkspaceDto } from './dto/update-workspace.dto';
-import { Workspace } from '@prisma/client-sugarfoot';
-import { AuthenticatedRequest, WorkspaceMemberRole } from '@fubs/shared';
-import { EventsService } from '../events/events.service';
+import {
+  AuthenticatedRequest,
+  Events,
+  WorkspaceMemberRole,
+} from '@fubs/shared';
 
 @Injectable()
 export class WorkspacesService {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly eventsService: EventsService
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async create(
     createWorkspaceDto: CreateWorkspaceDto,
     user: AuthenticatedRequest['user']
-  ): Promise<Workspace> {
+  ) {
     if (user.role !== WorkspaceMemberRole.OWNER) {
       throw new ForbiddenException('Only owners can create workspaces');
     }
-    const workspace = await this.prisma.workspace.create({
-      data: {
-        name: createWorkspaceDto.name,
-        description: createWorkspaceDto.description,
-        ownerId: user.id,
-        members: {
-          create: {
-            userId: user.id,
-            role: WorkspaceMemberRole.OWNER,
+
+    const result = await this.prisma.$transaction(async (tx) => {
+      const workspace = await tx.workspace.create({
+        data: {
+          name: createWorkspaceDto.name,
+          description: createWorkspaceDto.description,
+          ownerId: user.id,
+          members: {
+            create: {
+              userId: user.id,
+              role: WorkspaceMemberRole.OWNER,
+            },
           },
         },
-      },
-      include: {
-        members: true,
-        projects: true,
-      },
+        include: {
+          members: true,
+          projects: true,
+        },
+      });
+
+      await tx.outbox.create({
+        data: {
+          type: Events.WORKSPACE_CREATED,
+          payload: JSON.stringify({
+            id: workspace.id,
+            ownerId: workspace.ownerId,
+          }),
+          processed: false,
+        },
+      });
+
+      return workspace;
     });
 
-    // Emit workspace created event
-    await this.eventsService.publishWorkspaceCreated({
-      id: workspace.id,
-      ownerId: workspace.ownerId,
-    });
-
-    return workspace;
+    return result;
   }
 
-  async findAll(userId: string): Promise<Workspace[]> {
+  async findAll(userId: string) {
     return this.prisma.workspace.findMany({
       where: {
         OR: [
@@ -74,8 +83,8 @@ export class WorkspacesService {
     });
   }
 
-  async findOne(id: string): Promise<Workspace> {
-    return (await this.prisma.workspace.findFirst({
+  async findOne(id: string) {
+    return await this.prisma.workspace.findUnique({
       where: {
         id,
       },
@@ -83,14 +92,14 @@ export class WorkspacesService {
         members: true,
         projects: true,
       },
-    })) as Workspace;
+    });
   }
 
   async update(
     id: string,
     updateWorkspaceDto: UpdateWorkspaceDto
-  ): Promise<Workspace> {
-    return this.prisma.workspace.update({
+  ): Promise<{ message: string }> {
+    await this.prisma.workspace.update({
       where: { id },
       data: updateWorkspaceDto,
       include: {
@@ -98,12 +107,16 @@ export class WorkspacesService {
         projects: true,
       },
     });
+
+    return { message: 'workspace updated successfully' };
   }
 
-  async remove(id: string): Promise<void> {
+  async remove(id: string): Promise<{ message: string }> {
     await this.prisma.workspace.delete({
       where: { id },
     });
+
+    return { message: 'Workspace deleted successfully' };
   }
 
   async userHasAccess(workspaceId: string, userId: string): Promise<boolean> {
