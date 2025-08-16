@@ -1,3 +1,11 @@
+model Outbox {
+  id          String   @id @default(uuid())
+  type        String
+  payload     String
+  processed   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  processedAt DateTime?
+}
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 

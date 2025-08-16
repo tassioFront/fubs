@@ -23,3 +23,24 @@ export class CreateWorkspaceDto {
   @MaxLength(500, { message: 'Description cannot exceed 500 characters' })
   description?: string;
 }
+
+export class WorkspaceResponseDto {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
+  name: string;
+
+  @ApiProperty()
+  description: string | null;
+
+  @ApiProperty()
+  ownerId: string;
+
+  @ApiProperty({ type: [String] })
+  memberIds: string[];
+
+  constructor(partial: Partial<WorkspaceResponseDto>) {
+    Object.assign(this, partial);
+  }
+}

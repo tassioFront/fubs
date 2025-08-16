@@ -8,6 +8,7 @@ import {
   Delete,
   Request,
   UseGuards,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -16,7 +17,10 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { WorkspacesService } from './workspaces.service';
-import { CreateWorkspaceDto } from './dto/create-workspace.dto';
+import {
+  CreateWorkspaceDto,
+  WorkspaceResponseDto,
+} from './dto/create-workspace.dto';
 import { UpdateWorkspaceDto } from './dto/update-workspace.dto';
 import { JwtAuthGuard } from '@fubs/shared';
 import type { AuthenticatedRequest } from '@fubs/shared';
@@ -42,11 +46,21 @@ export class WorkspacesController {
     status: 403,
     description: 'Access denied - require authentication',
   })
-  create(
+  async create(
     @Body() createWorkspaceDto: CreateWorkspaceDto,
     @Request() req: AuthenticatedRequest
-  ) {
-    return this.workspacesService.create(createWorkspaceDto, req.user);
+  ): Promise<WorkspaceResponseDto> {
+    const workspace = await this.workspacesService.create(
+      createWorkspaceDto,
+      req.user
+    );
+    return new WorkspaceResponseDto({
+      id: workspace.id,
+      name: workspace.name,
+      description: workspace.description,
+      ownerId: workspace.ownerId,
+      memberIds: workspace.members.map((m) => m.userId),
+    });
   }
 
   @Get()
@@ -56,9 +70,19 @@ export class WorkspacesController {
     status: 403,
     description: 'Access denied - require authentication',
   })
-  findAll(@Request() req: AuthenticatedRequest) {
+  async findAll(@Request() req: AuthenticatedRequest) {
     const userId = req.user.id;
-    return this.workspacesService.findAll(userId);
+    const workspaces = await this.workspacesService.findAll(userId);
+    return workspaces.map(
+      (workspace) =>
+        new WorkspaceResponseDto({
+          id: workspace.id,
+          name: workspace.name,
+          description: workspace.description,
+          ownerId: workspace.ownerId,
+          memberIds: workspace.members.map((m) => m.userId),
+        })
+    );
   }
 
   @Get(':id')
@@ -69,8 +93,15 @@ export class WorkspacesController {
     status: 403,
     description: 'Access denied - not a workspace member',
   })
-  findOne(@Param('id') id: string) {
-    return this.workspacesService.findOne(id);
+  async findOne(@Param('id', new ParseUUIDPipe()) id: string) {
+    const workspace = await this.workspacesService.findOne(id);
+    return new WorkspaceResponseDto({
+      id: workspace?.id,
+      name: workspace?.name,
+      description: workspace?.description,
+      ownerId: workspace?.ownerId,
+      memberIds: workspace?.members.map((m) => m.userId),
+    });
   }
 
   @Patch(':id')
@@ -82,7 +113,7 @@ export class WorkspacesController {
     description: 'Insufficient permissions - user not workspace owner or admin',
   })
   update(
-    @Param('id') id: string,
+    @Param('id', new ParseUUIDPipe()) id: string,
     @Body() updateWorkspaceDto: UpdateWorkspaceDto
   ) {
     return this.workspacesService.update(id, updateWorkspaceDto);
@@ -96,7 +127,7 @@ export class WorkspacesController {
     status: 403,
     description: 'Insufficient permissions - user not workspace owner',
   })
-  remove(@Param('id') id: string) {
+  remove(@Param('id', new ParseUUIDPipe()) id: string) {
     return this.workspacesService.remove(id);
   }
 }

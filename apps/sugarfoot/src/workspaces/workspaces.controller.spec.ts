@@ -50,11 +50,19 @@ describe('WorkspacesController', () => {
     id: 'test-workspace-id',
     name: 'Test Workspace',
     description: 'Test Description',
-    ownerId: 1,
+    ownerId: '1',
     createdAt: new Date('2023-01-01'),
     updatedAt: new Date('2023-01-01'),
     members: [],
     projects: [],
+  };
+
+  const mockWorkspaceResponseDto = {
+    id: 'test-workspace-id',
+    name: 'Test Workspace',
+    description: 'Test Description',
+    ownerId: '1',
+    memberIds: [],
   };
 
   const mockWorkspaceMember = {
@@ -114,7 +122,7 @@ describe('WorkspacesController', () => {
       const req = createAuthenticatedRequest();
       const result = await controller.create(createWorkspaceDto, req);
 
-      expect(result).toEqual(mockWorkspace);
+      expect(result).toEqual(mockWorkspaceResponseDto);
       expect(service.create).toHaveBeenCalledWith(createWorkspaceDto, {
         id: 1,
       });
@@ -143,7 +151,7 @@ describe('WorkspacesController', () => {
       const req = createAuthenticatedRequest(1);
       const result = await controller.findAll(req);
 
-      expect(result).toEqual(mockWorkspaces);
+      expect(result).toEqual([mockWorkspaceResponseDto]);
       expect(service.findAll).toHaveBeenCalledWith(1);
     });
 
@@ -167,7 +175,7 @@ describe('WorkspacesController', () => {
       const req = createAuthenticatedRequest(1);
       const result = await controller.findOne(workspaceId, req);
 
-      expect(result).toEqual(mockWorkspace);
+      expect(result).toEqual(mockWorkspaceResponseDto);
       expect(service.findOne).toHaveBeenCalledWith(workspaceId);
     });
 
