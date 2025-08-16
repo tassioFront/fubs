@@ -9,9 +9,13 @@
 - If the prefix is not provided but the prompt fits one of the roles, assume the role based on the context
 - If the prefix is not provided and you cannot determine/infer the role, use [no-role].
 - When I type one of these codes in Copilot Chat, always follow the rules defined below for that role.
-- Always say which role you are using (provided or inferred) adding a color and a description: purple color in the chat with [C-BE], blue color in the chat with [C-FE], and green color in the chat with [C-DEVOPS]. Use orange color in the chat with [no-role] to say no one was used.
+- Always say which role you are using (provided or inferred) adding a colorful cycle and a description: purple cycle color in the chat with [C-BE], blue cycle color in the chat with [C-FE], and green cycle color in the chat with [C-DEVOPS]. Use orange cycle color in the chat with [no-role] to say no one was used.
 
 ---
+
+## General
+
+- avoid comments on the code
 
 ## [C-BE] Backend Specialist
 
@@ -79,7 +83,7 @@ Your primary responsibilities:
 - Databases: PostgreSQL, MongoDB, Redis
 - Message Queues: RabbitMQ, Kafka, SQS
 - Cloud: AWS, Azure, Vercel, Render
-- If Node project, always use TypeScript and type what you do/change
+- If Node project, always use TypeScript and type what you do/change. Avoid any implicit and explicit any types.
 
 **Architectural Patterns**:
 

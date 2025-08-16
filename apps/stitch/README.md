@@ -1,6 +1,9 @@
 <div align='center'>
   
 <img width="200" alt="Sugarfoot logo" src="https://github.com/user-attachments/assets/50103fc3-3902-44e5-ae14-c06b82c053b4" />
+
+He is angry 😠 because it doesn't look him at all.
+
 </div>
 
 <br/>
@@ -68,6 +71,39 @@
 - Payment events and webhooks are handled in `stitch-service` and propagated via RabbitMQ/outbox.
 - If the owner is unpaid (i.e., `expiresAt` in the cache is in the past), all users (owner, admin, member) are denied access to the workspace and its resources.
 - This enables eventual consistency and decouples the services for better scalability and reliability.
+
+## 🔄 Full Access Flow: Checkout to Workspace Access
+
+```mermaid
+sequenceDiagram
+	participant U as User
+	participant FE as Frontend
+	participant Stitch as stitch-service
+	participant Stripe as Stripe
+	participant Outbox as Outbox/RabbitMQ
+	participant Sugar as sugarfoot-service
+
+	U->>FE: Select plan & click "Subscribe"
+	FE->>Stitch: POST /checkout/session (plan, user info)
+	Stitch->>Stripe: Create Checkout Session
+	Stripe-->>Stitch: Session URL
+	Stitch-->>FE: Return session URL
+	FE-->>U: Redirect to Stripe Checkout
+	U->>Stripe: Complete payment
+	Stripe-->>Stitch: Webhook (checkout.session.completed)
+	Stitch->>Stitch: Validate webhook, update Order (PAID), set expiresAt
+	Stitch->>Outbox: Emit payment_completed event
+	Outbox-->>Sugar: payment_completed event
+	Sugar->>Sugar: Update local payment cache (expiresAt)
+	U->>FE: Try to access workspace
+	FE->>Sugar: API request (workspace access)
+	Sugar->>Sugar: Check payment cache (expiresAt)
+	alt Payment valid
+		Sugar-->>FE: Allow access
+	else Payment expired
+		Sugar-->>FE: Deny access (payment required)
+	end
+```
 
 ## 🏗️ Architecture & Responsibilities
 
@@ -268,3 +304,82 @@ Document the mapping between your local plan config and Stripe product/price IDs
 - `common/` for shared services, guards, and utilities.
 - Prisma schema and migrations are in `prisma/`.
 - Top-level files for Docker, Nx, and documentation.
+
+## 🚀 Implementation Strategy: Step-by-Step
+
+Follow this plan to implement the Stitch service, based on the architecture and requirements above. Assumes the Nx NestJS app is already scaffolded.
+
+### 1. Scaffold Data Models (Prisma)
+
+- Define `Order`, `Outbox`, and `WebhookEvent` models in `prisma/schema.prisma`.
+- Run `npx prisma migrate dev` to generate migrations and sync the database.
+- Generate Prisma client and validate models.
+
+### 2. Set Up Project Structure
+
+- Create folders and files as per the recommended structure (see above).
+- Add `.module.ts` files for each domain (checkout, webhook, orders, plans, outbox).
+- Add DTOs for input validation.
+
+### 3. Implement Plan Config & Business Logic
+
+- Create `plans/plans.config.ts` with all plan definitions (see Plan interface).
+- Implement `plans.service.ts` to expose plan data to the rest of the app.
+
+### 4. Implement Order Management
+
+- Implement `orders.service.ts`, `orders.repository.ts`, and `orders.entity.ts` for CRUD and business logic.
+- Add validation and mapping between Prisma and entity classes.
+
+### 5. Integrate Stripe Checkout
+
+- Implement `checkout.controller.ts` and `checkout.service.ts` to create Stripe checkout sessions.
+- Use Stripe SDK, map plan to Stripe price ID, and handle session creation.
+- Store session/order data in the database.
+
+### 6. Handle Stripe Webhooks
+
+- Implement `webhook.controller.ts` and `webhook.service.ts` to receive and validate Stripe webhook events.
+- Use Stripe signature validation and idempotency keys.
+- Update order status and emit events as needed.
+
+### 7. Implement Outbox/Event Publishing
+
+- Implement `outbox/` module for the outbox pattern and RabbitMQ integration.
+- Ensure payment events are published to other services (e.g., payment_completed).
+
+### 8. Secure the Service
+
+- Add JWT guards to all internal endpoints (except `/webhook/stripe`).
+- Validate RBAC: users can only access their own orders.
+- Harden webhook endpoint (Stripe signature only).
+
+### 9. Add Error Handling & Observability
+
+- Implement centralized error filters (NestJS).
+- Add logging for all payment and webhook events.
+- Expose health/readiness endpoints.
+
+### 10. Testing
+
+- Write unit tests for business logic and services.
+- Add integration tests for Stripe flows (mock Stripe in CI).
+- Test webhook signature validation and event publishing.
+
+### 11. Deployment
+
+- Ensure Dockerfile is production-ready.
+- Use environment variables for all secrets.
+- Add health checks and readiness probes.
+- Use Prisma migrations for DB schema updates.
+
+---
+
+Subscription Management ❌ Add create, update, cancel, retrieve
+Invoice Handling ❌ Add invoice retrieval methods
+Customer Portal ❌ Add portal session creation
+Payment Methods ❌ Add attach/detach/list methods
+Idempotency Keys ❌ Add for critical operations
+Metadata Consistency ⚠️ Standardize/validate
+Test/Live Mode Awareness ⚠️ Make explicit/configurable
+Product/Price Sync ❌ Add sync/update logic
