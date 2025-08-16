@@ -14,7 +14,7 @@
     ],
     "sharedGlobals": ["{workspaceRoot}/.github/workflows/ci.yml"]
   },
-  "sync":{
+  "sync": {
     "applyChanges": true
   },
   "plugins": [
@@ -56,7 +56,8 @@
       "exclude": [
         "apps/projects-e2e/**/*",
         "task-e2e/**/*",
-        "apps/task-e2e/**/*"
+        "apps/task-e2e/**/*",
+        "apps/stitch-e2e/**/*"
       ]
     }
   ],

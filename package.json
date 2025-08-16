@@ -19,7 +19,14 @@
     "db:koda:seed": "cd apps/koda && npx prisma db seed",
     "db:koda:generate": "cd apps/koda && npx prisma generate",
     "docker:koda:build": "docker build -t fubs-koda -f apps/koda/Dockerfile .",
-    "docker:koda:up": "docker-compose up koda-db -d && docker run --rm -p 4000:4000 --network fubs_microservices-network -e DATABASE_URL=postgresql://postgres:postgres@koda-db:5432/koda_db?schema=public -e NODE_ENV=production -e JWT_SECRET=your-secret-key-for-development -e JWT_EXPIRES_IN=7d fubs-koda"
+    "docker:koda:up": "docker-compose up koda-db -d && docker run --rm -p 4000:4000 --network fubs_microservices-network -e DATABASE_URL=postgresql://postgres:postgres@koda-db:5432/koda_db?schema=public -e NODE_ENV=production -e JWT_SECRET=your-secret-key-for-development -e JWT_EXPIRES_IN=7d fubs-koda",
+    "db:stitch:studio": "cd apps/stitch && npx prisma studio",
+    "db:stitch:migrate": "cd apps/stitch && npx prisma migrate dev",
+    "db:stitch:migrate:deploy": "cd apps/stitch && npx prisma migrate deploy",
+    "db:stitch:seed": "cd apps/stitch && npx prisma db seed",
+    "db:stitch:generate": "cd apps/stitch && npx prisma generate",
+    "docker:stitch:build": "docker build -t fubs-stitch -f apps/stitch/Dockerfile .",
+    "docker:stitch:up": "docker-compose up stitch-db -d && docker run --rm -p 4001:4001 --network fubs_microservices-network -e DATABASE_URL=postgresql://postgres:postgres@stitch-db:5432/stitch_db?schema=public -e NODE_ENV=production -e JWT_SECRET=your-secret-key-for-development -e JWT_EXPIRES_IN=7d fubs-stitch"
   },
   "private": true,
   "dependencies": {
