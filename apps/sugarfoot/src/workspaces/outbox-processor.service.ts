@@ -48,7 +48,7 @@ export class OutboxProcessorService {
     }
   }
 
-  @Cron('*/10 * * * * *')
+  @Cron(process.env.OUTBOX_CRON_EXPRESSION || '*/30 * * * * *')
   async handleCron() {
     await this.processOutboxEvents();
   }
