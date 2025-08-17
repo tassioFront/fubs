@@ -17,7 +17,18 @@ async function bootstrap() {
       },
     })
   );
-  app.enableShutdownHooks();
+  app.use(
+    '/stitch/webhook/stripe',
+    bodyParser.raw({
+      type: 'application/json',
+      verify: (req, res, buf) => {
+        (req as unknown as { rawBody: Buffer }).rawBody = buf;
+      },
+    })
+  );
+  app.use(bodyParser.json()); // still keep JSON for normal requests
+
+  // app.enableShutdownHooks();
 
   const globalPrefix = 'stitch';
   app.setGlobalPrefix(globalPrefix);
@@ -34,10 +45,10 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup(globalPrefix + '/api/docs', app, document);
 
-  app.enableCors({
-    origin: process.env.CORS_ORIGIN,
-    credentials: true,
-  });
+  // app.enableCors({
+  //   origin: process.env.CORS_ORIGIN,
+  //   credentials: true,
+  // });
 
   const port = process.env.STITCH_SERVICE_PORT as string;
   await app.listen(port);
