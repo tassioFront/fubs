@@ -108,6 +108,7 @@ export class StripeService {
   async createCheckoutSession(
     dto: CreateCheckoutSessionDto
   ): Promise<Stripe.Checkout.Session> {
+    console.log('🚀 ~ StripeService ~ createCheckoutSession ~ dto:', dto);
     try {
       const session = await this.stripe.checkout.sessions.create({
         customer: dto.stripeCustomerId,
@@ -280,6 +281,10 @@ export class StripeService {
               `Owner ID not found in metadata for invoice: ${invoice.id}, requesting it`
             );
             const customer = await this.getCustomer(invoice.customer as string);
+            console.log(
+              '🚀 ~ StripeService ~ handleInvoicePaid ~ customer:',
+              customer
+            );
             ownerId = customer.metadata?.ownerId || '';
           }
 
@@ -359,6 +364,11 @@ export class StripeService {
           );
           const customer = await this.getCustomer(
             subscription.customer as string
+          );
+          console.log(
+            '🚀 ~ StripeService ~ handleSubscriptionCreated ~ customer:',
+            customer.metadata,
+            customer
           );
           ownerId = customer.metadata?.ownerId || '';
         }
