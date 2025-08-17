@@ -212,6 +212,28 @@ export class StripeService {
     }
   }
 
+  async getSubscriptionsByOwnerId(
+    ownerId: string
+  ): Promise<Stripe.Subscription[]> {
+    try {
+      const subscriptions = await this.stripe.subscriptions.search({
+        query: `metadata['ownerId']:'${ownerId}'`,
+        limit: 100,
+      });
+      this.logger.log(
+        `Found ${subscriptions.data.length} subscriptions for owner ${ownerId}`
+      );
+      return subscriptions.data;
+    } catch (error) {
+      this.logger.error(
+        `Failed to get subscriptions for owner ${ownerId}: ${
+          (error as Error).message
+        }`
+      );
+      throw error;
+    }
+  }
+
   // --- Webhook Event Handlers ---
 
   validateWebhookSignature(
