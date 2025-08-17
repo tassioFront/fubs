@@ -2,8 +2,8 @@ import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app/app.module';
-import { validationPipeConfig } from './common/validation.config';
-import { AllExceptionsFilter } from '@fubs/shared';
+// import { validationPipeConfig } from './common/validation.config';
+// import { AllExceptionsFilter } from '@fubs/shared';
 import * as bodyParser from 'body-parser';
 
 async function bootstrap() {
@@ -22,8 +22,8 @@ async function bootstrap() {
   const globalPrefix = 'stitch';
   app.setGlobalPrefix(globalPrefix);
 
-  app.useGlobalPipes(validationPipeConfig);
-  app.useGlobalFilters(new AllExceptionsFilter());
+  // app.useGlobalPipes(validationPipeConfig);
+  // app.useGlobalFilters(new AllExceptionsFilter());
 
   const config = new DocumentBuilder()
     .setTitle('Stitch API')
