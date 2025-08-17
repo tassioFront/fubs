@@ -8,6 +8,8 @@ import {
   Logger,
   UnauthorizedException,
   Body,
+  Get,
+  Param,
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { StripeService } from '../common/stripe/stripe.service';
@@ -35,11 +37,6 @@ export class WebhookController {
   ) {
     let event;
     try {
-      console.log(
-        '🚀 ~ WebhookController ~ handleStripeWebhook ~ req:',
-        (req as any).rawBody,
-        req
-      );
       event = this.stripeService.validateWebhookSignature(
         (req as unknown as { rawBody: Buffer }).rawBody,
         signature
@@ -65,5 +62,13 @@ export class WebhookController {
   async createTestCustomer(@Body() dto: CreateCustomerDto) {
     const customer = await this.stripeService.createCustomer(dto);
     return { id: customer.id };
+  }
+
+  @Get('test-subscriptions/:ownerId')
+  async getTestSubscriptions(@Param('ownerId') ownerId: string) {
+    const subscriptions = await this.stripeService.getSubscriptionsByOwnerId(
+      ownerId
+    );
+    return { subscriptions };
   }
 }
