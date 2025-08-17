@@ -267,35 +267,21 @@ export class StripeService {
     this.logger.log(`Invoice paid: ${invoice.id}`, invoice);
 
     try {
-      if (invoice.lines?.data?.[0] && invoice.customer) {
-        const lineItem = invoice.lines.data[0];
-        // Access price through the line item - type assertion for Stripe's complex types
-        const priceId = (lineItem as unknown as { price?: { id?: string } })
-          .price?.id;
-        if (priceId) {
-          // Get ownerId from invoice metadata or customer metadata as fallback
-          let ownerId = invoice.metadata?.ownerId || '';
+      const lineItem = invoice.lines.data[0];
+      // Access price through the line item - type assertion for Stripe's complex types
+      const priceId = (lineItem as unknown as { price: { id: string } }).price
+        ?.id;
+      const ownerId = invoice.metadata?.ownerId as string;
+      this.logger.log(
+        `Processing invoice payment for owner: ${ownerId} with price: ${priceId}`
+      );
 
-          if (!ownerId && invoice.customer) {
-            this.logger.warn(
-              `Owner ID not found in metadata for invoice: ${invoice.id}, requesting it`
-            );
-            const customer = await this.getCustomer(invoice.customer as string);
-            console.log(
-              '🚀 ~ StripeService ~ handleInvoicePaid ~ customer:',
-              customer
-            );
-            ownerId = customer.metadata?.ownerId || '';
-          }
-
-          await this.processPlanPayment(
-            invoice.customer as string,
-            priceId,
-            'invoice_paid',
-            ownerId
-          );
-        }
-      }
+      await this.processPlanPayment(
+        invoice.customer as string,
+        priceId,
+        'invoice_paid',
+        ownerId
+      );
     } catch (error) {
       this.logger.error(
         `Failed to process invoice.paid event: ${(error as Error).message}`
@@ -354,32 +340,13 @@ export class StripeService {
 
     try {
       const priceId = subscription.items.data[0]?.price?.id;
-      if (priceId && subscription.customer) {
-        // Get ownerId from subscription metadata or customer metadata as fallback
-        let ownerId = subscription.metadata?.ownerId || '';
 
-        if (!ownerId && subscription.customer) {
-          this.logger.warn(
-            `Owner ID not found in metadata for subscription: ${subscription.id}, requesting it`
-          );
-          const customer = await this.getCustomer(
-            subscription.customer as string
-          );
-          console.log(
-            '🚀 ~ StripeService ~ handleSubscriptionCreated ~ customer:',
-            customer.metadata,
-            customer
-          );
-          ownerId = customer.metadata?.ownerId || '';
-        }
-
-        await this.processPlanPayment(
-          subscription.customer as string,
-          priceId,
-          'subscription_created',
-          ownerId
-        );
-      }
+      await this.processPlanPayment(
+        subscription.customer as string,
+        priceId,
+        'subscription_created',
+        '' // there is not metadata info when the subscription is created
+      );
     } catch (error) {
       this.logger.error(
         `Failed to process subscription.created event: ${
@@ -472,27 +439,27 @@ export class StripeService {
       const lineItems = await this.stripe.checkout.sessions.listLineItems(
         session.id
       );
-      const priceId = lineItems.data[0]?.price?.id;
+      const priceId = lineItems.data[0]?.price?.id as string;
+      const ownerId = session.metadata?.ownerId as string;
+      const subscriptionId = session.subscription as string;
 
-      if (priceId && session.customer) {
-        // Get ownerId from session metadata or customer metadata as fallback
-        let ownerId = session.metadata?.ownerId || '';
+      // the subscription must be updated to include the metadata
+      await this.updateSubscription(subscriptionId, {
+        metadata: {
+          ownerId,
+          expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toString(), // 1 month from now
+        },
+      });
+      this.logger.log(
+        `Updated subscription ${subscriptionId} with ownerId metadata`
+      );
 
-        if (!ownerId && session.customer) {
-          this.logger.warn(
-            `Owner ID not found in metadata for checkout session: ${session.id}, requesting it`
-          );
-          const customer = await this.getCustomer(session.customer as string);
-          ownerId = customer.metadata?.ownerId || '';
-        }
-
-        await this.processPlanPayment(
-          session.customer as string,
-          priceId,
-          'checkout_completed',
-          ownerId
-        );
-      }
+      await this.processPlanPayment(
+        session.customer as string,
+        priceId,
+        'checkout_completed',
+        ownerId
+      );
     } catch (error) {
       this.logger.error(
         `Failed to process checkout.session.completed event: ${
@@ -512,10 +479,17 @@ export class StripeService {
     ownerId: string
   ): Promise<void> {
     try {
+      this.logger.log(
+        `Processing plan payment for customer: ${stripeCustomerId} and owner: ${ownerId}, price ID: ${stripePriceId}, event type: ${eventType}`
+      );
       // Find the plan by Stripe price ID
       const plan = await this.prisma.plan.findFirst({
         where: { stripePriceId },
       });
+
+      const debug = true;
+
+      if (debug) return;
 
       if (!plan) {
         this.logger.warn(

@@ -50,8 +50,9 @@ export interface CreateCheckoutSessionDto {
 export interface UpdateSubscriptionDto {
   priceId?: string;
   trialPeriodDays?: number;
-  metadata?: {
+  metadata: {
     ownerId: string;
+    expiresAt: string;
   };
   pauseCollection?: boolean;
 }
