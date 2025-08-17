@@ -8,15 +8,6 @@ import * as bodyParser from 'body-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  // app.use(
-  //   '/webhook/stripe',
-  //   bodyParser.raw({
-  //     type: 'application/json',
-  //     verify: (req, res, buf) => {
-  //       (req as unknown as { rawBody: Buffer }).rawBody = buf;
-  //     },
-  //   })
-  // );
   app.use(
     '/stitch/webhook/stripe',
     bodyParser.raw({

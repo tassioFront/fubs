@@ -145,6 +145,9 @@ export class StripeService {
         payment_behavior: 'default_incomplete',
         payment_settings: { save_default_payment_method: 'on_subscription' },
         expand: ['latest_invoice.payment_intent'],
+        metadata: {
+          ...dto.metadata,
+        },
       });
       this.logger.log(`Subscription created: ${subscription.id}`);
       return subscription;
@@ -269,11 +272,22 @@ export class StripeService {
         const priceId = (lineItem as unknown as { price?: { id?: string } })
           .price?.id;
         if (priceId) {
+          // Get ownerId from invoice metadata or customer metadata as fallback
+          let ownerId = invoice.metadata?.ownerId || '';
+
+          if (!ownerId && invoice.customer) {
+            this.logger.warn(
+              `Owner ID not found in metadata for invoice: ${invoice.id}, requesting it`
+            );
+            const customer = await this.getCustomer(invoice.customer as string);
+            ownerId = customer.metadata?.ownerId || '';
+          }
+
           await this.processPlanPayment(
             invoice.customer as string,
             priceId,
             'invoice_paid',
-            invoice.metadata?.ownerId || '' // Ensure ownerId is provided
+            ownerId
           );
         }
       }
@@ -336,11 +350,24 @@ export class StripeService {
     try {
       const priceId = subscription.items.data[0]?.price?.id;
       if (priceId && subscription.customer) {
+        // Get ownerId from subscription metadata or customer metadata as fallback
+        let ownerId = subscription.metadata?.ownerId || '';
+
+        if (!ownerId && subscription.customer) {
+          this.logger.warn(
+            `Owner ID not found in metadata for subscription: ${subscription.id}, requesting it`
+          );
+          const customer = await this.getCustomer(
+            subscription.customer as string
+          );
+          ownerId = customer.metadata?.ownerId || '';
+        }
+
         await this.processPlanPayment(
           subscription.customer as string,
           priceId,
           'subscription_created',
-          subscription.metadata?.ownerId || ''
+          ownerId
         );
       }
     } catch (error) {
@@ -438,11 +465,22 @@ export class StripeService {
       const priceId = lineItems.data[0]?.price?.id;
 
       if (priceId && session.customer) {
+        // Get ownerId from session metadata or customer metadata as fallback
+        let ownerId = session.metadata?.ownerId || '';
+
+        if (!ownerId && session.customer) {
+          this.logger.warn(
+            `Owner ID not found in metadata for checkout session: ${session.id}, requesting it`
+          );
+          const customer = await this.getCustomer(session.customer as string);
+          ownerId = customer.metadata?.ownerId || '';
+        }
+
         await this.processPlanPayment(
           session.customer as string,
           priceId,
           'checkout_completed',
-          session.metadata?.ownerId || ''
+          ownerId
         );
       }
     } catch (error) {

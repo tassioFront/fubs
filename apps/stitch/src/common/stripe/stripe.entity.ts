@@ -32,6 +32,9 @@ export interface CreatePriceDto {
 export interface CreateSubscriptionDto {
   stripeCustomerId: string;
   priceId: string;
+  metadata: {
+    ownerId: string;
+  };
 }
 
 export interface CreateCheckoutSessionDto {
@@ -39,12 +42,16 @@ export interface CreateCheckoutSessionDto {
   priceId: string;
   successUrl: string;
   cancelUrl: string;
-  metadata?: Record<string, string>;
+  metadata: {
+    ownerId: string;
+  };
 }
 
 export interface UpdateSubscriptionDto {
   priceId?: string;
   trialPeriodDays?: number;
-  metadata?: Record<string, string>;
+  metadata?: {
+    ownerId: string;
+  };
   pauseCollection?: boolean;
 }
