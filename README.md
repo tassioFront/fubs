@@ -83,7 +83,7 @@ It would increase the scalability, respecting the domain boundary, but also woul
          │
          │
          |
-              HTTP/REST (temporary solution)
+              event driven
 ┌─────────────────┐     ┌─────────────────┐
 │sugarfoot-service│◄─ ─►│  koda-service  │
 │   (Node.js)     │     │   (Node.js)     │
@@ -92,6 +92,16 @@ It would increase the scalability, respecting the domain boundary, but also woul
 │ • Projects      │     │ • Comments      │
 │ • Members       │     │ • Assignments   │
 └─────────────────┘     └─────────────────┘
+   ▲
+   │ event driven
+   │
+   ▼
+┌─────────────────────┐
+│  stitch-service     │
+│   (Node.js)         │
+│ • Checkout/Payments │
+│ • Stripe integration│
+└─────────────────────┘
 ```
 
 ### Service Responsibilities
@@ -99,6 +109,7 @@ It would increase the scalability, respecting the domain boundary, but also woul
 - **users-service** (Python): Authentication & user management ✅ _External Service_ [see the source code here](https://github.com/tassioFront/studying-python)
 - **sugarfoot-service** (Node.js): Workspaces, projects, member management - In progress
 - **koda-service** (Node.js): Tasks, comments, detailed work tracking 🚧 _Planned_
+- **stitch-service** (Node.js): Checkout and payment microservice 🚧 _Planned_
 
 ## 🚀 Tech Stack
 
@@ -143,8 +154,8 @@ It would increase the scalability, respecting the domain boundary, but also woul
 
 4. **Access services:**
    - Sugarfoot API: http://localhost:3000
-   - Swagger Docs: http://localhost:3000/api
-   - PostgreSQL: localhost:5433
+   - Koda API: http://localhost:4000
+   - Stitch API: http://localhost:4001
 
 ### Docker Commands
 
