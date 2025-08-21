@@ -78,30 +78,29 @@ He is angry 😠 because it doesn't look him at all.
 sequenceDiagram
 	participant U as User
 	participant FE as Frontend
+	participant Users as users-service
 	participant Stitch as stitch-service
 	participant Stripe as Stripe
-	participant Outbox as Outbox/RabbitMQ
 	participant Sugar as sugarfoot-service
 
 	U->>FE: Select plan & click "Subscribe"
 	FE->>Stitch: POST /checkout/session (plan, user info)
-	Stitch->>Stripe: Create Checkout Session
-	Stripe-->>Stitch: Session URL
-	Stitch-->>FE: Return session URL
-	FE-->>U: Redirect to Stripe Checkout
-	U->>Stripe: Complete payment
-	Stripe-->>Stitch: Webhook (checkout.session.completed)
-	Stitch->>Stitch: Validate webhook, update Order (PAID), set expiresAt
-	Stitch->>Outbox: Emit payment_completed event
-	Outbox-->>Sugar: payment_completed event
-	Sugar->>Sugar: Update local payment cache (expiresAt)
-	U->>FE: Try to access workspace
-	FE->>Sugar: API request (workspace access)
-	Sugar->>Sugar: Check payment cache (expiresAt)
-	alt Payment valid
-		Sugar-->>FE: Allow access
-	else Payment expired
-		Sugar-->>FE: Deny access (payment required)
+	Stitch->>Users: GET /users/:id (validate user exists)
+	alt User does not exist
+		Stitch-->>FE: Error (user not found)
+		FE-->>U: Show error
+	else User exists
+		Stitch->>Stripe: Create Customer (if not exists)
+		Stitch->>Stripe: Create Checkout Session
+		Stripe-->>Stitch: Session URL
+		Stitch-->>FE: Return session URL
+		FE-->>U: Redirect to Stripe Checkout
+		U->>Stripe: Complete payment
+		Stripe-->>Stitch: Webhook (checkout.session.completed)
+		Stitch->>Stitch: Validate webhook, update Order (PAID), set expiresAt
+		Stitch->>Sugar: Emit payment_completed event
+		Stitch-->>Sugar: payment_completed event
+		Sugar->>Sugar: Update local payment cache (expiresAt)
 	end
 ```
 
