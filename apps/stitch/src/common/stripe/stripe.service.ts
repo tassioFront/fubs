@@ -11,13 +11,19 @@ import {
   UpdateSubscriptionDto,
 } from './stripe.entity';
 
+const getExpirationDate = (): Date =>
+  new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 1 month from now
+
 @Injectable()
 export class StripeService {
   private readonly logger = new Logger(StripeService.name);
   private readonly stripe: Stripe;
-  private readonly prisma = new PrismaClient();
 
-  constructor(private readonly configService: ConfigService) {
+  constructor(
+    private readonly configService: ConfigService,
+    // to-do: we should inject PrismaService instead when there are methods there apps/stitch/src/common/prisma.service.ts
+    private readonly prisma: PrismaClient
+  ) {
     const secretKey = this.configService.get<string>('STRIPE_SECRET_KEY');
     if (!secretKey) {
       throw new Error('STRIPE_SECRET_KEY is required');
@@ -108,7 +114,6 @@ export class StripeService {
   async createCheckoutSession(
     dto: CreateCheckoutSessionDto
   ): Promise<Stripe.Checkout.Session> {
-    console.log('🚀 ~ StripeService ~ createCheckoutSession ~ dto:', dto);
     try {
       const session = await this.stripe.checkout.sessions.create({
         customer: dto.stripeCustomerId,
@@ -447,7 +452,7 @@ export class StripeService {
       await this.updateSubscription(subscriptionId, {
         metadata: {
           ownerId,
-          expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toString(), // 1 month from now
+          expiresAt: getExpirationDate().toString(),
         },
       });
       this.logger.log(
@@ -520,7 +525,7 @@ export class StripeService {
           `Order ${existingOrder.id} marked as PAID for plan ${plan.type}`
         );
       } else {
-        const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 1 month from now
+        const expiresAt = getExpirationDate();
         // Create new order record
         const newOrder = await this.prisma.order.create({
           data: {
