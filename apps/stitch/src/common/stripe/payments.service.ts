@@ -267,7 +267,7 @@ export class PaymentsService {
       metadata?: Record<string, string>;
       customer?: string;
     };
-    this.logger.log(`Invoice paid: ${invoice.id}`, invoice as unknown as any);
+    this.logger.log(`Invoice paid: ${invoice.id}`);
 
     try {
       const lineItem = invoice.lines?.data?.[0];

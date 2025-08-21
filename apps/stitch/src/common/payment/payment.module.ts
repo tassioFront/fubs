@@ -35,6 +35,11 @@ import { PrismaService } from '../prisma.service';
       },
     },
   ],
-  exports: [PrismaService, StripeAdapterService, PaymentsService, PAYMENT_PROVIDER],
+  exports: [
+    PrismaService,
+    StripeAdapterService,
+    PaymentsService,
+    PAYMENT_PROVIDER,
+  ],
 })
 export class PaymentModule {}
