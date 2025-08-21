@@ -1,5 +1,5 @@
 import { PLANS } from './plans.config';
-import { StripeService } from '../common/stripe/stripe.service';
+import { PaymentsService } from '../common/stripe/payments.service';
 import {
   Controller,
   Get,
@@ -23,7 +23,7 @@ import {
 export class PlansController {
   constructor(
     private readonly plansService: PlansService,
-    private readonly stripeService: StripeService
+    private readonly paymentsService: PaymentsService
   ) {}
 
   @Get()
@@ -77,8 +77,8 @@ export class PlansController {
         type: plan.type,
       });
 
-      // 2. Create Stripe product
-      const product = await this.stripeService.createProduct({
+      // 2. Create provider product
+      const product = await this.paymentsService.createProduct({
         name: plan.name,
         description: plan.description,
         metadata: {
@@ -90,15 +90,15 @@ export class PlansController {
         },
       });
 
-      // 3. Create Stripe price
-      const price = await this.stripeService.createPrice({
+      // 3. Create provider price
+      const price = await this.paymentsService.createPrice({
         product: product.id,
         unitAmount: plan.priceCents,
         currency: 'usd',
         recurring: { interval: plan.billingPeriod },
       });
 
-      // 4. Update plan with Stripe IDs if changed
+      // 4. Update plan with provider IDs if changed
       if (
         dbPlan.stripeProductId !== product.id ||
         dbPlan.stripePriceId !== price.id
@@ -121,6 +121,6 @@ export class PlansController {
         stripePriceId: price.id,
       });
     }
-    return { message: 'Plans seeded (with Stripe)', plans: created };
+    return { message: 'Plans seeded (with provider)', plans: created };
   }
 }

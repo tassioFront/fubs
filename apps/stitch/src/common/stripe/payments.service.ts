@@ -1,8 +1,11 @@
-import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
-import Stripe from 'stripe';
-import { ConfigService } from '@nestjs/config';
-import { PrismaClient } from '@prisma/client-stitch';
 import {
+  Inject,
+  Injectable,
+  Logger,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { PrismaService } from '../prisma.service';
+import type {
   CreateCheckoutSessionDto,
   CreateCustomerDto,
   CreatePriceDto,
@@ -10,30 +13,33 @@ import {
   CreateSubscriptionDto,
   UpdateSubscriptionDto,
 } from './stripe.entity';
+import { PAYMENT_PROVIDER } from '../payment/payment-provider.interface';
+import type {
+  PaymentProvider,
+  Customer,
+  Product,
+  Price,
+  CheckoutSession,
+  Subscription,
+  WebhookEvent,
+} from '../payment/payment-provider.interface';
+
+const getExpirationDate = (): Date =>
+  new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 1 month from now
 
 @Injectable()
-export class StripeService {
-  private readonly logger = new Logger(StripeService.name);
-  private readonly stripe: Stripe;
-  private readonly prisma = new PrismaClient();
-
-  constructor(private readonly configService: ConfigService) {
-    const secretKey = this.configService.get<string>('STRIPE_SECRET_KEY');
-    if (!secretKey) {
-      throw new Error('STRIPE_SECRET_KEY is required');
-    }
-
-    this.stripe = new Stripe(secretKey, {
-      apiVersion: '2025-07-30.basil',
-      typescript: true,
-    });
-  }
+export class PaymentsService {
+  private readonly logger = new Logger(PaymentsService.name);
+  constructor(
+    private readonly prisma: PrismaService,
+    @Inject(PAYMENT_PROVIDER) private readonly payments: PaymentProvider
+  ) {}
 
   async createCustomer(
     createCustomerDto: CreateCustomerDto
-  ): Promise<Stripe.Customer> {
+  ): Promise<Customer> {
     try {
-      const customer = await this.stripe.customers.create({
+      const customer = await this.payments.createCustomer({
         email: createCustomerDto.email,
         name: createCustomerDto.name,
         metadata: createCustomerDto.metadata,
@@ -51,10 +57,10 @@ export class StripeService {
     }
   }
 
-  async getCustomer(customerId: string): Promise<Stripe.Customer> {
+  async getCustomer(customerId: string): Promise<Customer> {
     try {
-      const customer = await this.stripe.customers.retrieve(customerId);
-      return customer as Stripe.Customer;
+      const customer = await this.payments.getCustomer(customerId);
+      return customer;
     } catch (error) {
       this.logger.error(
         `Failed to get customer ${customerId}: ${(error as Error).message}`
@@ -63,11 +69,11 @@ export class StripeService {
     }
   }
 
-  async createPrice(createPriceDto: CreatePriceDto): Promise<Stripe.Price> {
+  async createPrice(createPriceDto: CreatePriceDto): Promise<Price> {
     try {
-      const price = await this.stripe.prices.create({
-        product: createPriceDto.product,
-        unit_amount: createPriceDto.unitAmount,
+      const price = await this.payments.createPrice({
+        productId: createPriceDto.product,
+        unitAmount: createPriceDto.unitAmount,
         currency: createPriceDto.currency,
         recurring: createPriceDto.recurring,
       });
@@ -79,19 +85,24 @@ export class StripeService {
     }
   }
 
-  async createProduct(
-    createProductDto: CreateProductDto
-  ): Promise<Stripe.Product> {
+  async createProduct(createProductDto: CreateProductDto): Promise<Product> {
     try {
-      const product = await this.stripe.products.create({
+      const product = await this.payments.createProduct({
         name: createProductDto.name,
         description: createProductDto.description,
         metadata: {
           ...createProductDto.metadata,
           features: Array.isArray(createProductDto.metadata?.features)
             ? JSON.stringify(createProductDto.metadata.features)
-            : createProductDto.metadata?.features,
-        },
+            : String(createProductDto.metadata?.features ?? ''),
+          workspaceLimit: String(
+            (
+              createProductDto.metadata as unknown as {
+                workspaceLimit?: number | null;
+              }
+            )?.workspaceLimit ?? ''
+          ),
+        } as Record<string, string>,
       });
       this.logger.log(`Product created: ${product.id}`);
       return product;
@@ -107,22 +118,14 @@ export class StripeService {
 
   async createCheckoutSession(
     dto: CreateCheckoutSessionDto
-  ): Promise<Stripe.Checkout.Session> {
-    console.log('🚀 ~ StripeService ~ createCheckoutSession ~ dto:', dto);
+  ): Promise<CheckoutSession> {
     try {
-      const session = await this.stripe.checkout.sessions.create({
-        customer: dto.stripeCustomerId,
-        line_items: [
-          {
-            price: dto.priceId,
-            quantity: 1,
-          },
-        ],
-        mode: 'subscription',
-        success_url: dto.successUrl,
-        cancel_url: dto.cancelUrl,
+      const session = await this.payments.createCheckoutSession({
+        customerId: dto.stripeCustomerId,
+        priceId: dto.priceId,
+        successUrl: dto.successUrl,
+        cancelUrl: dto.cancelUrl,
         metadata: dto.metadata,
-        payment_method_types: ['card'],
       });
       this.logger.log(`Checkout session created: ${session.id}`);
       return session;
@@ -136,19 +139,12 @@ export class StripeService {
 
   // --- Subscription Management ---
 
-  async createSubscription(
-    dto: CreateSubscriptionDto
-  ): Promise<Stripe.Subscription> {
+  async createSubscription(dto: CreateSubscriptionDto): Promise<Subscription> {
     try {
-      const subscription = await this.stripe.subscriptions.create({
-        customer: dto.stripeCustomerId,
-        items: [{ price: dto.priceId }],
-        payment_behavior: 'default_incomplete',
-        payment_settings: { save_default_payment_method: 'on_subscription' },
-        expand: ['latest_invoice.payment_intent'],
-        metadata: {
-          ...dto.metadata,
-        },
+      const subscription = await this.payments.createSubscription({
+        customerId: dto.stripeCustomerId,
+        priceId: dto.priceId,
+        metadata: { ...dto.metadata },
       });
       this.logger.log(`Subscription created: ${subscription.id}`);
       return subscription;
@@ -160,11 +156,9 @@ export class StripeService {
     }
   }
 
-  async getSubscription(subscriptionId: string): Promise<Stripe.Subscription> {
+  async getSubscription(subscriptionId: string): Promise<Subscription> {
     try {
-      const subscription = await this.stripe.subscriptions.retrieve(
-        subscriptionId
-      );
+      const subscription = await this.payments.getSubscription(subscriptionId);
       return subscription;
     } catch (error) {
       this.logger.error(
@@ -179,11 +173,16 @@ export class StripeService {
   async updateSubscription(
     subscriptionId: string,
     update: UpdateSubscriptionDto
-  ): Promise<Stripe.Subscription> {
+  ): Promise<Subscription> {
     try {
-      const subscription = await this.stripe.subscriptions.update(
+      const subscription = await this.payments.updateSubscription(
         subscriptionId,
-        update
+        {
+          priceId: update.priceId,
+          trialPeriodDays: update.trialPeriodDays,
+          metadata: (update.metadata ?? {}) as Record<string, string>,
+          pauseCollection: update.pauseCollection,
+        }
       );
       this.logger.log(`Subscription updated: ${subscription.id}`);
       return subscription;
@@ -197,11 +196,9 @@ export class StripeService {
     }
   }
 
-  async cancelSubscription(
-    subscriptionId: string
-  ): Promise<Stripe.Subscription> {
+  async cancelSubscription(subscriptionId: string): Promise<Subscription> {
     try {
-      const subscription = await this.stripe.subscriptions.cancel(
+      const subscription = await this.payments.cancelSubscription(
         subscriptionId
       );
       this.logger.log(`Subscription cancelled: ${subscription.id}`);
@@ -216,18 +213,16 @@ export class StripeService {
     }
   }
 
-  async getSubscriptionsByOwnerId(
-    ownerId: string
-  ): Promise<Stripe.Subscription[]> {
+  async getSubscriptionsByOwnerId(ownerId: string): Promise<Subscription[]> {
     try {
-      const subscriptions = await this.stripe.subscriptions.search({
-        query: `metadata['ownerId']:'${ownerId}'`,
-        limit: 100,
-      });
-      this.logger.log(
-        `Found ${subscriptions.data.length} subscriptions for owner ${ownerId}`
+      const subscriptions = await this.payments.searchSubscriptions(
+        `metadata['ownerId']:'${ownerId}'`,
+        100
       );
-      return subscriptions.data;
+      this.logger.log(
+        `Found ${subscriptions.length} subscriptions for owner ${ownerId}`
+      );
+      return subscriptions;
     } catch (error) {
       this.logger.error(
         `Failed to get subscriptions for owner ${ownerId}: ${
@@ -240,20 +235,23 @@ export class StripeService {
 
   // --- Webhook Event Handlers ---
 
-  validateWebhookSignature(
+  async validateWebhookSignature(
     payload: Buffer | string,
     sig: string
-  ): Stripe.Event {
+  ): Promise<WebhookEvent> {
     const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
     if (!endpointSecret) {
       throw new UnauthorizedException('stripe webhook secret is required');
     }
     try {
-      return this.stripe.webhooks.constructEvent(payload, sig, endpointSecret);
+      return await this.payments.validateWebhook(payload, sig);
     } catch (err) {
       const isUnauthorized = err instanceof UnauthorizedException;
       if (!isUnauthorized) {
-        this.logger.error('Failed to validate Stripe webhook signature', err);
+        this.logger.error(
+          'Failed to validate Stripe webhook signature',
+          err as Error
+        );
       }
       throw err;
     }
@@ -262,15 +260,18 @@ export class StripeService {
   /**
    * Handle invoice.paid event
    */
-  async handleInvoicePaid(event: Stripe.Event): Promise<void> {
-    const invoice = event.data.object as Stripe.Invoice;
-    this.logger.log(`Invoice paid: ${invoice.id}`, invoice);
+  async handleInvoicePaid(event: WebhookEvent): Promise<void> {
+    const invoice = event.data as unknown as {
+      id: string;
+      lines?: { data: Array<{ price?: { id?: string } }> };
+      metadata?: Record<string, string>;
+      customer?: string;
+    };
+    this.logger.log(`Invoice paid: ${invoice.id}`, invoice as unknown as any);
 
     try {
-      const lineItem = invoice.lines.data[0];
-      // Access price through the line item - type assertion for Stripe's complex types
-      const priceId = (lineItem as unknown as { price: { id: string } }).price
-        ?.id;
+      const lineItem = invoice.lines?.data?.[0];
+      const priceId = lineItem?.price?.id as string;
       const ownerId = invoice.metadata?.ownerId as string;
       this.logger.log(
         `Processing invoice payment for owner: ${ownerId} with price: ${priceId}`
@@ -292,8 +293,11 @@ export class StripeService {
   /**
    * Handle invoice.payment_failed event
    */
-  async handleInvoicePaymentFailed(event: Stripe.Event): Promise<void> {
-    const invoice = event.data.object as Stripe.Invoice;
+  async handleInvoicePaymentFailed(event: WebhookEvent): Promise<void> {
+    const invoice = event.data as unknown as {
+      id: string;
+      customer?: string;
+    };
     this.logger.warn(`Invoice payment failed: ${invoice.id}`);
 
     try {
@@ -334,12 +338,16 @@ export class StripeService {
   /**
    * Handle customer.subscription.created event
    */
-  async handleSubscriptionCreated(event: Stripe.Event): Promise<void> {
-    const subscription = event.data.object as Stripe.Subscription;
+  async handleSubscriptionCreated(event: WebhookEvent): Promise<void> {
+    const subscription = event.data as unknown as {
+      id: string;
+      items?: { data: Array<{ price?: { id?: string } }> };
+      customer?: string;
+    };
     this.logger.log(`Subscription created: ${subscription.id}`, subscription);
 
     try {
-      const priceId = subscription.items.data[0]?.price?.id;
+      const priceId = subscription.items?.data?.[0]?.price?.id as string;
 
       await this.processPlanPayment(
         subscription.customer as string,
@@ -359,8 +367,12 @@ export class StripeService {
   /**
    * Handle customer.subscription.updated event
    */
-  async handleSubscriptionUpdated(event: Stripe.Event): Promise<void> {
-    const subscription = event.data.object as Stripe.Subscription;
+  async handleSubscriptionUpdated(event: WebhookEvent): Promise<void> {
+    const subscription = event.data as unknown as {
+      id: string;
+      customer?: string;
+      status?: string;
+    };
     this.logger.log(`Subscription updated: ${subscription.id}`);
 
     try {
@@ -388,8 +400,11 @@ export class StripeService {
   /**
    * Handle customer.subscription.deleted event
    */
-  async handleSubscriptionDeleted(event: Stripe.Event): Promise<void> {
-    const subscription = event.data.object as Stripe.Subscription;
+  async handleSubscriptionDeleted(event: WebhookEvent): Promise<void> {
+    const subscription = event.data as unknown as {
+      id: string;
+      customer?: string;
+    };
     this.logger.warn(`Subscription deleted: ${subscription.id}`);
 
     try {
@@ -430,16 +445,21 @@ export class StripeService {
   /**
    * Handle checkout.session.completed event
    */
-  async handleCheckoutSessionCompleted(event: Stripe.Event): Promise<void> {
-    const session = event.data.object as Stripe.Checkout.Session;
+  async handleCheckoutSessionCompleted(event: WebhookEvent): Promise<void> {
+    const session = event.data as unknown as {
+      id: string;
+      metadata?: Record<string, string>;
+      subscription?: string;
+      customer?: string;
+    };
     this.logger.log(`Checkout session completed: ${session.id}`, session);
 
     try {
       // Get the line items to find the plan price
-      const lineItems = await this.stripe.checkout.sessions.listLineItems(
+      const lineItems = await this.payments.listCheckoutSessionLineItems(
         session.id
       );
-      const priceId = lineItems.data[0]?.price?.id as string;
+      const priceId = lineItems[0]?.priceId as string;
       const ownerId = session.metadata?.ownerId as string;
       const subscriptionId = session.subscription as string;
 
@@ -447,7 +467,7 @@ export class StripeService {
       await this.updateSubscription(subscriptionId, {
         metadata: {
           ownerId,
-          expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toString(), // 1 month from now
+          expiresAt: getExpirationDate().toString(),
         },
       });
       this.logger.log(
@@ -520,7 +540,7 @@ export class StripeService {
           `Order ${existingOrder.id} marked as PAID for plan ${plan.type}`
         );
       } else {
-        const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 1 month from now
+        const expiresAt = getExpirationDate();
         // Create new order record
         const newOrder = await this.prisma.order.create({
           data: {

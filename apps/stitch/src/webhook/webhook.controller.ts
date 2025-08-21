@@ -12,7 +12,7 @@ import {
   Param,
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
-import { StripeService } from '../common/stripe/stripe.service';
+import { PaymentsService } from '../common/stripe/payments.service';
 import { WebhookService } from './webhook.service';
 import type {
   CreateCheckoutSessionDto,
@@ -24,7 +24,7 @@ export class WebhookController {
   private readonly logger = new Logger(WebhookController.name);
 
   constructor(
-    private readonly stripeService: StripeService,
+    private readonly paymentsService: PaymentsService,
     private readonly webhookService: WebhookService
   ) {}
 
@@ -35,9 +35,8 @@ export class WebhookController {
     @Res() res: Response,
     @Headers('stripe-signature') signature: string
   ) {
-    let event;
     try {
-      event = this.stripeService.validateWebhookSignature(
+      const event = await this.paymentsService.validateWebhookSignature(
         (req as unknown as { rawBody: Buffer }).rawBody,
         signature
       );
@@ -48,25 +47,25 @@ export class WebhookController {
       if (!isUnauthorized) {
         this.logger.error('Unexpected error handling Stripe webhook', err);
       }
-      return err;
+      throw err;
     }
   }
 
   @Post('test-checkout-url')
   async createTestCheckoutUrl(@Body() dto: CreateCheckoutSessionDto) {
-    const session = await this.stripeService.createCheckoutSession(dto);
-    return { url: session.url };
+    const session = await this.paymentsService.createCheckoutSession(dto);
+    return { url: (session as unknown as { url?: string }).url };
   }
 
   @Post('test-customer')
   async createTestCustomer(@Body() dto: CreateCustomerDto) {
-    const customer = await this.stripeService.createCustomer(dto);
+    const customer = await this.paymentsService.createCustomer(dto);
     return { id: customer.id };
   }
 
   @Get('test-subscriptions/:ownerId')
   async getTestSubscriptions(@Param('ownerId') ownerId: string) {
-    const subscriptions = await this.stripeService.getSubscriptionsByOwnerId(
+    const subscriptions = await this.paymentsService.getSubscriptionsByOwnerId(
       ownerId
     );
     return { subscriptions };

@@ -2,11 +2,12 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { PlansService } from './plans.service';
 import { PlansController } from './plans.controller';
-import { StripeService } from '../common/stripe/stripe.service';
+import { PaymentsService } from '../common/stripe/payments.service';
+import { PaymentModule } from '../common/payment/payment.module';
 
 @Module({
-  imports: [ConfigModule],
-  providers: [PlansService, StripeService],
+  imports: [ConfigModule, PaymentModule],
+  providers: [PlansService, PaymentsService],
   controllers: [PlansController],
   exports: [PlansService],
 })

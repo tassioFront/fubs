@@ -1,9 +1,16 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { PrismaClient } from '@prisma/client-stitch';
 
 @Injectable()
-export class PrismaService {
-  // TODO: Initialize Prisma client for Stitch service
-  // - Configure Prisma client with custom output path
-  // - Handle database connections
-  // - Implement health checks
+export class PrismaService
+  extends PrismaClient
+  implements OnModuleInit, OnModuleDestroy
+{
+  async onModuleInit() {
+    await this.$connect();
+  }
+
+  async onModuleDestroy() {
+    await this.$disconnect();
+  }
 }
