@@ -1,0 +1,17 @@
+{
+  "name": "gary",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "gary",
+  "projectType": "application",
+  "tags": [],
+  "// targets": "to see all targets run: nx show project gary --web",
+  "targets": {
+    "dev": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "next dev -p 4002",
+        "cwd": "gary"
+      }
+    }
+  }
+}
