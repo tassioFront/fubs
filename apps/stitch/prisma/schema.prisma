@@ -10,20 +10,36 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Order {
-  id                    String      @id @default(uuid())
-  ownerId               String
-  stripeCustomerId      String? // Stripe customer ID for this owner
-  planType              PlanType
-  amount                Decimal
-  currency              String
-  status                OrderStatus @default(PENDING)
-  stripeSessionId       String?
-  stripePaymentIntentId String?
-  createdAt             DateTime    @default(now())
-  updatedAt             DateTime    @updatedAt
-  expiresAt             DateTime
+
+enum SubscriptionStatus {
+  TRIALING            @map("trialing")
+  ACTIVE              @map("active")
+  PAST_DUE            @map("past_due")
+  CANCELED            @map("canceled")
+  UNPAID              @map("unpaid")
+  INCOMPLETE          @map("incomplete")
+  INCOMPLETE_EXPIRED  @map("incomplete_expired")
+  PAUSED              @map("paused")
 }
+
+
+model SubscriptionEntitlement {
+  id                   String   @id @default(uuid())
+  ownerId              String
+  planType             PlanType
+  stripeCustomerId     String?
+  stripeSubscriptionId String?  @unique
+  stripePriceId        String?
+  status               SubscriptionStatus @default(ACTIVE)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  expiresAt            DateTime
+
+  @@index([ownerId])
+  @@index([stripeCustomerId])
+  @@index([status, expiresAt])
+}
+
 
 enum PlanType {
   FREE
@@ -39,13 +55,6 @@ model WebhookEvent {
   receivedAt DateTime @default(now())
 }
 
-enum OrderStatus {
-  PENDING
-  PAID
-  FAILED
-  CANCELLED
-  EXPIRED
-}
 
 model Outbox {
   id          String   @id @default(uuid())
@@ -54,6 +63,14 @@ model Outbox {
   processed   Boolean  @default(false)
   createdAt   DateTime @default(now())
   processedAt DateTime?
+
+  @@index([processed])
+
+}
+
+enum BillingPeriod {
+  MONTH @map("month")
+  YEAR  @map("year")
 }
 
 model Plan {

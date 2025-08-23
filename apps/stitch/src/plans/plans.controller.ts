@@ -1,5 +1,5 @@
 import { PLANS } from './plans.config';
-import { PaymentsService } from '../common/stripe/payments.service';
+import { PaymentsService } from '../payment/payments.service';
 import {
   Controller,
   Get,

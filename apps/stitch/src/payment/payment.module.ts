@@ -2,8 +2,8 @@ import { Module } from '@nestjs/common';
 import { PAYMENT_PROVIDER } from './payment-provider.interface';
 import { StripeAdapterService } from './stripe-adapter.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { PaymentsService } from '../stripe/payments.service';
-import { PrismaService } from '../prisma.service';
+import { PaymentsService } from './payments.service';
+import { PrismaService } from '../common/prisma.service';
 
 /**
  * Payment Module
