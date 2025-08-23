@@ -1,4 +1,6 @@
-# Gary — Frontend Stack (SSR-first Next.js + TypeScript, App Router)
+# Gary
+
+[Gary](https://upload.wikimedia.org/wikipedia/commons/4/4a/Gary_%28SpongeBob%29_character.png) is the frontend app of the Fubs monorepo. It will be used for clients to use the Fubs platform.
 
 Purpose
 
