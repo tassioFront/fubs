@@ -1,5 +1,5 @@
 {
-  "extends": "../tsconfig.base.json",
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "jsx": "preserve",
     "strict": true,
@@ -34,7 +34,7 @@
     "**/*.jsx",
     "**/*.ts",
     "**/*.tsx",
-    "../dist/gary/.next/types/**/*.ts",
+    "../../dist/gary/.next/types/**/*.ts",
     "../gary/.next/types/**/*.ts",
     "next-env.d.ts",
     ".next/types/**/*.ts"
