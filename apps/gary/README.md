@@ -1,4 +1,9 @@
-# Gary
+<div align='center'>
+  
+<img width="200" alt="Gary logo" src="https://github.com/user-attachments/assets/30413105-2015-4064-b680-ef3f7f5ba80a" />
+</div>
+
+<br/>
 
 [Gary](https://upload.wikimedia.org/wikipedia/commons/4/4a/Gary_%28SpongeBob%29_character.png) is the frontend app of the Fubs monorepo. It will be used for clients to use the Fubs platform.
 
