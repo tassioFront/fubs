@@ -1,6 +1,6 @@
 <div align='center'>
   
-<img width="200" alt="Gary logo" src="https://github.com/user-attachments/assets/30413105-2015-4064-b680-ef3f7f5ba80a" />
+<img width="200" alt="Gary logo" src="https://github.com/user-attachments/assets/1d42e29b-a7c0-479d-8d80-e4ae3d801716" />
 </div>
 
 <br/>
