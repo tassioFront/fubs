@@ -39,19 +39,21 @@ model Task {
   dueDate  DateTime?
 
   projectId     String
-  project       Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project       Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
   createdBy     String
-  createdByUser User    @relation("CreatedByUser", fields: [createdBy], references: [id], onDelete: Cascade)
+  createdByUser User          @relation("CreatedByUser", fields: [createdBy], references: [id], onDelete: Cascade)
   assignedTo    String?
-  assignedUser  User?   @relation("AssignedUser", fields: [assignedTo], references: [id], onDelete: SetNull)
+  assignedUser  User?         @relation("AssignedUser", fields: [assignedTo], references: [id], onDelete: SetNull)
+  comments      TaskComment[]
 
   @@map("tasks")
 }
 
 model User {
-  id            String @id @default(uuid())
-  assignedTasks Task[] @relation("AssignedUser")
-  createdTasks  Task[] @relation("CreatedByUser")
+  id            String        @id @default(uuid())
+  assignedTasks Task[]        @relation("AssignedUser")
+  createdTasks  Task[]        @relation("CreatedByUser")
+  comments      TaskComment[] @relation("CreatedByUser")
 
   @@map("users")
 }
@@ -81,4 +83,18 @@ model WorkspaceMember {
   workspaceId String
 
   @@map("workspace_members")
+}
+
+model TaskComment {
+  id        String   @id @default(uuid())
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  taskId        String
+  task          Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  createdBy     String
+  createdByUser User   @relation("CreatedByUser", fields: [createdBy], references: [id], onDelete: Cascade)
+
+  @@map("task_comments")
 }
