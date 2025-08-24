@@ -8,6 +8,8 @@ import { PrismaService } from '../common/prisma.service';
 import { WorkspaceMemberGuard } from '../auth/guards/workspace-member.guard';
 import { WorkspaceMemberService } from '../auth/guards/workspace-member.service';
 
+import type { AuthenticatedRequest } from '@fubs/shared';
+
 jest.mock('@prisma/client-koda', () => ({
   PrismaClient: jest.fn(),
 }));
@@ -47,7 +49,7 @@ describe('TasksController', () => {
     user: {
       id: userId,
     },
-  });
+  }) as AuthenticatedRequest;
 
   const mockTask = {
     id: 'test-task-id',
