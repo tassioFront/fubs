@@ -15,19 +15,17 @@ import {
   ApiTags,
   ApiOperation,
   ApiResponse,
-  ApiBearerAuth,
 } from '@nestjs/swagger';
 
-import { JwtAuthGuard } from '@fubs/shared';
-import { type UUID } from '@fubs/shared';
+import { JwtAuthGuard, type UUID, type AuthenticatedRequest } from '@fubs/shared';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from "./dto/update-comment.dto";
 import { WorkspaceMemberGuard } from '../auth/guards/workspace-member.guard';
 
-import type { AuthenticatedRequest } from '@fubs/shared';
-
+@ApiTags('comments')
+@Controller('comments')
 export class CommentsController {
-  constructor(private commentsService: CommentsService) {}
+  constructor(private readonly commentsService: CommentsService) {}
 
   @Post()
   @UseGuards(JwtAuthGuard, WorkspaceMemberGuard)
@@ -61,7 +59,9 @@ export class CommentsController {
       throw new ForbiddenException('You are not allowed to update this comment');
     }
 
-    return this.commentsService.updateComment(updateCommentDto);
+    // Add commentId to the DTO for the service
+    const updateDto = { ...updateCommentDto, commentId };
+    return this.commentsService.updateComment(updateDto);
   }
 
   @Delete(':commentId')
