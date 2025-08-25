@@ -1,5 +1,16 @@
 import Link from 'next/link';
 
+function FeatureCard({
+  title,
+  body,
+}: Readonly<{ title: string; body: string }>) {
+  return (
+    <div className="rounded-xl border border-muted bg-muted/40 p-5 backdrop-blur-sm">
+      <h3 className="text-heading-3 font-semibold">{title}</h3>
+      <p className="mt-2 text-body text-muted-foreground">{body}</p>
+    </div>
+  );
+}
 export default function Page() {
   return (
     <main className="min-h-[calc(100vh-0px)] bg-background text-foreground">
@@ -79,17 +90,5 @@ export default function Page() {
         </div>
       </section>
     </main>
-  );
-}
-
-function FeatureCard({
-  title,
-  body,
-}: Readonly<{ title: string; body: string }>) {
-  return (
-    <div className="rounded-xl border border-muted bg-muted/40 p-5 backdrop-blur-sm">
-      <h3 className="text-heading-3 font-semibold">{title}</h3>
-      <p className="mt-2 text-body text-muted-foreground">{body}</p>
-    </div>
   );
 }
