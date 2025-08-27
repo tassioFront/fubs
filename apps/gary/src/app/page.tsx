@@ -13,7 +13,7 @@ function FeatureCard({
 }
 export default function Page() {
   return (
-    <main className="min-h-[calc(100vh-0px)] bg-background text-foreground">
+    <div>
       <section className="mx-auto max-w-5xl px-gutter py-16 md:py-24">
         <div className="space-y-6">
           <h1 className="text-display-xl sm:text-display-2xl font-extrabold tracking-tight">
@@ -89,6 +89,6 @@ export default function Page() {
           </div>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

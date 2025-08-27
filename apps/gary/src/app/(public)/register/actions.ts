@@ -1,0 +1,85 @@
+'use server';
+
+import { redirect } from 'next/navigation';
+import { z } from 'zod';
+import { mapError } from '@/app/utils/zod';
+import { login, mapErrorFromUsers, registerUser } from '@/app/service/users';
+import { RegisterFormState } from './types';
+
+const RegisterSchema = z
+  .object({
+    first_name: z.string().min(1, 'First name is required'),
+    last_name: z.string().min(1, 'Last name is required'),
+    email: z.string().email('Enter a valid email'),
+    password: z.string().min(8, 'Password must be at least 8 characters'),
+    password_confirm: z.string().min(8, 'Confirm your password'),
+  })
+  .refine(
+    async (d: { password: string; password_confirm: string }) =>
+      d.password === d.password_confirm,
+    {
+      path: ['password_confirm'],
+      message: 'Passwords do not match',
+    }
+  );
+
+export async function registerAction(
+  _prevState: RegisterFormState,
+  formData: FormData
+): Promise<RegisterFormState> {
+  const raw = Object.fromEntries(formData.entries());
+  const params = {
+    first_name: raw.first_name,
+    last_name: raw.last_name,
+    email: raw.email,
+    password: raw.password,
+    password_confirm: raw.password_confirm,
+  };
+  let redirectPath = '/plans?registered';
+
+  try {
+    const parsed = await RegisterSchema.parseAsync(params);
+    const res = await registerUser(parsed);
+
+    if (res.status === 400) {
+      const json = await res.json();
+      return {
+        errors: mapErrorFromUsers(json as Record<string, string[]>),
+        ...parsed,
+      };
+    }
+
+    if (!res.ok) {
+      // we could log this
+      console.error('registerAction ~ Unauthorized');
+      return {
+        formError: 'We got a problem. Please try again later.',
+        ...parsed,
+      };
+    }
+
+    // auto login
+    const loginRes = await login(parsed.email, parsed.password);
+
+    if (!loginRes.ok) {
+      redirectPath = '/login?registered&error';
+    } else {
+      const data = await loginRes.json();
+      console.log('🚀 ~ registerAction ~ loginRes data:', data); // we can save it later
+    }
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return {
+        errors: mapError(error.errors),
+        ...(params as RegisterFormState),
+      };
+    }
+
+    return {
+      formError: 'Unknown error. Please try again later.',
+      ...params,
+    } as RegisterFormState;
+  }
+
+  redirect(redirectPath);
+}

@@ -12,7 +12,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <main className="min-h-[calc(100vh-0px)] bg-background text-foreground">
+          {children}
+        </main>
+      </body>
     </html>
   );
 }

@@ -80,13 +80,30 @@ a {
 
 /* Form elements inherit typography/colors */
 button,
-input,
 select,
 textarea {
   font: inherit;
   color: inherit;
   background: transparent;
 }
+
+input {
+  font: inherit;
+  color: inherit;
+  background: color-mix(in srgb, var(--color-background) 80%, #fff 5%);
+  transition: background 0.2s;
+}
+
+/* Override Chrome autofill background */
+input:-webkit-autofill, input:-internal-autofill-selected,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active, input:focus-visible, input:focus{
+  box-shadow: 0 0 0 1000px color-mix(in srgb, var(--color-background) 80%, #fff 5%) inset !important;
+  -webkit-box-shadow: 0 0 0 1000px color-mix(in srgb, var(--color-background) 80%, #fff 5%) inset !important;
+  -webkit-text-fill-color: var(--color-foreground) !important;
+}
+
+
 
 /* Unstyle buttons by default; use Tailwind utilities for variants */
 button,
@@ -96,8 +113,6 @@ button,
   -webkit-appearance: none;
   appearance: none;
   border: 0;
-  padding: 0;
-  background: transparent;
   cursor: pointer;
 }
 button:disabled,
