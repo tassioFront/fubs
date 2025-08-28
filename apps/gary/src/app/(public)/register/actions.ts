@@ -3,7 +3,7 @@
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { mapError } from '@/app/utils/zod';
-import { login, mapErrorFromUsers, registerUser } from '@/app/service/users';
+import { mapErrorFromUsers, registerUser } from '@/app/service/users';
 import { RegisterFormState } from './types';
 
 const RegisterSchema = z
@@ -35,7 +35,6 @@ export async function registerAction(
     password: raw.password,
     password_confirm: raw.password_confirm,
   };
-  let redirectPath = '/plans?registered';
 
   try {
     const parsed = await RegisterSchema.parseAsync(params);
@@ -57,16 +56,6 @@ export async function registerAction(
         ...parsed,
       };
     }
-
-    // auto login
-    const loginRes = await login(parsed.email, parsed.password);
-
-    if (!loginRes.ok) {
-      redirectPath = '/login?registered&error';
-    } else {
-      const data = await loginRes.json();
-      console.log('🚀 ~ registerAction ~ loginRes data:', data); // we can save it later
-    }
   } catch (error) {
     if (error instanceof z.ZodError) {
       return {
@@ -81,5 +70,5 @@ export async function registerAction(
     } as RegisterFormState;
   }
 
-  redirect(redirectPath);
+  redirect('/login?registered');
 }

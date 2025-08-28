@@ -1,4 +1,7 @@
 import { getAuthHeader } from '@fubs/shared/src/lib/utils/getToken';
+import { requestWithBody } from './request';
+
+const USERS_SERVICE_URL = process.env.USERS_SERVICE_URL;
 
 export const mapErrorFromUsers = (errors: Record<string, string[]>) => {
   // example of errors: { password: [ 'Ensure this field has at least 8 characters.' ] }
@@ -18,32 +21,34 @@ interface UserRegisterParams {
 }
 
 export async function registerUser(body: UserRegisterParams) {
-  const USERS_SERVICE_URL = process.env.USERS_SERVICE_URL;
-
   const headers = getAuthHeader({
     serviceName: process.env.GARY_SERVICE_NAME as string,
   });
 
-  return await fetch(`${USERS_SERVICE_URL}/api/users/internal/register/`, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify(body),
-    cache: 'no-store',
+  return await requestWithBody({
+    url: `${USERS_SERVICE_URL}/api/users/internal/register/`,
+    options: {
+      method: 'POST',
+      headers,
+      cache: 'no-store',
+    },
+    body,
   });
 }
 
 export async function login(email: string, password: string) {
-  const USERS_SERVICE_URL = process.env.USERS_SERVICE_URL;
-
-  return await fetch(`${USERS_SERVICE_URL}/api/users/login/`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
+  return await requestWithBody({
+    url: `${USERS_SERVICE_URL}/api/users/login/`,
+    options: {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      cache: 'no-store',
     },
-    body: JSON.stringify({
+    body: {
       email,
       password,
-    }),
-    cache: 'no-store',
+    },
   });
 }
