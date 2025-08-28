@@ -1,6 +1,6 @@
 import { CreateCommentDto } from "./dto/create-comment.dto";
 import { UpdateCommentDto } from "./dto/update-comment.dto";
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
 
 @Injectable()
@@ -9,14 +9,6 @@ export class CommentsService {
 
   async createComment(createCommentDto: CreateCommentDto) {
     const { content, taskId, createdBy } = createCommentDto;
-
-    const task = await this.prisma.task.findUnique({
-      where: { id: taskId },
-    });
-
-    if (!task) {
-      throw new NotFoundException('Task not found');
-    }
 
     return this.prisma.taskComment.create({
       data: {
@@ -32,10 +24,6 @@ export class CommentsService {
       where: { id: commentId },
     });
 
-    if (!comment) {
-      throw new NotFoundException('Comment not found');
-    }
-
     return comment;
   }
 
@@ -46,14 +34,6 @@ export class CommentsService {
   }
 
   async deleteComment(commentId: string) {
-    const comment = await this.prisma.taskComment.findUnique({
-      where: { id: commentId },
-    });
-
-    if (!comment) {
-      throw new NotFoundException('Comment not found');
-    }
-
     return this.prisma.taskComment.delete({
       where: { id: commentId },
     });
@@ -61,14 +41,6 @@ export class CommentsService {
 
   async updateComment(updateCommentDto: UpdateCommentDto) {
     const { commentId, content } = updateCommentDto;
-
-    const comment = await this.prisma.taskComment.findUnique({
-      where: { id: commentId },
-    });
-
-    if (!comment) {
-      throw new NotFoundException('Comment not found');
-    }
 
     return this.prisma.taskComment.update({
       where: { id: commentId },
