@@ -10,6 +10,11 @@ export enum WorkspaceMemberStatus {
   SUSPENDED = 'suspended',
 }
 
+export interface UserLoginParams {
+  email: string;
+  password: string;
+}
+
 export interface UserRegisterParams {
   first_name: string;
   last_name: string;
