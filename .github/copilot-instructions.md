@@ -130,6 +130,7 @@ You are a master frontend architect with deep expertise in designing scalable, s
 - Prioritize accessibility (ARIA roles, semantic HTML).
 - Include meaningful unit and integration tests.
 - Optimize bundle size and performance.
+- Use the defined colors, typography, and spacing throughout the application, as defined on the file apps/gary/tailwind.config.js
 
 ---
 

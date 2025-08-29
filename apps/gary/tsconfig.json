@@ -27,7 +27,11 @@
     "types": [
       "jest",
       "node"
-    ]
+    ],
+    "paths": {
+      "@/*": ["./src/*"],
+      "@fubs/shared/src/*": ["../../libs/shared/src/*", "../../libs/shared/src"],
+    }
   },
   "include": [
     "**/*.js",
@@ -36,6 +40,7 @@
     "**/*.tsx",
     "../../dist/gary/.next/types/**/*.ts",
     "../gary/.next/types/**/*.ts",
+    "../../libs/shared/**/*.ts",
     "next-env.d.ts",
     ".next/types/**/*.ts"
   ],

@@ -47,6 +47,7 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.2",
     "next": "~15.2.4",
+    "next-auth": "beta",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "prisma": "^6.13.0",
@@ -54,7 +55,8 @@
     "react-dom": "19.0.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
-    "stripe": "^18.4.0"
+    "stripe": "^18.4.0",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@eslint/compat": "^1.1.1",

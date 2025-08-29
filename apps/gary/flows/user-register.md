@@ -85,6 +85,8 @@ Requirements coverage
 
 High-level steps
 
+## Step 1
+
 1. Register (Server Action)
 
 - Route: `src/app/(public)/register/page.tsx` with `registerAction` in `actions.ts` ('use server').
@@ -97,6 +99,8 @@ High-level steps
 - On success, set HttpOnly cookie (e.g., `auth_token`) via `cookies().set(...)` (Secure, SameSite=Lax, Path=/).
 - Redirect to `/plans`.
 
+## Step 2
+
 3. Choose Plan (SSR list from Stitch)
 
 - Route: `src/app/(onboarding)/plans/page.tsx` (server component).
@@ -104,6 +108,8 @@ High-level steps
 - Action: `choosePlanAction(planId)` in `src/app/(onboarding)/plans/actions.ts`.
   - If selected plan is FREE: proceed to Step 5 (see note below).
   - If PAID: create checkout session (Step 4).
+
+## Step 3
 
 4. Create Checkout Session (Server Action → Redirect)
 
@@ -122,6 +128,8 @@ High-level steps
 - Then poll/read entitlement: `GET ${STITCH_SERVICE_URL}/entitlements/me`.
   - If ACTIVE (or FREE), redirect to `/app` (home/dashboard).
   - If not yet active (webhook delay), show a transient “finalizing purchase” screen and retry briefly.
+
+## Step 4
 
 6. Access Control (Middleware + Server Guards)
 

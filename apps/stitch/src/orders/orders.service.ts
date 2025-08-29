@@ -6,6 +6,6 @@ export class OrdersService {
   private readonly prisma = new PrismaClient();
 
   async getAllOrders() {
-    return this.prisma.order.findMany();
+    return this.prisma.subscriptionEntitlement.findMany();
   }
 }
