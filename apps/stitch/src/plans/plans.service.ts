@@ -3,7 +3,7 @@ import { PrismaClient } from '@prisma/client-stitch';
 import { CreatePlanDto, UpdatePlanDto, PlanOutputDto } from './plan.dto';
 import { PlanType } from '@fubs/shared';
 import { PaymentsService } from '../payment/payments.service';
-import { Price } from '../payment/payment-provider.interface';
+import { Price } from '@fubs/shared';
 
 @Injectable()
 export class PlansService {

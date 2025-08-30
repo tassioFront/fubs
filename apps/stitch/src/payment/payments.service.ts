@@ -18,11 +18,11 @@ import type {
   PaymentProvider,
   Customer,
   Product,
-  Price,
   CheckoutSession,
   Subscription,
   WebhookEvent,
 } from './payment-provider.interface';
+import { Price } from '@fubs/shared';
 
 const getExpirationDate = (): Date =>
   new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 1 month from now

@@ -1,5 +1,6 @@
-export const PAYMENT_PROVIDER = Symbol('PAYMENT_PROVIDER');
 import { Price } from '@fubs/shared';
+
+export const PAYMENT_PROVIDER = Symbol('PAYMENT_PROVIDER');
 
 export interface Customer {
   id: string;
