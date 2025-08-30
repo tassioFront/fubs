@@ -52,3 +52,12 @@ export async function login(email: string, password: string) {
     },
   });
 }
+
+export async function validateToken(authToken: string) {
+  return await fetch(`${USERS_SERVICE_URL}/api/users/validate-token/`, {
+    headers: {
+      Authorization: `Bearer ${authToken}`,
+    },
+    cache: 'no-store',
+  });
+}
