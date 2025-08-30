@@ -28,7 +28,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             return null;
           }
 
-          const { user } = await res.json();
+          const { user, access } = await res.json();
           console.log('🚀 ~ authorize ~ json:', user);
 
           return {
