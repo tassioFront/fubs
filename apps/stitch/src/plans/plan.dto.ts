@@ -166,8 +166,9 @@ export class GetPricesByIdDto {
   @IsNotEmpty()
   ids: string;
 
-  // Computed property to get array of price IDs
-  get priceIds(): string[] {
-    return this.ids.split(',');
+    return this.ids
+      .split(',')
+      .map(id => id.trim())
+      .filter(id => id.length > 0);
   }
 }
