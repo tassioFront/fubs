@@ -23,19 +23,22 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             credentials.email as string,
             credentials.password as string
           );
-
+          console.log('🚀 ~ authorize ~ res.ok:', res.ok);
           if (!res.ok) {
             return null;
           }
 
           const { user, access } = await res.json();
+          console.log('🚀 ~ authorize ~ json:', user);
+
           return {
             id: user.id,
             name: user.name,
             token: access,
             email: user.email,
           };
-        } catch {
+        } catch (error) {
+          console.error('🚀 ~ authorize ~ error:', error);
           return null;
         }
       },
