@@ -22,7 +22,10 @@ export default function RegisterForm() {
   >(login, {} as LoginFormState);
 
   return (
-    <form action={formAction} className="space-y-10">
+    <form
+      action={formAction}
+      className="space-y-10 max-w-md flex flex-col mx-auto"
+    >
       <FormMessage message={state?.formError} />
 
       <Input
