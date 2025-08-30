@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { mapError } from '@/app/utils/zod';
 import { mapErrorFromUsers, registerUser } from '@/app/service/users';
 import { RegisterFormState } from './types';
+import { WorkspaceMemberRole } from '@fubs/shared/src/lib/types/user';
 
 const RegisterSchema = z
   .object({
@@ -38,7 +39,10 @@ export async function registerAction(
 
   try {
     const parsed = await RegisterSchema.parseAsync(params);
-    const res = await registerUser(parsed);
+    const res = await registerUser({
+      ...parsed,
+      type: WorkspaceMemberRole.OWNER,
+    });
     const json = await res.json();
     console.log('🚀 ~ registerAction ~ res:', res.status);
     console.log('🚀 ~ registerAction ~ json:', json);

@@ -1,5 +1,6 @@
 import { getAuthHeader } from '@fubs/shared/src/lib/utils/getToken';
 import { requestWithBody } from './request';
+import { WorkspaceMemberRole } from '@fubs/shared/src/lib/types/user';
 
 const USERS_SERVICE_URL = process.env.USERS_SERVICE_URL;
 
@@ -20,7 +21,9 @@ interface UserRegisterParams {
   password_confirm: string;
 }
 
-export async function registerUser(body: UserRegisterParams) {
+export async function registerUser(
+  body: UserRegisterParams & { type: WorkspaceMemberRole }
+) {
   const headers = getAuthHeader({
     serviceName: process.env.GARY_SERVICE_NAME as string,
   });
