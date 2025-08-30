@@ -2,10 +2,14 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client-stitch';
 import { CreatePlanDto, UpdatePlanDto, PlanOutputDto } from './plan.dto';
 import { PlanType } from '@fubs/shared';
+import { PaymentsService } from '../payment/payments.service';
+import { Price } from '../payment/payment-provider.interface';
 
 @Injectable()
 export class PlansService {
   private readonly prisma = new PrismaClient();
+
+  constructor(private readonly paymentsService: PaymentsService) {}
 
   async getAllPlans(): Promise<PlanOutputDto[]> {
     const plans = await this.prisma.plan.findMany();
@@ -62,5 +66,9 @@ export class PlansService {
   async deletePlan(id: string): Promise<{ message: string }> {
     await this.prisma.plan.delete({ where: { id } });
     return { message: 'Plan deleted successfully' };
+  }
+
+  async getPricesById(priceIds: string[]): Promise<Price[]> {
+    return this.paymentsService.getPricesById(priceIds);
   }
 }

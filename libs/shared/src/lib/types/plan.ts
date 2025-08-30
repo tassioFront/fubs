@@ -1,3 +1,5 @@
+import { Price } from './price.js';
+
 export enum PlanType {
   FREE = 'FREE',
   SOLO = 'SOLO',
@@ -17,4 +19,12 @@ export interface Plan {
 
 export interface PlanCompleted extends Plan {
   stripePriceId: string;
+  stripeProductId: string;
+  id: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface PlanWithPriceDetails extends PlanCompleted {
+  priceDetails?: Price;
 }

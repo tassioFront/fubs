@@ -156,3 +156,18 @@ export class PlanTypeParamDto {
   @IsEnum(PlanType)
   type: PlanType;
 }
+
+export class GetPricesByIdDto {
+  @ApiProperty({
+    description: 'Comma-separated list of price IDs',
+    example: 'price_1,price_2,price_3',
+  })
+  @IsString()
+  @IsNotEmpty()
+  ids: string;
+
+  // Computed property to get array of price IDs
+  get priceIds(): string[] {
+    return this.ids.split(',');
+  }
+}

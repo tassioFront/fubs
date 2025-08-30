@@ -1,4 +1,5 @@
 export const PAYMENT_PROVIDER = Symbol('PAYMENT_PROVIDER');
+import { Price } from '@fubs/shared';
 
 export interface Customer {
   id: string;
@@ -12,16 +13,6 @@ export interface Product {
   name: string;
   description?: string;
   metadata: Record<string, string>;
-}
-
-export interface Price {
-  id: string;
-  productId: string;
-  unitAmount: number;
-  currency: string;
-  recurring?: {
-    interval: 'day' | 'week' | 'month' | 'year';
-  };
 }
 
 export interface CheckoutSession {
@@ -132,6 +123,7 @@ export interface PaymentProvider {
   // Price Management
   createPrice(data: CreatePriceDto): Promise<Price>;
   getPrice(priceId: string): Promise<Price>;
+  getPricesById(priceIds: string[]): Promise<Price[]>;
 
   // Checkout Management
   createCheckoutSession(
