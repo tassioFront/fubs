@@ -39,9 +39,11 @@ export async function registerAction(
   try {
     const parsed = await RegisterSchema.parseAsync(params);
     const res = await registerUser(parsed);
+    const json = await res.json();
+    console.log('🚀 ~ registerAction ~ res:', res.status);
+    console.log('🚀 ~ registerAction ~ json:', json);
 
     if (res.status === 400) {
-      const json = await res.json();
       return {
         errors: mapErrorFromUsers(json as Record<string, string[]>),
         ...parsed,
