@@ -1,12 +1,13 @@
 import LoginForm from './login-form';
 import { auth } from '../../../../auth.config';
-import { redirect } from 'next/navigation';
+// import { redirect } from 'next/navigation';
 
 export default async function LoginPage() {
   const session = await auth();
 
   if (session?.user) {
-    redirect('/workspace');
+    // uncomment this after has the logout option on workspace layout
+    // redirect('/workspace');
   }
 
   return (
