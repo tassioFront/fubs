@@ -77,7 +77,7 @@ export default function RegisterForm() {
         />
       </div>
 
-      <div className="pt-2 flex justify-center sm:justify-end">
+      <div className="pt-2 flex justify-center flex-col sm:justify-end sm:float-right">
         <Btn
           type="submit"
           variant="primary"
@@ -86,6 +86,17 @@ export default function RegisterForm() {
         >
           Create account
         </Btn>
+        <div className="pt-4 text-center">
+          <span className="text-sm text-gary-700">
+            Already have an account?{' '}
+            <a
+              href="/login"
+              className="text-gary-primary underline hover:text-gary-primary-dark transition-colors"
+            >
+              Log in
+            </a>
+          </span>
+        </div>
       </div>
     </form>
   );

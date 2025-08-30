@@ -1,6 +1,15 @@
 import LoginForm from './login-form';
+import { auth } from '../../../../auth.config';
+// import { redirect } from 'next/navigation';
 
 export default async function LoginPage() {
+  const session = await auth();
+
+  if (session?.user) {
+    // uncomment this after has the logout option on workspace layout
+    // redirect('/workspace');
+  }
+
   return (
     <div>
       <section className="mx-auto max-w-5xl px-gutter py-16 md:py-24">
