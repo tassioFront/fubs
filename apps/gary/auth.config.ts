@@ -62,12 +62,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
       if (!isLoggedIn) return Response.redirect(process.env.APP_URL + '/login');
 
-      const res = await validateToken(token);
-      if (res.ok) return true;
+      try {
+        const res = await validateToken(token);
+        if (res.ok) return true;
 
-      await signOut({
-        redirect: false,
-      });
+        await signOut({
+          redirect: false,
+        });
+      } catch (error) {
+        console.log('🚀 ~ authorized ~ error:', error);
+      }
 
       return Response.redirect(process.env.APP_URL + '/login');
     },
