@@ -6,6 +6,7 @@ import { WebhookModule } from '../webhook/webhook.module';
 import { OrdersModule } from '../orders/orders.module';
 import { PlansModule } from '../plans/plans.module';
 import { OutboxModule } from '../outbox/outbox.module';
+import { CustomerModule } from '../customer/customer.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { OutboxModule } from '../outbox/outbox.module';
     OrdersModule,
     PlansModule,
     OutboxModule,
+    CustomerModule,
   ],
   controllers: [AppController],
   providers: [AppService],

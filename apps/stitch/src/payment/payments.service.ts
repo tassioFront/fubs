@@ -58,15 +58,7 @@ export class PaymentsService {
   }
 
   async getCustomer(customerId: string): Promise<Customer> {
-    try {
-      const customer = await this.payments.getCustomer(customerId);
-      return customer;
-    } catch (error) {
-      this.logger.error(
-        `Failed to get customer ${customerId}: ${(error as Error).message}`
-      );
-      throw error;
-    }
+    return await this.payments.getCustomer(customerId);
   }
 
   async createPrice(createPriceDto: CreatePriceDto): Promise<Price> {
