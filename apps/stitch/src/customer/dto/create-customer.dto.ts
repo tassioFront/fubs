@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsEmail, IsObject } from 'class-validator';
+import { IsString, IsNotEmpty, IsEmail, IsUUID } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateCustomerDto {
@@ -19,11 +19,10 @@ export class CreateCustomerDto {
   name: string;
 
   @ApiProperty({
-    description: 'Customer metadata including ownerId',
-    example: { ownerId: 'owner_123' },
+    description: 'Customer ownerId',
+    example: 'owner_123',
   })
-  @IsObject()
-  metadata: {
-    ownerId: string;
-  };
+  @IsUUID()
+  @IsNotEmpty()
+  ownerId: string;
 }

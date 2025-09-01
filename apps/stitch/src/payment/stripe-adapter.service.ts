@@ -133,6 +133,7 @@ export class StripeAdapterService implements PaymentProvider {
   async createCustomer(data: CreateCustomerDto): Promise<Customer> {
     const existingCustomer = await this.stripe.customers.list({
       email: data.email,
+      limit: 1,
     });
     if (existingCustomer.data.length) {
       throw new ConflictException(

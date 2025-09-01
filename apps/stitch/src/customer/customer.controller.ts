@@ -47,7 +47,14 @@ export class CustomerController {
   async createCustomer(
     @Body() createCustomerDto: CreateCustomerDto
   ): Promise<CustomerResponseDto> {
-    return await this.paymentsService.createCustomer(createCustomerDto);
+    const customer = {
+      email: createCustomerDto.email,
+      name: createCustomerDto.name,
+      metadata: {
+        ownerId: createCustomerDto.ownerId,
+      },
+    };
+    return await this.paymentsService.createCustomer(customer);
   }
 
   @UseGuards(JwtAuthGuard)
