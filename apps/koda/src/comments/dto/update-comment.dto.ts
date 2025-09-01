@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsUUID, IsNotEmpty, IsString } from 'class-validator';;
+import { IsUUID, IsNotEmpty, IsString } from 'class-validator';
 
 export class UpdateCommentDto {
   @ApiProperty()
