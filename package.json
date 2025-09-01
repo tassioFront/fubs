@@ -26,7 +26,8 @@
     "db:stitch:seed": "cd apps/stitch && npx prisma db seed",
     "db:stitch:generate": "cd apps/stitch && npx prisma generate",
     "docker:stitch:build": "docker build -t fubs-stitch -f apps/stitch/Dockerfile .",
-    "docker:stitch:up": "docker-compose up stitch-db -d && docker run --rm -p 4001:4001 --network fubs_microservices-network -e DATABASE_URL=postgresql://postgres:postgres@stitch-db:5432/stitch_db?schema=public -e NODE_ENV=production -e JWT_SECRET=your-secret-key-for-development -e JWT_EXPIRES_IN=7d fubs-stitch"
+    "docker:stitch:up": "docker-compose up stitch-db -d && docker run --rm -p 4001:4001 --network fubs_microservices-network -e DATABASE_URL=postgresql://postgres:postgres@stitch-db:5432/stitch_db?schema=public -e NODE_ENV=production -e JWT_SECRET=your-secret-key-for-development -e JWT_EXPIRES_IN=7d fubs-stitch",
+    "prepare": "husky"
   },
   "private": true,
   "dependencies": {
@@ -95,6 +96,7 @@
     "eslint-plugin-jsx-a11y": "6.10.1",
     "eslint-plugin-react": "7.35.0",
     "eslint-plugin-react-hooks": "5.0.0",
+    "husky": "^9.1.7",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
     "jest-environment-node": "^29.7.0",

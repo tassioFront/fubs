@@ -4,17 +4,33 @@ import { TasksController } from './tasks.controller';
 import { TasksService } from './tasks.service';
 import { CreateTaskDto, TaskStatus, TaskPriority } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
-import { PrismaService } from '../common/prisma.service';
 import { WorkspaceMemberGuard } from '../auth/guards/workspace-member.guard';
 import { WorkspaceMemberService } from '../auth/guards/workspace-member.service';
 
 import type { AuthenticatedRequest } from '@fubs/shared';
 
 jest.mock('@prisma/client-koda', () => ({
-  PrismaClient: jest.fn(),
-}));
+  PrismaClient: jest.fn().mockImplementation(() => ({
+    $connect: jest.fn(),
+    $disconnect: jest.fn(),
+    task: {
+      create: jest.fn(),
+      findMany: jest.fn(),
+      findUnique: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
+    },
+    project: {
+      findFirst: jest.fn(),
+    },
+    user: {
+      findUnique: jest.fn(),
+    },
+  })),
+}), { virtual: true });
 
-// Mock the shared library guards
+import { PrismaService } from '../common/prisma.service';
+
 jest.mock('@fubs/shared', () => ({
   ...jest.requireActual('@fubs/shared'),
   JwtAuthGuard: class MockJwtAuthGuard {

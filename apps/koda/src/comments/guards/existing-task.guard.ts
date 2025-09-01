@@ -4,7 +4,7 @@ import {
   ExecutionContext,
   NotFoundException
 } from '@nestjs/common'
-import { TasksService } from 'src/tasks/tasks.service'
+import { TasksService } from '../../tasks/tasks.service'
 
 @Injectable()
 export class ExistingTaskGuard implements CanActivate {

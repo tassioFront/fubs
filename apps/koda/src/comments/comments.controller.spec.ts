@@ -4,17 +4,35 @@ import { CommentsController } from './comments.controller';
 import { CommentsService } from './comments.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
-import { PrismaService } from '../common/prisma.service';
 import { WorkspaceMemberGuard } from '../auth/guards/workspace-member.guard';
 import { WorkspaceMemberService } from '../auth/guards/workspace-member.service';
+import { ExistingTaskGuard } from './guards/existing-task.guard';
+import { TasksService } from '../tasks/tasks.service';
 
 import type { UUID } from '@fubs/shared';
 
 jest.mock('@prisma/client-koda', () => ({
-  PrismaClient: jest.fn(),
-}));
+  PrismaClient: jest.fn().mockImplementation(() => ({
+    $connect: jest.fn(),
+    $disconnect: jest.fn(),
+    comment: {
+      create: jest.fn(),
+      findMany: jest.fn(),
+      findUnique: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
+    },
+    task: {
+      findUnique: jest.fn(),
+    },
+    user: {
+      findUnique: jest.fn(),
+    },
+  })),
+}), { virtual: true });
 
-// Mock the shared library guards
+import { PrismaService } from '../common/prisma.service';
+
 jest.mock('@fubs/shared', () => ({
   ...jest.requireActual('@fubs/shared'),
   JwtAuthGuard: class MockJwtAuthGuard {
@@ -44,7 +62,6 @@ describe('CommentsController', () => {
   let controller: CommentsController;
   let service: CommentsService;
 
-  // Helper function to create a properly formatted authenticated request
   const createAuthenticatedRequest = (userId = 'user-123') => ({
     user: {
       id: userId,
@@ -101,6 +118,21 @@ describe('CommentsController', () => {
           useValue: mockPrismaService,
         },
         {
+          provide: TasksService,
+          useValue: {
+            findById: jest.fn().mockResolvedValue({
+              id: 'task-123',
+              title: 'Test Task',
+            }),
+            create: jest.fn(),
+            findAllByProjectId: jest.fn(),
+            assignTaskToUser: jest.fn(),
+            unassignTask: jest.fn(),
+            deleteTask: jest.fn(),
+            updateTask: jest.fn(),
+          },
+        },
+        {
           provide: WorkspaceMemberGuard,
           useValue: {
             canActivate: jest.fn().mockReturnValue(true),
@@ -111,6 +143,12 @@ describe('CommentsController', () => {
           useValue: {
             getWorkspaceByTaskId: jest.fn(),
             userHasAccess: jest.fn(),
+          },
+        },
+        {
+          provide: ExistingTaskGuard,
+          useValue: {
+            canActivate: jest.fn().mockReturnValue(true),
           },
         },
       ],
