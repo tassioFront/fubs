@@ -6,6 +6,7 @@ import {
   Param,
   HttpCode,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -17,12 +18,14 @@ import {
 import { PaymentsService } from '../payment/payments.service';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { CustomerResponseDto } from './dto/customer-response.dto';
+import { ApiTokenGuard } from '@fubs/shared';
 
 @ApiTags('customers')
 @Controller('customers')
 export class CustomerController {
   constructor(private readonly paymentsService: PaymentsService) {}
 
+  @UseGuards(ApiTokenGuard)
   @Post()
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
