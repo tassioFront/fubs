@@ -18,7 +18,7 @@ import {
 import { PaymentsService } from '../payment/payments.service';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { CustomerResponseDto } from './dto/customer-response.dto';
-import { ApiTokenGuard } from '@fubs/shared';
+import { ApiTokenGuard, JwtAuthGuard } from '@fubs/shared';
 
 @ApiTags('customers')
 @Controller('customers')
@@ -50,6 +50,7 @@ export class CustomerController {
     return await this.paymentsService.createCustomer(createCustomerDto);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
