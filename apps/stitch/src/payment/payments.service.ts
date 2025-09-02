@@ -85,17 +85,6 @@ export class PaymentsService {
     }
   }
 
-  async getPricesById(priceIds: string[]): Promise<Price[]> {
-    try {
-      const prices = await this.payments.getPricesById(priceIds);
-      this.logger.log(`Retrieved ${prices.length} prices`);
-      return prices;
-    } catch (error) {
-      this.logger.error(`Failed to get prices: ${(error as Error).message}`);
-      throw error;
-    }
-  }
-
   async createProduct(createProductDto: CreateProductDto): Promise<Product> {
     try {
       const product = await this.payments.createProduct({

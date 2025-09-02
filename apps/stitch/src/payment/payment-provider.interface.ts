@@ -124,7 +124,6 @@ export interface PaymentProvider {
   // Price Management
   createPrice(data: CreatePriceDto): Promise<Price>;
   getPrice(priceId: string): Promise<Price>;
-  getPricesById(priceIds: string[]): Promise<Price[]>;
 
   // Checkout Management
   createCheckoutSession(

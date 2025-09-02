@@ -9,7 +9,6 @@ import {
   Patch,
   Delete,
   ParseUUIDPipe,
-  Query,
 } from '@nestjs/common';
 
 import { PlansService } from './plans.service';
@@ -18,7 +17,6 @@ import {
   UpdatePlanDto,
   PlanOutputDto,
   PlanTypeParamDto,
-  GetPricesByIdDto,
 } from './plan.dto';
 
 @Controller('plans')
@@ -31,11 +29,6 @@ export class PlansController {
   @Get()
   async getAllPlans(): Promise<PlanOutputDto[]> {
     return this.plansService.getAllPlans();
-  }
-
-  @Get('prices-by-id')
-  async getPricesById(@Query() dto: GetPricesByIdDto) {
-    return this.plansService.getPricesById(dto.priceIds);
   }
 
   @Get('type/:type')

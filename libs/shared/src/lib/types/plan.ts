@@ -24,7 +24,3 @@ export interface PlanCompleted extends Plan {
   createdAt: Date;
   updatedAt: Date;
 }
-
-export interface PlanWithPriceDetails extends PlanCompleted {
-  priceDetails?: Price;
-}

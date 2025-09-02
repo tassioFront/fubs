@@ -168,19 +168,6 @@ export class StripeAdapterService implements PaymentProvider {
     return this.mapPrice(price as Stripe.Price);
   }
 
-  async getPricesById(priceIds: string[]): Promise<Price[]> {
-    const { data } = await this.stripe.prices.list({
-      limit: 10,
-      active: true,
-    });
-
-    const filteredPrices = data
-      .filter((price) => priceIds.includes(price.id))
-      .map((price) => this.mapPrice(price as Stripe.Price));
-
-    return filteredPrices;
-  }
-
   async createCheckoutSession(
     data: CreateCheckoutSessionDto
   ): Promise<CheckoutSession> {
