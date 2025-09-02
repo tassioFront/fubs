@@ -9,6 +9,8 @@ Contract (users-service)
 - Register: POST `${USERS_SERVICE_URL}/api/users/register/`
   - body: { username: string; email: string; password: string }
   - 201/200 success; 4xx with field errors otherwise
+- Create Customer on Stitch
+  - users-service does not send events, so we need to manually save the customer to Stitch (Payment Provider), which will be used later to treat payment and plan stuff
 
 Routing (App Router)
 
@@ -172,4 +174,4 @@ Testing
 - E2E (Playwright):
   - Register → auto-login → plans list shown.
   - FREE plan → lands in `/app` and content visible.
-  - PAID plan → redirected to checkout, back to success, entitlement becomes ACTIVE, then `/app`.
+  - PAID plan → redirected to checkout, back to success, entitlement becomes ACTIVE, then `/app`
