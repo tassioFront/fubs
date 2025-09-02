@@ -1,5 +1,3 @@
-import { Price } from './price.js';
-
 export enum PlanType {
   FREE = 'FREE',
   SOLO = 'SOLO',
