@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CustomerController } from './customer.controller';
-import { PaymentsService } from '../payment/payments.service';
+import { CustomerService } from './customer.service';
 
 describe('CustomerController', () => {
   let controller: CustomerController;
@@ -12,14 +12,13 @@ describe('CustomerController', () => {
   beforeEach(async () => {
     mockPaymentsService = {
       createCustomer: jest.fn(),
-      getCustomer: jest.fn(),
+      getCustomerByOwnerId: jest.fn(),
     };
-
     const module: TestingModule = await Test.createTestingModule({
       controllers: [CustomerController],
       providers: [
         {
-          provide: PaymentsService,
+          provide: CustomerService,
           useValue: mockPaymentsService,
         },
       ],
@@ -37,7 +36,7 @@ describe('CustomerController', () => {
       const createCustomerDto = {
         email: 'test@example.com',
         name: 'Test User',
-        metadata: { ownerId: 'owner_123' },
+        ownerId: 'owner_123',
       };
 
       const expectedCustomer = {
@@ -51,9 +50,11 @@ describe('CustomerController', () => {
 
       const result = await controller.createCustomer(createCustomerDto);
 
-      expect(mockPaymentsService.createCustomer).toHaveBeenCalledWith(
-        createCustomerDto
-      );
+      expect(mockPaymentsService.createCustomer).toHaveBeenCalledWith({
+        email: 'test@example.com',
+        name: 'Test User',
+        ownerId: 'owner_123',
+      });
       expect(result).toEqual(expectedCustomer);
     });
   });
@@ -68,11 +69,15 @@ describe('CustomerController', () => {
         metadata: { ownerId: 'owner_123' },
       };
 
-      mockPaymentsService.getCustomer.mockResolvedValue(expectedCustomer);
+      mockPaymentsService.getCustomerByOwnerId.mockResolvedValue(
+        expectedCustomer
+      );
 
-      const result = await controller.getCustomer(customerId);
+      const result = await controller.getCustomerByOwnerId(customerId);
 
-      expect(mockPaymentsService.getCustomer).toHaveBeenCalledWith(customerId);
+      expect(mockPaymentsService.getCustomerByOwnerId).toHaveBeenCalledWith(
+        customerId
+      );
       expect(result).toEqual(expectedCustomer);
     });
   });

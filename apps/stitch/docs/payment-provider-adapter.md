@@ -7,6 +7,7 @@ The Stitch service uses a **Payment Provider Adapter** pattern to abstract payme
 - **PaymentProvider Interface**: Defines all required payment operations (customer, product, price, checkout, subscription, invoice, webhook handling).
 - **StripeAdapterService**: Implements the PaymentProvider interface for Stripe, mapping Stripe resources to the domain models.
 - **Decoupling**: Business logic interacts only with the PaymentProvider interface, not directly with Stripe or other providers.
+- **Local Persistence**: All business-critical entities (e.g., customer) should be persisted in the local database, with references to the provider-specific IDs (e.g., `stripeCustomerId`). This ensures resilience, auditability, and provider-agnostic business logic.
 
 ---
 
@@ -59,3 +60,4 @@ Each controller should use the relevant methods from `payment.service` to intera
 - move the customer-related logic from payment.service.ts to customer.service.ts
 - create the necessary customer-related endpoints on customer.controller.ts
 - create the necessary customer-related DTOs (Data Transfer Objects) for request validation and type safety
+- create a local customer model on schema that stores business data and references the provider’s customer

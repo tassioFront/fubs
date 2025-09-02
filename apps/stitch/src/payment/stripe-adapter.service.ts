@@ -1,9 +1,4 @@
-import {
-  ConflictException,
-  Injectable,
-  NotFoundException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import Stripe from 'stripe';
 import { ConfigService } from '@nestjs/config';
 import {
@@ -55,7 +50,7 @@ export class StripeAdapterService implements PaymentProvider {
       id: c.id,
       email: c.email ?? '',
       name: c.name ?? '',
-      metadata: (c.metadata ?? {}) as Record<string, string>,
+      ownerId: c.metadata?.ownerId ?? '',
     };
   }
 
@@ -131,37 +126,17 @@ export class StripeAdapterService implements PaymentProvider {
 
   // PaymentProvider methods
   async createCustomer(data: CreateCustomerDto): Promise<Customer> {
-    const existingCustomer = await this.stripe.customers.list({
-      email: data.email,
-      limit: 1,
-    });
-    if (existingCustomer.data.length) {
-      throw new ConflictException(
-        `Customer with email ${data.email} already exists`
-      );
-    }
-
     const customer = await this.stripe.customers.create({
       email: data.email,
       name: data.name,
-      metadata: data.metadata,
+      metadata: { ownerId: data.ownerId },
     });
     return this.mapCustomer(customer);
   }
 
   async getCustomer(customerId: string): Promise<Customer> {
-    try {
-      const customer = await this.stripe.customers.retrieve(customerId);
-      return this.mapCustomer(customer as Stripe.Customer);
-    } catch (error) {
-      if (
-        error instanceof Stripe.errors.StripeInvalidRequestError &&
-        error.statusCode === 404
-      ) {
-        throw new NotFoundException(`Customer not found: ${customerId}`);
-      }
-      throw error;
-    }
+    const customer = await this.stripe.customers.retrieve(customerId);
+    return this.mapCustomer(customer as Stripe.Customer);
   }
 
   async createProduct(data: CreateProductDto): Promise<Product> {

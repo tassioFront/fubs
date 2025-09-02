@@ -7,6 +7,7 @@ import {
   HttpCode,
   HttpStatus,
   UseGuards,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -15,7 +16,7 @@ import {
   ApiParam,
   ApiBadRequestResponse,
 } from '@nestjs/swagger';
-import { PaymentsService } from '../payment/payments.service';
+import { CustomerService } from './customer.service';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { CustomerResponseDto } from './dto/customer-response.dto';
 import { ApiTokenGuard, JwtAuthGuard } from '@fubs/shared';
@@ -23,7 +24,7 @@ import { ApiTokenGuard, JwtAuthGuard } from '@fubs/shared';
 @ApiTags('customers')
 @Controller('customers')
 export class CustomerController {
-  constructor(private readonly paymentsService: PaymentsService) {}
+  constructor(private readonly customerService: CustomerService) {}
 
   @UseGuards(ApiTokenGuard)
   @Post()
@@ -47,27 +48,20 @@ export class CustomerController {
   async createCustomer(
     @Body() createCustomerDto: CreateCustomerDto
   ): Promise<CustomerResponseDto> {
-    const customer = {
-      email: createCustomerDto.email,
-      name: createCustomerDto.name,
-      metadata: {
-        ownerId: createCustomerDto.ownerId,
-      },
-    };
-    return await this.paymentsService.createCustomer(customer);
+    return await this.customerService.createCustomer(createCustomerDto);
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get(':id')
+  @Get('/owner/:id')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    summary: 'Get customer by ID',
-    description: 'Retrieves customer information by customer ID',
+    summary: 'Get customer by owner ID',
+    description: 'Retrieves customer information by owner ID',
   })
   @ApiParam({
     name: 'id',
-    description: 'Customer ID',
-    example: 'cus_abc123',
+    description: 'Owner ID',
+    example: '04f92bab-cc86-4ede-90d4-cd76dfce3045',
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -75,11 +69,13 @@ export class CustomerController {
     type: CustomerResponseDto,
   })
   @ApiBadRequestResponse({
-    description: 'Invalid customer ID',
+    description: 'Invalid owner ID',
   })
-  async getCustomer(
-    @Param('id') customerId: string
-  ): Promise<CustomerResponseDto> {
-    return await this.paymentsService.getCustomer(customerId);
+  async getCustomerByOwnerId(
+    @Param('id', ParseUUIDPipe) ownerId: string
+  ): Promise<CustomerResponseDto | null> {
+    const customer = await this.customerService.getCustomerByOwnerId(ownerId);
+
+    return customer;
   }
 }

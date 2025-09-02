@@ -20,8 +20,12 @@ export class CustomerResponseDto {
   name: string;
 
   @ApiProperty({
-    description: 'Customer metadata',
-    example: { ownerId: 'owner_123' },
+    description: 'Customer ownerId',
+    example: 'owner_123',
   })
-  metadata: Record<string, string>;
+  ownerId: string;
+
+  constructor(partial: Partial<CustomerResponseDto>) {
+    Object.assign(this, partial);
+  }
 }

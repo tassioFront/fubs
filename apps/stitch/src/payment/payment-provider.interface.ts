@@ -4,7 +4,7 @@ export interface Customer {
   id: string;
   email: string;
   name: string;
-  metadata: Record<string, string>;
+  ownerId: string;
 }
 
 export interface Product {
@@ -70,7 +70,7 @@ export interface WebhookEvent {
 export interface CreateCustomerDto {
   email: string;
   name: string;
-  metadata: Record<string, string>;
+  ownerId: string;
 }
 
 export interface CreateProductDto {
