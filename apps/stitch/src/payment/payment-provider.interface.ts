@@ -1,3 +1,5 @@
+import { Price } from '@fubs/shared';
+
 export const PAYMENT_PROVIDER = Symbol('PAYMENT_PROVIDER');
 
 export interface Customer {
@@ -12,16 +14,6 @@ export interface Product {
   name: string;
   description?: string;
   metadata: Record<string, string>;
-}
-
-export interface Price {
-  id: string;
-  productId: string;
-  unitAmount: number;
-  currency: string;
-  recurring?: {
-    interval: 'day' | 'week' | 'month' | 'year';
-  };
 }
 
 export interface CheckoutSession {

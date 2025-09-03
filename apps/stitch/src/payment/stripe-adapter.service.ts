@@ -5,7 +5,6 @@ import {
   PaymentProvider,
   Customer,
   Product,
-  Price,
   CheckoutSession,
   Subscription as ProviderSubscription,
   Invoice as PaymentInvoice,
@@ -18,6 +17,7 @@ import {
   UpdateSubscriptionDto,
   CheckoutLineItemSummary,
 } from './payment-provider.interface';
+import { Price } from '@fubs/shared';
 
 @Injectable()
 export class StripeAdapterService implements PaymentProvider {
