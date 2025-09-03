@@ -1,8 +1,3 @@
-// function workspaceCard() {
-//   return (
-//     <div className="bg-gary-success/10 border border-gary-success/20 rounded-lg p-xl max-w-2xl mx-auto"></div>
-//   );
-// }
 export default async function AppPage() {
   return (
     <div className="min-h-screen bg-background">
@@ -12,7 +7,7 @@ export default async function AppPage() {
             Welcome to Your Dashboard!
           </h1>
           <p className="text-body-lg text-muted-foreground mb-xl">
-            Here you can manage you find all your workspace at once. Simple.{' '}
+            Here you can find all your workspaces at once. Simple.{''}
           </p>
 
           <div className="bg-gary-success/10 border border-gary-success/20 rounded-lg p-xl max-w-2xl mx-auto"></div>

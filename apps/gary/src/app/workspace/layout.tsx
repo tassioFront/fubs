@@ -1,6 +1,6 @@
 'use server';
 import FubsLogo from '@/ui/FubsLogo';
-import { SignOutBtn } from '@/ui/SingOutBtn';
+import { SignOutBtn } from '@/ui/SignOutBtn';
 import { type ReactNode } from 'react';
 
 interface OnboardingLayoutProps {

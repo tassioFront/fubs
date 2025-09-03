@@ -21,7 +21,6 @@ export function PlanCTA({ plan, ownerId }: PlanCardProps) {
   ): Promise<CheckoutSession> => {
     if (!ownerId) {
       redirect('/register');
-      return _state;
     }
 
     await choosePlanAction({ planId: plan.id, ownerId });
