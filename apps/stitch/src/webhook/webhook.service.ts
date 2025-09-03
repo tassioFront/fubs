@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { PaymentsService } from '../common/stripe/payments.service';
-import type { WebhookEvent } from '../common/payment';
+import { PaymentsService } from '../payment/payments.service';
+import type { WebhookEvent } from '../payment';
 
 @Injectable()
 export class WebhookService {

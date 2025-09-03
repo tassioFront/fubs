@@ -6,14 +6,18 @@ import { WebhookModule } from '../webhook/webhook.module';
 import { OrdersModule } from '../orders/orders.module';
 import { PlansModule } from '../plans/plans.module';
 import { OutboxModule } from '../outbox/outbox.module';
+import { CustomerModule } from '../customer/customer.module';
+import { AuthModule } from '../common/auth/auth.module';
 
 @Module({
   imports: [
+    AuthModule,
     CheckoutModule,
     WebhookModule,
     OrdersModule,
     PlansModule,
     OutboxModule,
+    CustomerModule,
   ],
   controllers: [AppController],
   providers: [AppService],

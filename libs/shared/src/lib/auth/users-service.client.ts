@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import axios, { AxiosInstance } from 'axios';
 import { User, UserByEmail } from '../types/index.js';
-import * as jwt from 'jsonwebtoken';
+import { getToken } from '../utils/getToken.js';
 
 @Injectable()
 export class UsersServiceClient {
@@ -52,13 +52,6 @@ export class UsersServiceClient {
         );
       }
     );
-  }
-
-  getToken(): string {
-    const secret = process.env.INTERNAL_JWT_SECRET_KEY as string;
-    return jwt.sign({ service: 'sugarfoot' }, secret, {
-      expiresIn: '10m',
-    });
   }
 
   /**
@@ -152,7 +145,7 @@ export class UsersServiceClient {
     email: string;
   }): Promise<UserByEmail | null> {
     try {
-      const token = this.getToken();
+      const token = getToken({ serviceName: 'sugarfoot' });
       const response = await this.httpClient.get<User>(
         `/api/users/internal/by-email/${email}`,
         {

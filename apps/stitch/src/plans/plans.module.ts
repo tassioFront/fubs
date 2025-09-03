@@ -2,8 +2,8 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { PlansService } from './plans.service';
 import { PlansController } from './plans.controller';
-import { PaymentsService } from '../common/stripe/payments.service';
-import { PaymentModule } from '../common/payment/payment.module';
+import { PaymentsService } from '../payment/payments.service';
+import { PaymentModule } from '../payment/payment.module';
 
 @Module({
   imports: [ConfigModule, PaymentModule],

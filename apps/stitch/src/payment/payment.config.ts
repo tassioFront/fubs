@@ -2,8 +2,6 @@ export interface PaymentConfig {
   provider: 'stripe' | 'paypal' | 'square';
   apiKey: string;
   webhookSecret?: string;
-  apiVersion?: string;
-  environment: 'test' | 'live';
 }
 
 export interface StripeConfig extends PaymentConfig {

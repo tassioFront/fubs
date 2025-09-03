@@ -2,18 +2,18 @@ import {
   Inject,
   Injectable,
   Logger,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { PrismaService } from '../prisma.service';
+import { PrismaService } from '../common/prisma.service';
 import type {
   CreateCheckoutSessionDto,
-  CreateCustomerDto,
   CreatePriceDto,
   CreateProductDto,
   CreateSubscriptionDto,
   UpdateSubscriptionDto,
-} from './stripe.entity';
-import { PAYMENT_PROVIDER } from '../payment/payment-provider.interface';
+} from '../common/stripe/stripe.entity';
+import { PAYMENT_PROVIDER } from './payment-provider.interface';
 import type {
   PaymentProvider,
   Customer,
@@ -22,7 +22,8 @@ import type {
   CheckoutSession,
   Subscription,
   WebhookEvent,
-} from '../payment/payment-provider.interface';
+  CreateCustomerDto,
+} from './payment-provider.interface';
 
 const getExpirationDate = (): Date =>
   new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 1 month from now
@@ -38,33 +39,20 @@ export class PaymentsService {
   async createCustomer(
     createCustomerDto: CreateCustomerDto
   ): Promise<Customer> {
-    try {
-      const customer = await this.payments.createCustomer({
-        email: createCustomerDto.email,
-        name: createCustomerDto.name,
-        metadata: createCustomerDto.metadata,
-      });
-
-      this.logger.log(
-        `Customer created: ${customer.id} for owner ${createCustomerDto.metadata.ownerId}`
-      );
-      return customer;
-    } catch (error) {
-      this.logger.error(
-        `Failed to create customer: ${(error as Error).message}`
-      );
-      throw error;
-    }
+    return await this.payments.createCustomer({
+      email: createCustomerDto.email,
+      name: createCustomerDto.name,
+      ownerId: createCustomerDto.ownerId,
+    });
   }
 
   async getCustomer(customerId: string): Promise<Customer> {
     try {
-      const customer = await this.payments.getCustomer(customerId);
-      return customer;
+      return await this.payments.getCustomer(customerId);
     } catch (error) {
-      this.logger.error(
-        `Failed to get customer ${customerId}: ${(error as Error).message}`
-      );
+      if ((error as { statusCode: number }).statusCode === 404) {
+        throw new NotFoundException(`Customer not found: ${customerId}`);
+      }
       throw error;
     }
   }
@@ -303,16 +291,16 @@ export class PaymentsService {
     try {
       if (invoice.customer) {
         // Mark any pending orders as failed
-        await this.prisma.order.updateMany({
-          where: {
-            stripeCustomerId: invoice.customer as string,
-            status: 'PENDING',
-          },
-          data: {
-            status: 'FAILED',
-            updatedAt: new Date(),
-          },
-        });
+        // await this.prisma.order.updateMany({
+        //   where: {
+        //     stripeCustomerId: invoice.customer as string,
+        //     status: 'PENDING',
+        //   },
+        //   data: {
+        //     status: 'FAILED',
+        //     updatedAt: new Date(),
+        //   },
+        // });
 
         // Add event to outbox for notifications
         await this.prisma.outbox.create({
@@ -410,16 +398,16 @@ export class PaymentsService {
     try {
       if (subscription.customer) {
         // Mark orders as cancelled
-        await this.prisma.order.updateMany({
-          where: {
-            stripeCustomerId: subscription.customer as string,
-            status: 'PAID',
-          },
-          data: {
-            status: 'CANCELLED',
-            updatedAt: new Date(),
-          },
-        });
+        // await this.prisma.order.updateMany({
+        //   where: {
+        //     stripeCustomerId: subscription.customer as string,
+        //     status: 'PAID',
+        //   },
+        //   data: {
+        //     status: 'CANCELLED',
+        //     updatedAt: new Date(),
+        //   },
+        // });
 
         // Add event to outbox for access deactivation
         await this.prisma.outbox.create({
@@ -446,7 +434,7 @@ export class PaymentsService {
    * Handle checkout.session.completed event
    */
   async handleCheckoutSessionCompleted(event: WebhookEvent): Promise<void> {
-    const session = event.data as unknown as {
+    const session = event.data as {
       id: string;
       metadata?: Record<string, string>;
       subscription?: string;
@@ -459,7 +447,7 @@ export class PaymentsService {
       const lineItems = await this.payments.listCheckoutSessionLineItems(
         session.id
       );
-      const priceId = lineItems[0]?.priceId as string;
+      const priceId = lineItems[0]?.priceId;
       const ownerId = session.metadata?.ownerId as string;
       const subscriptionId = session.subscription as string;
 
@@ -507,10 +495,6 @@ export class PaymentsService {
         where: { stripePriceId },
       });
 
-      const debug = true;
-
-      if (debug) return;
-
       if (!plan) {
         this.logger.warn(
           `Plan not found for Stripe price ID: ${stripePriceId}`
@@ -518,45 +502,47 @@ export class PaymentsService {
         return;
       }
 
-      // Find or create order record
-      const existingOrder = await this.prisma.order.findFirst({
-        where: {
-          stripeCustomerId,
-          planType: plan.type,
-          status: 'PENDING',
-        },
-      });
+      // // Find or create order record
+      // const existingOrder = await this.prisma.subscriptionEntitlement.findFirst(
+      //   {
+      //     where: {
+      //       stripeCustomerId,
+      //       planType: plan.type,
+      //       status: 'ACTIVE',
+      //     },
+      //   }
+      // );
 
-      if (existingOrder) {
-        // Update existing order to PAID
-        await this.prisma.order.update({
-          where: { id: existingOrder.id },
-          data: {
-            status: 'PAID',
-            updatedAt: new Date(),
-          },
-        });
-        this.logger.log(
-          `Order ${existingOrder.id} marked as PAID for plan ${plan.type}`
-        );
-      } else {
-        const expiresAt = getExpirationDate();
-        // Create new order record
-        const newOrder = await this.prisma.order.create({
-          data: {
-            ownerId, // This should be mapped to actual user ID
-            stripeCustomerId,
-            planType: plan.type,
-            amount: plan.priceCents,
-            currency: 'usd',
-            status: 'PAID',
-            expiresAt,
-          },
-        });
-        this.logger.log(
-          `New order ${newOrder.id} created for plan ${plan.type}`
-        );
-      }
+      // if (existingOrder) {
+      //   // Update existing order to PAID
+      //   await this.prisma.order.update({
+      //     where: { id: existingOrder.id },
+      //     data: {
+      //       status: 'PAID',
+      //       updatedAt: new Date(),
+      //     },
+      //   });
+      //   this.logger.log(
+      //     `Order ${existingOrder.id} marked as PAID for plan ${plan.type}`
+      //   );
+      // } else {
+      //   const expiresAt = getExpirationDate();
+      //   // Create new order record
+      //   const newOrder = await this.prisma.order.create({
+      //     data: {
+      //       ownerId, // This should be mapped to actual user ID
+      //       stripeCustomerId,
+      //       planType: plan.type,
+      //       amount: plan.priceCents,
+      //       currency: 'usd',
+      //       status: 'PAID',
+      //       expiresAt,
+      //     },
+      //   });
+      //   this.logger.log(
+      //     `New order ${newOrder.id} created for plan ${plan.type}`
+      //   );
+      // }
 
       // Add event to outbox for workspace access activation
       // await this.prisma.outbox.create({

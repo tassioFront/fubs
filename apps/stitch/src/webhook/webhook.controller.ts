@@ -12,12 +12,10 @@ import {
   Param,
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
-import { PaymentsService } from '../common/stripe/payments.service';
+import { PaymentsService } from '../payment/payments.service';
 import { WebhookService } from './webhook.service';
-import type {
-  CreateCheckoutSessionDto,
-  CreateCustomerDto,
-} from '../common/stripe/stripe.entity';
+import type { CreateCheckoutSessionDto } from '../common/stripe/stripe.entity';
+import type { CreateCustomerDto } from 'src/payment/payment-provider.interface';
 
 @Controller('webhook')
 export class WebhookController {
