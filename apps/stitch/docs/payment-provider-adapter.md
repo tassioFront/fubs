@@ -24,25 +24,19 @@ To improve maintainability and scalability, payment-related entities should be s
 - **OrderController**: Uses `payment.service` methods for payment transactions and audit trails.
 - **WebhookController**: Uses `payment.service` methods for webhook processing and validation.
 
-### Example Structure
+### Example: Customer
+
+### Structure
 
 ```
 apps/stitch/src/
 	customer/
 		customer.module.ts
 		customer.controller.ts
-	product/
-		product.module.ts
-		product.controller.ts
-	checkout/
-		checkout.module.ts
-		checkout.controller.ts
-	subscription/
-		subscription.module.ts
-		subscription.controller.ts
-	order/
-		order.module.ts
-		order.controller.ts
+		customer.service.ts
+		dto/
+			create-customer.dto.ts
+			update-customer.dto.ts
 	payment/ // it will be moved to common folder later
 		payment-provider.interface.ts
 		stripe-adapter.service.ts
@@ -52,7 +46,7 @@ apps/stitch/src/
 
 Each controller should use the relevant methods from `payment.service` to interact with the payment provider, keeping business logic centralized and maintainable.
 
-## Step 1 - Customer
+### steps
 
 - create the customer folder
 - create the customer module in (it should inject the PaymentService as payment.module does)

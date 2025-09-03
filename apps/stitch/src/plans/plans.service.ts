@@ -1,11 +1,24 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client-stitch';
-import { CreatePlanDto, UpdatePlanDto, PlanOutputDto } from './plan.dto';
-import { PlanType } from '@fubs/shared';
+import {
+  CreatePlanDto,
+  UpdatePlanDto,
+  PlanOutputDto,
+  CreateCheckoutSessionDto,
+} from './plan.dto';
+import { Plan, PlanType, CheckoutSession } from '@fubs/shared';
+import { PaymentsService } from '../payment/payments.service';
+import { CustomerService } from '../customer/customer.service';
 
 @Injectable()
 export class PlansService {
   private readonly prisma = new PrismaClient();
+  private readonly logger = new Logger(PlansService.name);
+
+  constructor(
+    private readonly payments: PaymentsService,
+    private readonly customer: CustomerService
+  ) {}
 
   async getAllPlans(): Promise<PlanOutputDto[]> {
     const plans = await this.prisma.plan.findMany();
@@ -21,6 +34,7 @@ export class PlansService {
   async getPlanById(id: string): Promise<PlanOutputDto> {
     const plan = await this.prisma.plan.findUnique({ where: { id } });
     if (!plan) throw new NotFoundException('Plan not found');
+    this.logger.log(`Plan found: ${plan.id}`);
     return new PlanOutputDto({
       ...plan,
       type: plan.type as PlanType,
@@ -62,5 +76,20 @@ export class PlansService {
   async deletePlan(id: string): Promise<{ message: string }> {
     await this.prisma.plan.delete({ where: { id } });
     return { message: 'Plan deleted successfully' };
+  }
+
+  async createCheckoutSession(
+    dto: CreateCheckoutSessionDto
+  ): Promise<CheckoutSession> {
+    const plan = await this.getPlanById(dto.planId);
+    const customer = await this.customer.getCustomerByOwnerId(dto.ownerId);
+
+    return await this.payments.createCheckoutSession({
+      customer,
+      plan: plan as Plan,
+      successUrl: dto.successUrl,
+      cancelUrl: dto.cancelUrl,
+      ownerId: dto.ownerId,
+    });
   }
 }

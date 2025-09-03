@@ -1,4 +1,9 @@
-import { Injectable, ConflictException, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
 import { PaymentsService } from '../payment/payments.service';
 import type { CreateCustomerDto } from '../payment/payment-provider.interface';
@@ -67,15 +72,32 @@ export class CustomerService {
   async getCustomerByOwnerId(
     ownerId: string
   ): Promise<CustomerResponseDto | null> {
-    const localCustomer = await this.prisma.customer.findFirst({
-      where: { ownerId },
-    });
-    if (!localCustomer) return null;
-    return new CustomerResponseDto({
-      id: localCustomer.id,
-      name: localCustomer.name,
-      email: localCustomer.email,
-      ownerId: localCustomer.ownerId,
-    });
+    try {
+      const localCustomer = await this.prisma.customer.findFirst({
+        where: { ownerId },
+      });
+
+      if (!localCustomer) {
+        throw new NotFoundException(
+          `Customer not found for ownerId: ${ownerId}`
+        );
+      }
+      this.logger.log(`Customer found: ${localCustomer.id}`);
+
+      return new CustomerResponseDto({
+        id: localCustomer.id,
+        name: localCustomer.name,
+        email: localCustomer.email,
+        ownerId: localCustomer.ownerId,
+        stripeCustomerId: localCustomer.stripeCustomerId,
+      });
+    } catch (error) {
+      this.logger.error(
+        `Failed to get customer by ownerId ${ownerId}: ${
+          (error as Error).message
+        }`
+      );
+      throw error;
+    }
   }
 }

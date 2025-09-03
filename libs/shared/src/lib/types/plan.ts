@@ -1,3 +1,5 @@
+import { CustomerResponseDto } from './payment-customer.js';
+
 export enum PlanType {
   FREE = 'FREE',
   SOLO = 'SOLO',
@@ -21,4 +23,24 @@ export interface PlanCompleted extends Plan {
   id: string;
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface CreateCheckoutSessionDto {
+  ownerId: string;
+  customerId: string;
+  planId: string;
+  successUrl: string;
+  cancelUrl: string;
+}
+
+export interface CreateCheckoutSessionDtoWithPlan
+  extends Omit<CreateCheckoutSessionDto, 'planId' | 'customerId'> {
+  plan: Plan;
+  customer: CustomerResponseDto | null;
+}
+
+export interface CheckoutSession {
+  id: string;
+  url?: string;
+  ownerId: string;
 }
