@@ -17,4 +17,8 @@ export interface Plan {
 
 export interface PlanCompleted extends Plan {
   stripePriceId: string;
+  stripeProductId: string;
+  id: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
