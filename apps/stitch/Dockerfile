@@ -18,18 +18,15 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-
 # Generate Prisma client with correct binary targets for production
 RUN npx prisma generate --schema=./apps/stitch/prisma/schema.prisma
 
-# Build the Stitch app
+RUN NX_DAEMON=false yarn nx build shared
 RUN NX_DAEMON=false yarn nx build stitch --configuration=production
 
 # Production image, copy all the files and run the app
 FROM base AS runner
 WORKDIR /app
-
-
 
 # Install openssl and clean up apt cache
 RUN apt-get update \
