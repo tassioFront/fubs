@@ -9,7 +9,6 @@ WORKDIR /app
 COPY package*.json yarn.lock* ./
 COPY nx.json tsconfig.base.json ./
 
-
 # Install dependencies
 RUN yarn install --frozen-lockfile
 
@@ -20,6 +19,7 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 # Generate Prisma client with correct binary targets for production
+RUN NX_DAEMON=false yarn nx build shared
 RUN npx prisma generate --schema=./apps/sugarfoot/prisma/schema.prisma
 
 RUN NX_DAEMON=false yarn nx build sugarfoot --configuration=production
