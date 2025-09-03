@@ -2,12 +2,12 @@ import {
   Inject,
   Injectable,
   Logger,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
 import type {
   CreateCheckoutSessionDto,
-  CreateCustomerDto,
   CreatePriceDto,
   CreateProductDto,
   CreateSubscriptionDto,
@@ -21,6 +21,7 @@ import type {
   CheckoutSession,
   Subscription,
   WebhookEvent,
+  CreateCustomerDto,
 } from './payment-provider.interface';
 import { Price } from '@fubs/shared';
 
@@ -38,33 +39,20 @@ export class PaymentsService {
   async createCustomer(
     createCustomerDto: CreateCustomerDto
   ): Promise<Customer> {
-    try {
-      const customer = await this.payments.createCustomer({
-        email: createCustomerDto.email,
-        name: createCustomerDto.name,
-        metadata: createCustomerDto.metadata,
-      });
-
-      this.logger.log(
-        `Customer created: ${customer.id} for owner ${createCustomerDto.metadata.ownerId}`
-      );
-      return customer;
-    } catch (error) {
-      this.logger.error(
-        `Failed to create customer: ${(error as Error).message}`
-      );
-      throw error;
-    }
+    return await this.payments.createCustomer({
+      email: createCustomerDto.email,
+      name: createCustomerDto.name,
+      ownerId: createCustomerDto.ownerId,
+    });
   }
 
   async getCustomer(customerId: string): Promise<Customer> {
     try {
-      const customer = await this.payments.getCustomer(customerId);
-      return customer;
+      return await this.payments.getCustomer(customerId);
     } catch (error) {
-      this.logger.error(
-        `Failed to get customer ${customerId}: ${(error as Error).message}`
-      );
+      if ((error as { statusCode: number }).statusCode === 404) {
+        throw new NotFoundException(`Customer not found: ${customerId}`);
+      }
       throw error;
     }
   }

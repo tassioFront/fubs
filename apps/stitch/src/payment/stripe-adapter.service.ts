@@ -50,7 +50,7 @@ export class StripeAdapterService implements PaymentProvider {
       id: c.id,
       email: c.email ?? '',
       name: c.name ?? '',
-      metadata: (c.metadata ?? {}) as Record<string, string>,
+      ownerId: c.metadata?.ownerId ?? '',
     };
   }
 
@@ -129,7 +129,7 @@ export class StripeAdapterService implements PaymentProvider {
     const customer = await this.stripe.customers.create({
       email: data.email,
       name: data.name,
-      metadata: data.metadata,
+      metadata: { ownerId: data.ownerId },
     });
     return this.mapCustomer(customer);
   }
