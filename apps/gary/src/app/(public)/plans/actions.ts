@@ -1,7 +1,8 @@
 'use server';
 
-import { getPlans } from '@/app/service/stitch';
+import { getPlans, createCheckoutSession } from '@/app/service/stitch';
 import { PlanCompleted } from '@fubs/shared/src/lib/types/plan';
+import { redirect } from 'next/navigation';
 
 export async function getPlansWithPrices(): Promise<PlanCompleted[]> {
   try {
@@ -13,12 +14,29 @@ export async function getPlansWithPrices(): Promise<PlanCompleted[]> {
   }
 }
 
-export async function choosePlanAction(plan: PlanCompleted) {
-  // it should receive the userId and the priceId only
+interface ChoosePlanActionParams {
+  planId: string;
+  ownerId: string;
+}
+
+export async function choosePlanAction({
+  planId,
+  ownerId,
+}: ChoosePlanActionParams) {
+  let url = '';
   try {
-    console.log('🚀 ~ choosePlanAction ~ plan:', plan);
+    const session = await createCheckoutSession({
+      planId,
+      ownerId,
+      successUrl: process.env.APP_URL + '/workspace',
+      cancelUrl: process.env.APP_URL + '/cancel',
+    });
+
+    url = session.url as string;
   } catch (error) {
     console.error('Error choosing plan:', error);
     throw new Error('Failed to process plan selection');
   }
+
+  redirect(url);
 }

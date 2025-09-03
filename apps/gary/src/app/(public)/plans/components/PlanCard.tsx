@@ -2,12 +2,15 @@
 
 import { PlanCompleted, PlanType } from '@fubs/shared/src/lib/types/plan';
 import { PlanCTA } from './PlanCTA';
+import { auth } from '@/../auth.config';
 
 interface PlanCardProps {
   plan: PlanCompleted;
 }
 
 export async function PlanCard({ plan }: PlanCardProps) {
+  const session = await auth();
+
   const formatPrice = (
     priceCents: number,
     currency = 'USD',
@@ -67,7 +70,7 @@ export async function PlanCard({ plan }: PlanCardProps) {
           )}
         </div>
 
-        <PlanCTA plan={plan} />
+        <PlanCTA plan={plan} ownerId={session?.user?.id} />
 
         <div className="text-left">
           <h4 className="text-heading-3 font-medium text-foreground mb-md">
