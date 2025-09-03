@@ -6,6 +6,7 @@ import { mapError } from '@/app/utils/zod';
 import { mapErrorFromUsers, registerUser } from '@/app/service/users';
 import { RegisterFormState } from './types';
 import { WorkspaceMemberRole } from '@fubs/shared/src/lib/types/user';
+import { saveCustomer } from '@/app/service/stitch';
 
 const RegisterSchema = z
   .object({
@@ -43,25 +44,31 @@ export async function registerAction(
       ...parsed,
       type: WorkspaceMemberRole.OWNER,
     });
-    const json = await res.json();
-    console.log('🚀 ~ registerAction ~ res:', res.status);
-    console.log('🚀 ~ registerAction ~ json:', json);
+    const user = await res.json();
 
     if (res.status === 400) {
       return {
-        errors: mapErrorFromUsers(json as Record<string, string[]>),
+        errors: mapErrorFromUsers(user as Record<string, string[]>),
         ...parsed,
       };
     }
 
     if (!res.ok) {
-      // we could log this
-      console.error('registerAction ~ Unauthorized');
       return {
         formError: 'We got a problem. Please try again later.',
         ...parsed,
       };
     }
+
+    /*
+     * users-service does not send events, so we need to manually save the customer to Stitch here
+     * once all service requests are done on the server
+     */
+    await saveCustomer({
+      email: parsed.email,
+      name: parsed.first_name,
+      ownerId: user.id,
+    });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return {

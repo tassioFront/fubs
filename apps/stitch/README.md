@@ -8,7 +8,7 @@ He is angry 😠 because it doesn't look him at all.
 
 <br/>
 
-[Stitch](https://upload.wikimedia.org/wikipedia/en/thumb/d/d2/Stitch_%28Lilo_%26_Stitch%29.svg/1200px-Stitch_%28Lilo_%26_Stitch%29.svg.png) is a Node.js microservice for checkout and payment, built for the FUBS monorepo. It integrates with Stripe to manage payment sessions, webhooks, and order status, and is designed for robust, event-driven microservice architectures.
+[Stitch](https://upload.wikimedia.org/wikipedia/en/thumb/d/d2/Stitch_%28Lilo_%26_Stitch%29.svg/1200px-Stitch_%28Lilo_%26_Stitch%29.svg.png) is a Node.js microservice for checkout and payment, built for the FUBS monorepo. It integrates with Stripe (using adapter pattern. So the the payment provider can be changed) to manage payment sessions, webhooks, and order status, and is designed for robust, event-driven microservice architectures.
 
 ---
 
@@ -17,7 +17,7 @@ He is angry 😠 because it doesn't look him at all.
 ### 1. New User (No Workspace)
 
 1. User chooses a plan.
-2. User pays via checkout (Stripe).
+2. User pays via checkout.
 3. On successful payment, user gains access and can create a workspace.
 4. User must re-pay monthly to maintain access.
 
@@ -44,7 +44,7 @@ He is angry 😠 because it doesn't look him at all.
 					 |                             |                              |
 					 | 1. Choose plan & pay ------>|                              |
 					 |                             |                              |
-					 |<--- Stripe Checkout --------|                              |
+					 |<--- Checkout         <-------|                              |
 					 |                             |                              |
 					 |--- Payment Success Webhook->|                              |
 					 |                             |                              |
@@ -73,6 +73,8 @@ He is angry 😠 because it doesn't look him at all.
 - This enables eventual consistency and decouples the services for better scalability and reliability.
 
 ## 🔄 Full Access Flow: Checkout to Workspace Access
+
+obs: assuming Stripe as payment provider
 
 ```mermaid
 sequenceDiagram
@@ -106,178 +108,18 @@ sequenceDiagram
 
 ## 🏗️ Architecture & Responsibilities
 
-- **Checkout Sessions**: Create, update, and manage Stripe checkout/payment sessions.
-- **Webhooks**: Securely receive and process Stripe webhook events (payment succeeded, failed, refunds, etc).
+- **Checkout Sessions**: Create, update, and manage checkout/payment sessions.
+- **Webhooks**: Securely receive and process webhook events (payment succeeded, failed, refunds, etc).
 - **Order Management**: Track order/payment status, persist transaction metadata.
 - **Idempotency**: Ensure all payment and webhook operations are idempotent.
-- **Security**: Validate all incoming requests (JWT for internal, Stripe signatures for webhooks).
+- **Security**: Validate all incoming requests (JWT for internal, signatures for webhooks).
 - **Event-Driven**: Emit events (e.g., payment_completed) to other services via outbox pattern or message broker.
-
-## API Design
-
-- `POST /checkout/session`: Initiate a Stripe checkout session.
-- `GET /checkout/session/:id`: Retrieve session/payment status.
-- `POST /webhook/stripe`: Stripe webhook endpoint (secured, idempotent).
-- OpenAPI/Swagger documented.
 
 ## Database Schema (Prisma)
 
-```prisma
-// The ownerId in Order always refers to the workspace owner (payer).
-model Order {
-	id                  String   @id @default(uuid())
-	ownerId             String
-	planType            PlanType // Defines allowed workspaces, features, etc.
-	amount              Decimal
-	currency            String
-	status              OrderStatus @default(PENDING)
-	stripeSessionId     String?
-	stripePaymentIntentId String?
-	createdAt           DateTime @default(now())
-	updatedAt           DateTime @updatedAt
-  expiresAt           DateTime
-}
-
-## Stripe Integration
-enum PlanType {
-	FREE
-	SOLO
-	ENTERPRISE
-}
-
-
-model Outbox {
-	id          String   @id @default(uuid())
-	type        String
-	payload     String
-	processed   Boolean  @default(false)
-	createdAt   DateTime @default(now())
-	processedAt DateTime?
-}
-
-model WebhookEvent {
-	id        String   @id @default(uuid())
-	type      String
-	payload   String
-	processed Boolean  @default(false)
-	receivedAt DateTime @default(now())
-}
-
-enum OrderStatus {
-	PENDING
-	PAID
-	FAILED
-	CANCELLED
-	EXPIRED
-}
-```
-
-// PlanType enum can be used to define workspace limits in your business logic, e.g.:
-// FREE = 1 workspace, SOLO = 3 workspace, ENTERPRISE = unlimited
-
-## Plan Interface (for Stripe Integration)
-
-```ts
-// Used for business logic and Stripe product/price mapping
-export interface Plan {
-  type: 'FREE' | 'SOLO' | 'ENTERPRISE';
-  name: string; // Display name
-  description: string;
-  priceCents: number; // Price in cents (e.g., 990 = $9.90)
-  stripePriceId: string; // Stripe Price ID for this plan
-  workspaceLimit: number | null; // null = unlimited
-  features: string[];
-  billingPeriod: 'month' | 'year';
-}
-
-// Example:
-  {
-    type: 'SOLO',
-    name: 'Solo',
-    description: 'Up to 3 workspaces',
-    priceCents: 990,
-    stripePriceId: 'price_1...',
-    workspaceLimit: 3,
-    features: ['3 workspaces', 'Basic support'],
-    billingPeriod: 'month'
-  }
-```
-
-- Uses Stripe SDK for Node.js.
-- Stripe secret keys in environment variables.
-- Stripe’s idempotency keys for all API calls.
-- Webhook signatures validated using Stripe’s signing secret.
-
-## 📁 Project Structure
-
-```
-apps/
-	stitch/
-		src/
-			app/
-				app.module.ts
-				app.controller.ts
-				app.service.ts
-					checkout/
-						checkout.module.ts
-						checkout.controller.ts
-						checkout.service.ts
-						dto/
-							create-checkout-session.dto.ts
-					webhook/
-						webhook.module.ts
-						webhook.controller.ts
-						webhook.service.ts
-					orders/
-						orders.module.ts
-						orders.service.ts
-						orders.repository.ts
-						orders.entity.ts
-					plans/
-						plans.module.ts
-						plans.service.ts
-						plans.config.ts         # Plan definitions (see Plan interface)
-					outbox/
-						outbox.module.ts
-						outbox.service.ts
-						outbox.repository.ts
-						outbox.entity.ts
-			common/
-				prisma.service.ts
-				exceptions/
-				guards/
-				utils/
-			main.ts
-		prisma/
-			schema.prisma
-			migrations/
-		README.md
-		.env.example
-		Dockerfile
-		project.json
-		webpack.config.js
-```
+The schema is found on [Prisma Schema](./prisma/schema.prisma)
 
 ## 🧩 StripeService Responsibilities & Stripe Resource Checklist
-
-### StripeService Responsibilities
-
-- Initialize and configure the Stripe SDK (using environment/config values)
-- Centralize all Stripe API calls for:
-  - Creating and managing checkout sessions
-  - Creating and managing Stripe customers (if needed)
-  - Creating and managing Stripe products and prices (for plans)
-  - Retrieving and validating Stripe events (webhooks)
-  - Validating webhook signatures
-  - Handling refunds, cancellations, and payment status checks
-  - Mapping business logic (plans, orders) to Stripe resources
-- Expose helper methods for:
-  - Creating products/prices for new plans
-  - Looking up Stripe price IDs for plans
-  - Fetching payment/session status
-  - Handling idempotency keys
-  - (Optional) Managing subscriptions if you move to recurring billing
-- Provide a single point of integration for all modules (checkout, orders, webhook, etc.)
 
 ### Stripe Resources Required
 
@@ -292,19 +134,7 @@ To use this service, you will need to create and manage the following resources 
 - (Optional) **Customers**: If you want to track users in Stripe
 - (Optional) **Subscriptions**: If you want to support recurring billing (vs. one-time checkout)
 
-**Tip:**
-Document the mapping between your local plan config and Stripe product/price IDs. Automate creation of products/prices via StripeService if possible, or keep them in sync manually.
-
-**Notes:**
-
-- Each domain (checkout, webhook, orders, plans, outbox) is a folder/module.
-- `plans.config.ts` holds the plan definitions and Stripe price IDs.
-- `outbox/` handles outbox pattern and RabbitMQ integration.
-- `common/` for shared services, guards, and utilities.
-- Prisma schema and migrations are in `prisma/`.
-- Top-level files for Docker, Nx, and documentation.
-
-## 🚀 Implementation Strategy: Step-by-Step
+### 🚀 Implementation Strategy: Step-by-Step
 
 Follow this plan to implement the Stitch service, based on the architecture and requirements above. Assumes the Nx NestJS app is already scaffolded.
 
@@ -373,12 +203,3 @@ Follow this plan to implement the Stitch service, based on the architecture and 
 - Use Prisma migrations for DB schema updates.
 
 ---
-
-Subscription Management ❌ Add create, update, cancel, retrieve
-Invoice Handling ❌ Add invoice retrieval methods
-Customer Portal ❌ Add portal session creation
-Payment Methods ❌ Add attach/detach/list methods
-Idempotency Keys ❌ Add for critical operations
-Metadata Consistency ⚠️ Standardize/validate
-Test/Live Mode Awareness ⚠️ Make explicit/configurable
-Product/Price Sync ❌ Add sync/update logic

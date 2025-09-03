@@ -1,4 +1,7 @@
-import Link from 'next/link';
+import FubsLogo from '@/ui/FubsLogo';
+import { LinkBtn } from '@/ui/LinkBtn';
+import WorkspaceLink from '@/ui/WorkspaceLink';
+import { auth } from '../../auth.config';
 
 function FeatureCard({
   title,
@@ -11,33 +14,28 @@ function FeatureCard({
     </div>
   );
 }
-export default function Page() {
+export default async function Page() {
+  const session = await auth();
+
   return (
     <div>
       <section className="mx-auto max-w-5xl px-gutter py-16 md:py-24">
         <div className="space-y-6">
-          <h1 className="text-display-xl sm:text-display-2xl font-extrabold tracking-tight">
-            <span className="bg-gradient-to-r from-gary-primary to-gary-secondary bg-clip-text text-transparent">
-              Fubs
-            </span>
-          </h1>
+          <div className="flex items-center">
+            <FubsLogo />
+            {session?.user && <WorkspaceLink />}
+          </div>
           <p className="max-w-2xl text-body-lg text-muted-foreground">
             Project management for fast-moving teams. Plan roadmaps, run
             sprints, and track delivery in one place.
           </p>
           <div className="flex flex-wrap gap-3 pt-2">
-            <Link
-              href="/register"
-              className="inline-flex items-center justify-center rounded-lg bg-gary-primary px-6 py-3 text-body font-medium text-gary-primary-foreground transition-colors hover:bg-gary-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gary-accent"
-            >
+            <LinkBtn href="/register" variant="primary">
               Create your account
-            </Link>
-            <Link
-              href="/plans"
-              className="inline-flex items-center justify-center rounded-lg border border-muted bg-transparent px-6 py-3 text-body font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gary-accent"
-            >
+            </LinkBtn>
+            <LinkBtn href="/plans" variant="secondary">
               Explore plans
-            </Link>
+            </LinkBtn>
           </div>
         </div>
       </section>
