@@ -14,7 +14,7 @@
     ],
     "sharedGlobals": ["{workspaceRoot}/.github/workflows/ci.yml"]
   },
-  "sync":{
+  "sync": {
     "applyChanges": true
   },
   "plugins": [
@@ -56,13 +56,33 @@
       "exclude": [
         "apps/projects-e2e/**/*",
         "task-e2e/**/*",
-        "apps/task-e2e/**/*"
+        "apps/task-e2e/**/*",
+        "apps/stitch-e2e/**/*"
       ]
+    },
+    {
+      "plugin": "@nx/next/plugin",
+      "options": {
+        "startTargetName": "start",
+        "buildTargetName": "build",
+        "devTargetName": "dev",
+        "serveStaticTargetName": "serve-static",
+        "buildDepsTargetName": "build-deps",
+        "watchDepsTargetName": "watch-deps"
+      }
     }
   ],
   "targetDefaults": {
     "test": {
       "dependsOn": ["^build"]
+    }
+  },
+  "generators": {
+    "@nx/next": {
+      "application": {
+        "style": "tailwind",
+        "linter": "eslint"
+      }
     }
   }
 }

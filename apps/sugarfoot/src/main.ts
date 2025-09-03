@@ -7,6 +7,7 @@ import { AllExceptionsFilter } from '@fubs/shared';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.enableShutdownHooks();
 
   const globalPrefix = 'sugarfoot';
   app.setGlobalPrefix(globalPrefix);

@@ -6,6 +6,7 @@ import {
   InternalServerErrorException,
   Logger,
   BadRequestException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { WorkspacesService } from '../../workspaces/workspaces.service';
 import { AuthenticatedRequest } from '@fubs/shared';
@@ -28,7 +29,7 @@ export class WorkspacePrivilegesGuard implements CanActivate {
     const user = request.user as AuthenticatedRequest['user'];
     const workspaceId = request.params.workspaceId || request.params.id;
     const isAllowedUrlWithoutId =
-      !workspaceId && request.url === '/sugarfoot/api/workspaces';
+      !workspaceId && request.url === '/sugarfoot/workspaces';
 
     if (isAllowedUrlWithoutId) {
       this.logger.log(
@@ -50,19 +51,29 @@ export class WorkspacePrivilegesGuard implements CanActivate {
         user.id
       );
 
-      if (!workspace) {
+      if (workspace) {
+        this.logger.log(
+          `User with ID ${user.id} has access to workspace with ID ${workspaceId}`
+        );
+        return true;
+      }
+
+      const hasWorkspace = await this.workspacesService.findOne(workspaceId);
+
+      if (hasWorkspace) {
         this.logger.warn(
           `User with ID ${user.id} does not have access to workspace with ID ${workspaceId}`
         );
-        throw new NotFoundException('Workspace not found');
+        throw new ForbiddenException('Access denied');
       }
 
-      this.logger.log(
-        `User with ID ${user.id} has access to workspace with ID ${workspaceId}`
-      );
-      return true;
+      this.logger.warn(`Workspace with ID ${workspaceId} does not exist`);
+      throw new NotFoundException('Workspace not found');
     } catch (error) {
-      if (error instanceof NotFoundException) {
+      if (
+        error instanceof NotFoundException ||
+        error instanceof ForbiddenException
+      ) {
         throw error;
       }
 

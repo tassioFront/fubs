@@ -8,6 +8,7 @@ import {
   Delete,
   Request,
   UseGuards,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -16,7 +17,10 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { WorkspacesService } from './workspaces.service';
-import { CreateWorkspaceDto } from './dto/create-workspace.dto';
+import {
+  CreateWorkspaceDto,
+  WorkspaceResponseDto,
+} from './dto/create-workspace.dto';
 import { UpdateWorkspaceDto } from './dto/update-workspace.dto';
 import { JwtAuthGuard } from '@fubs/shared';
 import type { AuthenticatedRequest } from '@fubs/shared';
@@ -30,7 +34,7 @@ import { WorkspacePrivilegesGuard } from '../auth/guards/workspace-privileges.gu
   WorkspacePermissionsByRoleControlGuard,
   WorkspacePrivilegesGuard
 )
-@Controller('api/workspaces')
+@Controller('workspaces')
 export class WorkspacesController {
   constructor(private readonly workspacesService: WorkspacesService) {}
 
@@ -38,20 +42,47 @@ export class WorkspacesController {
   @ApiOperation({ summary: 'Create a new workspace' })
   @ApiResponse({ status: 201, description: 'Workspace created successfully' })
   @ApiResponse({ status: 400, description: 'Bad request' })
-  create(
+  @ApiResponse({
+    status: 403,
+    description: 'Access denied - require authentication',
+  })
+  async create(
     @Body() createWorkspaceDto: CreateWorkspaceDto,
     @Request() req: AuthenticatedRequest
-  ) {
-    const userId = req.user.id;
-    return this.workspacesService.create(createWorkspaceDto, userId);
+  ): Promise<WorkspaceResponseDto> {
+    const workspace = await this.workspacesService.create(
+      createWorkspaceDto,
+      req.user
+    );
+    return new WorkspaceResponseDto({
+      id: workspace.id,
+      name: workspace.name,
+      description: workspace.description,
+      ownerId: workspace.ownerId,
+      memberIds: workspace.members.map((m) => m.userId),
+    });
   }
 
   @Get()
   @ApiOperation({ summary: 'Get all workspaces for the current user' })
   @ApiResponse({ status: 200, description: 'List of workspaces' })
-  findAll(@Request() req: AuthenticatedRequest) {
+  @ApiResponse({
+    status: 403,
+    description: 'Access denied - require authentication',
+  })
+  async findAll(@Request() req: AuthenticatedRequest) {
     const userId = req.user.id;
-    return this.workspacesService.findAll(userId);
+    const workspaces = await this.workspacesService.findAll(userId);
+    return workspaces.map(
+      (workspace) =>
+        new WorkspaceResponseDto({
+          id: workspace.id,
+          name: workspace.name,
+          description: workspace.description,
+          ownerId: workspace.ownerId,
+          memberIds: workspace.members.map((m) => m.userId),
+        })
+    );
   }
 
   @Get(':id')
@@ -62,8 +93,15 @@ export class WorkspacesController {
     status: 403,
     description: 'Access denied - not a workspace member',
   })
-  findOne(@Param('id') id: string) {
-    return this.workspacesService.findOne(id);
+  async findOne(@Param('id', new ParseUUIDPipe()) id: string) {
+    const workspace = await this.workspacesService.findOne(id);
+    return new WorkspaceResponseDto({
+      id: workspace?.id,
+      name: workspace?.name,
+      description: workspace?.description,
+      ownerId: workspace?.ownerId,
+      memberIds: workspace?.members.map((m) => m.userId),
+    });
   }
 
   @Patch(':id')
@@ -72,10 +110,10 @@ export class WorkspacesController {
   @ApiResponse({ status: 404, description: 'Workspace not found' })
   @ApiResponse({
     status: 403,
-    description: 'Insufficient permissions - not workspace owner',
+    description: 'Insufficient permissions - user not workspace owner or admin',
   })
   update(
-    @Param('id') id: string,
+    @Param('id', new ParseUUIDPipe()) id: string,
     @Body() updateWorkspaceDto: UpdateWorkspaceDto
   ) {
     return this.workspacesService.update(id, updateWorkspaceDto);
@@ -87,9 +125,9 @@ export class WorkspacesController {
   @ApiResponse({ status: 404, description: 'Workspace not found' })
   @ApiResponse({
     status: 403,
-    description: 'Insufficient permissions - not workspace owner',
+    description: 'Insufficient permissions - user not workspace owner',
   })
-  remove(@Param('id') id: string) {
+  remove(@Param('id', new ParseUUIDPipe()) id: string) {
     return this.workspacesService.remove(id);
   }
 }

@@ -97,3 +97,12 @@ enum ProjectMemberRole {
   member
   owner
 }
+
+model Outbox {
+  id          String   @id @default(uuid())
+  type        String
+  payload     String
+  processed   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  processedAt DateTime?
+}
