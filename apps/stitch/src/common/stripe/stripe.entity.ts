@@ -12,14 +12,6 @@ export interface CreateProductDto {
   };
 }
 
-export interface CreateCustomerDto {
-  email: string;
-  name: string;
-  metadata: {
-    ownerId: string;
-  };
-}
-
 export interface CreatePriceDto {
   product: string;
   unitAmount: number;
