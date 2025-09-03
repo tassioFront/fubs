@@ -33,71 +33,53 @@ export class CustomerService {
   async createCustomer(
     createCustomerDto: CreateCustomerDto
   ): Promise<CustomerResponseDto> {
-    try {
-      const existingCustomer = await this.getCustomerByEmail(
-        createCustomerDto.email
+    const existingCustomer = await this.getCustomerByEmail(
+      createCustomerDto.email
+    );
+    if (existingCustomer) {
+      this.logger.warn(
+        `Customer with email ${createCustomerDto.email} already exists`
       );
-      if (existingCustomer) {
-        this.logger.warn(
-          `Customer with email ${createCustomerDto.email} already exists`
-        );
-        throw new ConflictException(
-          `Customer with email ${createCustomerDto.email} already exists`
-        );
-      }
-      const customer = await this.payments.createCustomer(createCustomerDto);
-
-      const localCustomer = await this.prisma.customer.create({
-        data: {
-          ownerId: createCustomerDto.ownerId,
-          name: createCustomerDto.name,
-          email: createCustomerDto.email,
-          stripeCustomerId: customer.id,
-        },
-      });
-      return new CustomerResponseDto({
-        id: localCustomer.id,
-        name: localCustomer.name,
-        email: localCustomer.email,
-        ownerId: localCustomer.ownerId,
-      });
-    } catch (error) {
-      this.logger.error(
-        `Failed to create customer: ${(error as Error).message}`
+      throw new ConflictException(
+        `Customer with email ${createCustomerDto.email} already exists`
       );
-      throw error;
     }
+    const customer = await this.payments.createCustomer(createCustomerDto);
+
+    const localCustomer = await this.prisma.customer.create({
+      data: {
+        ownerId: createCustomerDto.ownerId,
+        name: createCustomerDto.name,
+        email: createCustomerDto.email,
+        stripeCustomerId: customer.id,
+      },
+    });
+    return new CustomerResponseDto({
+      id: localCustomer.id,
+      name: localCustomer.name,
+      email: localCustomer.email,
+      ownerId: localCustomer.ownerId,
+    });
   }
 
   async getCustomerByOwnerId(
     ownerId: string
   ): Promise<CustomerResponseDto | null> {
-    try {
-      const localCustomer = await this.prisma.customer.findFirst({
-        where: { ownerId },
-      });
+    const localCustomer = await this.prisma.customer.findFirst({
+      where: { ownerId },
+    });
 
-      if (!localCustomer) {
-        throw new NotFoundException(
-          `Customer not found for ownerId: ${ownerId}`
-        );
-      }
-      this.logger.log(`Customer found: ${localCustomer.id}`);
-
-      return new CustomerResponseDto({
-        id: localCustomer.id,
-        name: localCustomer.name,
-        email: localCustomer.email,
-        ownerId: localCustomer.ownerId,
-        stripeCustomerId: localCustomer.stripeCustomerId,
-      });
-    } catch (error) {
-      this.logger.error(
-        `Failed to get customer by ownerId ${ownerId}: ${
-          (error as Error).message
-        }`
-      );
-      throw error;
+    if (!localCustomer) {
+      throw new NotFoundException(`Customer not found for ownerId: ${ownerId}`);
     }
+    this.logger.log(`Customer found: ${localCustomer.id}`);
+
+    return new CustomerResponseDto({
+      id: localCustomer.id,
+      name: localCustomer.name,
+      email: localCustomer.email,
+      ownerId: localCustomer.ownerId,
+      stripeCustomerId: localCustomer.stripeCustomerId,
+    });
   }
 }
