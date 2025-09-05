@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import axios, { AxiosInstance } from 'axios';
 import { User, UserByEmail } from '../types/index.js';
-import { getToken } from '../utils/getToken.js';
+import { getInternalApiToken } from '../utils/getToken.js';
 
 @Injectable()
 export class UsersServiceClient {
@@ -145,7 +145,7 @@ export class UsersServiceClient {
     email: string;
   }): Promise<UserByEmail | null> {
     try {
-      const token = getToken({ serviceName: 'sugarfoot' });
+      const token = getInternalApiToken({ serviceName: 'sugarfoot' });
       const response = await this.httpClient.get<User>(
         `/api/users/internal/by-email/${email}`,
         {

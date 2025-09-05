@@ -9,6 +9,7 @@ import {
   Patch,
   Delete,
   ParseUUIDPipe,
+  UseGuards,
 } from '@nestjs/common';
 
 import { PlansService } from './plans.service';
@@ -17,8 +18,11 @@ import {
   UpdatePlanDto,
   PlanOutputDto,
   PlanTypeParamDto,
+  CreateCheckoutSessionDto,
 } from './plan.dto';
+import { ApiTokenGuard } from '@fubs/shared';
 
+@UseGuards(ApiTokenGuard)
 @Controller('plans')
 export class PlansController {
   constructor(
@@ -64,6 +68,11 @@ export class PlansController {
     @Param('id', new ParseUUIDPipe()) id: string
   ): Promise<{ message: string }> {
     return this.plansService.deletePlan(id);
+  }
+
+  @Post('checkout-session')
+  async createCheckoutSession(@Body() dto: CreateCheckoutSessionDto) {
+    return this.plansService.createCheckoutSession(dto);
   }
 
   // just for testing

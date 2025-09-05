@@ -5,6 +5,7 @@ import {
   IsArray,
   IsNotEmpty,
   IsEnum,
+  IsUUID,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { PlanType } from '@fubs/shared';
@@ -155,4 +156,26 @@ export class PlanOutputDto {
 export class PlanTypeParamDto {
   @IsEnum(PlanType)
   type: PlanType;
+}
+
+export class CreateCheckoutSessionDto {
+  @ApiProperty()
+  @IsUUID()
+  @IsNotEmpty()
+  ownerId: string;
+
+  @ApiProperty()
+  @IsUUID()
+  @IsNotEmpty()
+  planId: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  successUrl: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  cancelUrl: string;
 }
