@@ -1,6 +1,5 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
-import { PaymentsService } from '../payment/payments.service';
 import {
   SubscriptionStatus,
   SubscriptionEntitlement,
@@ -20,16 +19,88 @@ export class SubscriptionService {
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly paymentsService: PaymentsService,
     private readonly customerService: CustomerService
   ) {}
+
+  private mapPaymentProviderStatusToLocal(
+    providerStatus?: string
+  ): SubscriptionStatus {
+    switch (providerStatus) {
+      case 'trialing':
+        return SubscriptionStatus.TRIALING;
+      case 'active':
+        return SubscriptionStatus.ACTIVE;
+      case 'past_due':
+        return SubscriptionStatus.PAST_DUE;
+      case 'canceled':
+      case 'cancelled':
+        return SubscriptionStatus.CANCELED;
+      case 'unpaid':
+        return SubscriptionStatus.UNPAID;
+      case 'incomplete':
+        return SubscriptionStatus.INCOMPLETE;
+      case 'incomplete_expired':
+        return SubscriptionStatus.INCOMPLETE_EXPIRED;
+      case 'paused':
+        return SubscriptionStatus.PAUSED;
+      default:
+        return SubscriptionStatus.ACTIVE;
+    }
+  }
+
+  private mapToResponseDto(
+    subscription: SubscriptionEntitlement
+  ): SubscriptionResponseDto {
+    return {
+      id: subscription.id,
+      ownerId: subscription.ownerId,
+      planType: subscription.planType,
+      paymentProviderCustomerId:
+        subscription.paymentProviderCustomerId || undefined,
+      paymentProviderSubscriptionId:
+        subscription.paymentProviderSubscriptionId || undefined,
+      paymentProviderPriceId: subscription.paymentProviderPriceId || undefined,
+      status: subscription.status,
+      createdAt: subscription.createdAt,
+      updatedAt: subscription.updatedAt,
+      expiresAt: subscription.expiresAt,
+    };
+  }
+
+  async getSubscriptions(
+    query: GetSubscriptionsQueryDto
+  ): Promise<SubscriptionResponseDto[]> {
+    const { ownerId, status, planType, limit = 50, offset = 0 } = query;
+
+    const subscriptions = await this.prisma.subscriptionEntitlement.findMany({
+      where: {
+        ...(ownerId && { ownerId }),
+        ...(status && { status }),
+        ...(planType && { planType }),
+      },
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+      skip: offset,
+    });
+
+    return subscriptions.map(this.mapToResponseDto.bind(this));
+  }
+
+  async getSubscriptionById(id: string): Promise<SubscriptionResponseDto> {
+    const subscription = await this.prisma.subscriptionEntitlement.findUnique({
+      where: { id },
+    });
+
+    if (!subscription) {
+      throw new NotFoundException(`Subscription not found: ${id}`);
+    }
+
+    return this.mapToResponseDto(subscription);
+  }
 
   async createSubscription(
     dto: CreateSubscriptionEntitlementDto
   ): Promise<SubscriptionResponseDto> {
-    /*
-     * to-do: we need to check if the provider is saving the subscription due data and period start date
-     */
     const expiresAt = new Date(dto.expiresAt);
 
     const subscription = await this.prisma.subscriptionEntitlement.create({
@@ -46,6 +117,44 @@ export class SubscriptionService {
     this.logger.log(`Created subscription entitlement: ${subscription.id}`);
 
     return this.mapToResponseDto(subscription);
+  }
+
+  async getSubscriptionByPaymentProviderSubscriptionId(
+    paymentProviderSubscriptionId: string
+  ): Promise<SubscriptionResponseDto | null> {
+    const subscription = await this.prisma.subscriptionEntitlement.findUnique({
+      where: { paymentProviderSubscriptionId },
+    });
+
+    return subscription ? this.mapToResponseDto(subscription) : null;
+  }
+
+  async updateSubscription(
+    id: string,
+    updateDto: UpdateSubscriptionDto
+  ): Promise<SubscriptionResponseDto> {
+    const subscription = await this.prisma.subscriptionEntitlement.findUnique({
+      where: { id },
+    });
+
+    if (!subscription) {
+      throw new NotFoundException(`Subscription not found: ${id}`);
+    }
+
+    const updatedSubscription =
+      await this.prisma.subscriptionEntitlement.update({
+        where: { id },
+        data: {
+          ...(updateDto.status && { status: updateDto.status }),
+          ...(updateDto.expiresAt && {
+            expiresAt: new Date(updateDto.expiresAt),
+          }),
+          updatedAt: new Date(),
+        },
+      });
+
+    this.logger.log(`Updated subscription: ${id}`);
+    return this.mapToResponseDto(updatedSubscription);
   }
 
   /**
@@ -126,146 +235,46 @@ export class SubscriptionService {
     }
   }
 
-  // ------------ check the rest of the methods below ------------
+  async handleSubscriptionDeleted(event: Stripe.Subscription): Promise<void> {
+    const subscription = event;
 
-  /**
-   * Get all subscriptions with optional filtering
-   */
-  async getSubscriptions(
-    query: GetSubscriptionsQueryDto
-  ): Promise<SubscriptionResponseDto[]> {
-    const { ownerId, status, planType, limit = 50, offset = 0 } = query;
+    this.logger.warn(`Processing subscription deleted: ${subscription.id}`);
 
-    const subscriptions = await this.prisma.subscriptionEntitlement.findMany({
-      where: {
-        ...(ownerId && { ownerId }),
-        ...(status && { status }),
-        ...(planType && { planType }),
-      },
-      orderBy: { createdAt: 'desc' },
-      take: limit,
-      skip: offset,
-    });
-
-    return subscriptions.map(this.mapToResponseDto.bind(this));
-  }
-
-  /**
-   * Get subscription by ID
-   */
-  async getSubscriptionById(id: string): Promise<SubscriptionResponseDto> {
-    const subscription = await this.prisma.subscriptionEntitlement.findUnique({
-      where: { id },
-    });
-
-    if (!subscription) {
-      throw new NotFoundException(`Subscription not found: ${id}`);
-    }
-
-    return this.mapToResponseDto(subscription);
-  }
-
-  /**
-   * Get subscription by payment provider subscription ID
-   */
-  async getSubscriptionByPaymentProviderSubscriptionId(
-    paymentProviderSubscriptionId: string
-  ): Promise<SubscriptionResponseDto | null> {
-    const subscription = await this.prisma.subscriptionEntitlement.findUnique({
-      where: { paymentProviderSubscriptionId },
-    });
-
-    return subscription ? this.mapToResponseDto(subscription) : null;
-  }
-
-  /**
-   * Get active subscriptions for an owner
-   */
-  async getActiveSubscriptionsByOwnerId(
-    ownerId: string
-  ): Promise<SubscriptionResponseDto[]> {
-    const subscriptions = await this.prisma.subscriptionEntitlement.findMany({
-      where: {
-        ownerId,
-        status: SubscriptionStatus.ACTIVE,
-        expiresAt: { gt: new Date() },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
-
-    return subscriptions.map(this.mapToResponseDto.bind(this));
-  }
-
-  /**
-   * Update subscription status and metadata
-   */
-  async updateSubscription(
-    id: string,
-    updateDto: UpdateSubscriptionDto
-  ): Promise<SubscriptionResponseDto> {
-    const subscription = await this.prisma.subscriptionEntitlement.findUnique({
-      where: { id },
-    });
-
-    if (!subscription) {
-      throw new NotFoundException(`Subscription not found: ${id}`);
-    }
-
-    const updatedSubscription =
-      await this.prisma.subscriptionEntitlement.update({
-        where: { id },
-        data: {
-          ...(updateDto.status && { status: updateDto.status }),
-          ...(updateDto.expiresAt && {
-            expiresAt: new Date(updateDto.expiresAt),
-          }),
-          updatedAt: new Date(),
-        },
-      });
-
-    this.logger.log(`Updated subscription: ${id}`);
-    return this.mapToResponseDto(updatedSubscription);
-  }
-
-  /**
-   * Cancel subscription
-   */
-  async cancelSubscription(id: string): Promise<SubscriptionResponseDto> {
-    const subscription = await this.prisma.subscriptionEntitlement.findUnique({
-      where: { id },
-    });
-
-    if (!subscription) {
-      throw new NotFoundException(`Subscription not found: ${id}`);
-    }
-
-    // Cancel in payment provider if we have a subscription ID
-    if (subscription.paymentProviderSubscriptionId) {
-      try {
-        await this.paymentsService.cancelSubscription(
-          subscription.paymentProviderSubscriptionId
+    try {
+      const localSubscription =
+        await this.getSubscriptionByPaymentProviderSubscriptionId(
+          subscription.id
         );
-      } catch (error) {
-        this.logger.error(
-          `Failed to cancel payment provider subscription ${
-            subscription.paymentProviderSubscriptionId
-          }: ${(error as Error).message}`
+
+      if (!localSubscription) {
+        this.logger.warn(
+          `No local subscription found for payment provider subscription ID: ${subscription.id}`
         );
+        throw new NotFoundException('Local subscription not found');
       }
-    }
 
-    // Update local subscription status
-    const updatedSubscription =
-      await this.prisma.subscriptionEntitlement.update({
-        where: { id },
-        data: {
-          status: SubscriptionStatus.CANCELED,
-          updatedAt: new Date(),
-        },
+      await this.updateSubscription(localSubscription.id, {
+        status: SubscriptionStatus.CANCELED,
       });
 
-    this.logger.log(`Cancelled subscription: ${id}`);
-    return this.mapToResponseDto(updatedSubscription);
+      // await this.prisma.outbox.create({
+      //   data: {
+      //     type: 'SUBSCRIPTION_CANCELLED',
+      //     payload: JSON.stringify({
+      //       paymentProviderCustomerId: subscription.customer,
+      //       paymentProviderSubscriptionId: subscription.id,
+      //       timestamp: new Date().toISOString(),
+      //     }),
+      //   },
+      // });
+    } catch (error) {
+      this.logger.error(
+        `Failed to process subscription.deleted event: ${
+          (error as Error).message
+        }`
+      );
+      throw error;
+    }
   }
 
   async handleSubscriptionUpdated(event: Stripe.Subscription): Promise<void> {
@@ -285,29 +294,32 @@ export class SubscriptionService {
           subscription.id
         );
 
-      if (localSubscription) {
-        // Map provider status to our local status
-        const localStatus = this.mapPaymentProviderStatusToLocal(
-          subscription.status
+      if (!localSubscription) {
+        this.logger.warn(
+          `No local subscription found for payment provider subscription ID: ${subscription.id}`
         );
-
-        await this.updateSubscription(localSubscription.id, {
-          status: localStatus,
-        });
+        throw new NotFoundException('Local subscription not found');
       }
 
-      // Add event to outbox for plan sync
-      await this.prisma.outbox.create({
-        data: {
-          type: 'SUBSCRIPTION_UPDATED',
-          payload: JSON.stringify({
-            paymentProviderCustomerId: subscription.customer,
-            paymentProviderSubscriptionId: subscription.id,
-            status: subscription.status,
-            timestamp: new Date().toISOString(),
-          }),
-        },
+      const localStatus = this.mapPaymentProviderStatusToLocal(
+        subscription.status
+      );
+
+      await this.updateSubscription(localSubscription.id, {
+        status: localStatus,
       });
+
+      // await this.prisma.outbox.create({
+      //   data: {
+      //     type: 'SUBSCRIPTION_UPDATED',
+      //     payload: JSON.stringify({
+      //       paymentProviderCustomerId: subscription.customer,
+      //       paymentProviderSubscriptionId: subscription.id,
+      //       status: subscription.status,
+      //       timestamp: new Date().toISOString(),
+      //     }),
+      //   },
+      // });
     } catch (error) {
       this.logger.error(
         `Failed to process subscription.updated event: ${
@@ -315,93 +327,6 @@ export class SubscriptionService {
         }`
       );
       throw error;
-    }
-  }
-
-  async handleSubscriptionDeleted(event: Stripe.Subscription): Promise<void> {
-    const subscription = event;
-
-    this.logger.warn(`Processing subscription deleted: ${subscription.id}`);
-
-    try {
-      // Find local subscription
-      const localSubscription =
-        await this.getSubscriptionByPaymentProviderSubscriptionId(
-          subscription.id
-        );
-
-      if (localSubscription) {
-        await this.updateSubscription(localSubscription.id, {
-          status: SubscriptionStatus.CANCELED,
-        });
-      }
-
-      // Add event to outbox for access deactivation
-      await this.prisma.outbox.create({
-        data: {
-          type: 'SUBSCRIPTION_CANCELLED',
-          payload: JSON.stringify({
-            paymentProviderCustomerId: subscription.customer,
-            paymentProviderSubscriptionId: subscription.id,
-            timestamp: new Date().toISOString(),
-          }),
-        },
-      });
-    } catch (error) {
-      this.logger.error(
-        `Failed to process subscription.deleted event: ${
-          (error as Error).message
-        }`
-      );
-      throw error;
-    }
-  }
-
-  /**
-   * Helper methods
-   */
-  private mapToResponseDto(
-    subscription: SubscriptionEntitlement
-  ): SubscriptionResponseDto {
-    return {
-      id: subscription.id,
-      ownerId: subscription.ownerId,
-      planType: subscription.planType,
-      paymentProviderCustomerId:
-        subscription.paymentProviderCustomerId || undefined,
-      paymentProviderSubscriptionId:
-        subscription.paymentProviderSubscriptionId || undefined,
-      paymentProviderPriceId: subscription.paymentProviderPriceId || undefined,
-      status: subscription.status,
-      createdAt: subscription.createdAt,
-      updatedAt: subscription.updatedAt,
-      expiresAt: subscription.expiresAt,
-    };
-  }
-
-  private mapPaymentProviderStatusToLocal(
-    providerStatus?: string
-  ): SubscriptionStatus {
-    switch (providerStatus) {
-      case 'trialing':
-        return SubscriptionStatus.TRIALING;
-      case 'active':
-        return SubscriptionStatus.ACTIVE;
-      case 'past_due':
-        return SubscriptionStatus.PAST_DUE;
-      case 'canceled':
-      case 'cancelled':
-        return SubscriptionStatus.CANCELED;
-      case 'unpaid':
-        return SubscriptionStatus.UNPAID;
-      case 'incomplete':
-        return SubscriptionStatus.INCOMPLETE;
-      case 'incomplete_expired':
-        return SubscriptionStatus.INCOMPLETE_EXPIRED;
-      case 'paused':
-        return SubscriptionStatus.PAUSED;
-      default:
-        return SubscriptionStatus.ACTIVE;
     }
   }
 }

@@ -24,11 +24,4 @@ export class SubscriptionController {
   ): Promise<SubscriptionResponseDto> {
     return this.subscriptionService.getSubscriptionById(id);
   }
-
-  @Get('owner/:ownerId/active')
-  async getActiveSubscriptionsByOwnerId(
-    @Param('ownerId') ownerId: string
-  ): Promise<SubscriptionResponseDto[]> {
-    return this.subscriptionService.getActiveSubscriptionsByOwnerId(ownerId);
-  }
 }
