@@ -30,9 +30,7 @@ export class SubscriptionService {
     /*
      * to-do: we need to check if the provider is saving the subscription due data and period start date
      */
-    const expiresAt = dto.expiresAt
-      ? new Date(dto.expiresAt)
-      : this.getDefaultExpirationDate();
+    const expiresAt = new Date(dto.expiresAt);
 
     const subscription = await this.prisma.subscriptionEntitlement.create({
       data: {
@@ -62,7 +60,8 @@ export class SubscriptionService {
     );
 
     try {
-      const priceId = subscription.items?.data?.[0]?.price?.id;
+      const data = subscription.items?.data[0];
+      const priceId = data?.price?.id;
       const customer =
         await this.customerService.getCustomerIdFromPaymentProviderID(
           subscription.customer as string
@@ -101,8 +100,10 @@ export class SubscriptionService {
         paymentProviderSubscriptionId: subscription.id,
         paymentProviderPriceId: priceId,
         status: SubscriptionStatus.ACTIVE,
+        expiresAt: data.current_period_end.toString(),
       });
 
+      // apply it when sugarfoot is ready for consuming the events
       // await this.prisma.outbox.create({
       //   data: {
       //     type: 'SUBSCRIPTION_CREATED',
@@ -193,64 +194,6 @@ export class SubscriptionService {
     });
 
     return subscriptions.map(this.mapToResponseDto.bind(this));
-  }
-
-  /**
-   * Create or update subscription entitlement
-   */
-  async createOrUpdateSubscriptionEntitlement(
-    dto: CreateSubscriptionEntitlementDto
-  ): Promise<SubscriptionResponseDto> {
-    const expiresAt = dto.expiresAt
-      ? new Date(dto.expiresAt)
-      : this.getDefaultExpirationDate();
-
-    // Check if subscription already exists for this owner and plan type
-    const existing = await this.prisma.subscriptionEntitlement.findFirst({
-      where: {
-        ownerId: dto.ownerId,
-        planType: dto.planType,
-        status: SubscriptionStatus.ACTIVE,
-      },
-    });
-
-    let subscription;
-
-    if (existing) {
-      // Update existing subscription
-      subscription = await this.prisma.subscriptionEntitlement.update({
-        where: { id: existing.id },
-        data: {
-          paymentProviderCustomerId:
-            dto.paymentProviderCustomerId || existing.paymentProviderCustomerId,
-          paymentProviderSubscriptionId:
-            dto.paymentProviderSubscriptionId ||
-            existing.paymentProviderSubscriptionId,
-          paymentProviderPriceId:
-            dto.paymentProviderPriceId || existing.paymentProviderPriceId,
-          status: dto.status || SubscriptionStatus.ACTIVE,
-          expiresAt,
-          updatedAt: new Date(),
-        },
-      });
-      this.logger.log(`Updated subscription entitlement: ${subscription.id}`);
-    } else {
-      // Create new subscription
-      subscription = await this.prisma.subscriptionEntitlement.create({
-        data: {
-          ownerId: dto.ownerId,
-          planType: dto.planType,
-          paymentProviderCustomerId: dto.paymentProviderCustomerId,
-          paymentProviderSubscriptionId: dto.paymentProviderSubscriptionId,
-          paymentProviderPriceId: dto.paymentProviderPriceId,
-          status: dto.status || SubscriptionStatus.ACTIVE,
-          expiresAt,
-        },
-      });
-      this.logger.log(`Created subscription entitlement: ${subscription.id}`);
-    }
-
-    return this.mapToResponseDto(subscription);
   }
 
   /**
@@ -434,10 +377,6 @@ export class SubscriptionService {
       updatedAt: subscription.updatedAt,
       expiresAt: subscription.expiresAt,
     };
-  }
-
-  private getDefaultExpirationDate(): Date {
-    return new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 1 month from now
   }
 
   private mapPaymentProviderStatusToLocal(

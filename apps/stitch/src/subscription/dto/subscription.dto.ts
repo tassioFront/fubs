@@ -79,5 +79,5 @@ export class CreateSubscriptionEntitlementDto {
 
   @IsOptional()
   @IsDateString()
-  expiresAt?: string;
+  expiresAt: string;
 }
