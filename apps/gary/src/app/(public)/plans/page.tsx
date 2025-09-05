@@ -1,4 +1,10 @@
-'use server';
+/*
+ * It could easily be a static page (with revalidation), but we need to show dynamic content as the Render container sleeps (free account)
+ * and it breaks the Gary's build on Vercel.
+ *
+ * It keeps running on the server anyway.
+ */
+export const dynamic = 'force-dynamic';
 
 import { PlanCompleted } from '@fubs/shared/src/lib/types/plan';
 import { getPlansWithPrices } from './actions';

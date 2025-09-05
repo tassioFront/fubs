@@ -5,19 +5,21 @@ import {
   PaymentProvider,
   Customer,
   Product,
-  CheckoutSession,
   Subscription as ProviderSubscription,
   Invoice as PaymentInvoice,
   WebhookEvent,
   CreateCustomerDto,
   CreateProductDto,
   CreatePriceDto,
-  CreateCheckoutSessionDto,
   CreateSubscriptionDto,
   UpdateSubscriptionDto,
   CheckoutLineItemSummary,
 } from './payment-provider.interface';
-import { Price } from '@fubs/shared';
+import {
+  Price,
+  CreateCheckoutSessionDtoWithPlan,
+  CheckoutSession,
+} from '@fubs/shared';
 
 @Injectable()
 export class StripeAdapterService implements PaymentProvider {
@@ -78,11 +80,8 @@ export class StripeAdapterService implements PaymentProvider {
   private mapCheckoutSession(s: Stripe.Checkout.Session): CheckoutSession {
     return {
       id: s.id,
-      customerId: (s.customer as string) ?? '',
-      priceId: '',
-      status: (s.status as CheckoutSession['status']) ?? 'open',
-      url: s.url ?? undefined,
-      metadata: (s.metadata ?? {}) as Record<string, string>,
+      url: s.url ?? '',
+      ownerId: s.metadata?.ownerId ?? '',
     };
   }
 
@@ -169,15 +168,15 @@ export class StripeAdapterService implements PaymentProvider {
   }
 
   async createCheckoutSession(
-    data: CreateCheckoutSessionDto
+    data: CreateCheckoutSessionDtoWithPlan
   ): Promise<CheckoutSession> {
     const session = await this.stripe.checkout.sessions.create({
-      customer: data.customerId,
-      line_items: [{ price: data.priceId, quantity: 1 }],
+      customer: data.customer?.paymentProviderCustomerId as string,
+      line_items: [{ price: data.plan.stripePriceId, quantity: 1 }],
       mode: 'subscription',
       success_url: data.successUrl,
       cancel_url: data.cancelUrl,
-      metadata: data.metadata,
+      metadata: { ownerId: data.ownerId },
       payment_method_types: ['card'],
     });
     return this.mapCheckoutSession(session);

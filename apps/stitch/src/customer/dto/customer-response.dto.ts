@@ -25,6 +25,12 @@ export class CustomerResponseDto {
   })
   ownerId: string;
 
+  @ApiProperty({
+    description: 'Customer Stripe Id',
+    example: 'cus_123',
+  })
+  paymentProviderCustomerId: string | null;
+
   constructor(partial: Partial<CustomerResponseDto>) {
     Object.assign(this, partial);
   }

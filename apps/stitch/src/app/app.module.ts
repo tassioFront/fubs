@@ -7,6 +7,7 @@ import { OrdersModule } from '../orders/orders.module';
 import { PlansModule } from '../plans/plans.module';
 import { OutboxModule } from '../outbox/outbox.module';
 import { CustomerModule } from '../customer/customer.module';
+import { SubscriptionModule } from '../subscription/subscription.module';
 import { AuthModule } from '../common/auth/auth.module';
 
 @Module({
@@ -18,6 +19,7 @@ import { AuthModule } from '../common/auth/auth.module';
     PlansModule,
     OutboxModule,
     CustomerModule,
+    SubscriptionModule,
   ],
   controllers: [AppController],
   providers: [AppService],

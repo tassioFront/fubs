@@ -1,33 +1,44 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { PaymentsService } from '../payment/payments.service';
-import type { WebhookEvent } from '../payment';
+// import { PaymentsService } from '../payment/payments.service';
+import { SubscriptionService } from '../subscription/subscription.service';
+// import type { WebhookEvent } from '../payment';
+import Stripe from 'stripe';
 
 @Injectable()
 export class WebhookService {
   private readonly logger = new Logger(WebhookService.name);
 
-  constructor(private readonly paymentsService: PaymentsService) {}
+  constructor(
+    // private readonly paymentsService: PaymentsService,
+    private readonly subscriptionService: SubscriptionService
+  ) {}
 
-  async handleStripeEvent(event: WebhookEvent): Promise<void> {
+  async handleStripeEvent(event: Stripe.Event): Promise<void> {
     switch (event.type) {
-      case 'invoice.paid':
-        await this.paymentsService.handleInvoicePaid(event);
-        break;
-      case 'invoice.payment_failed':
-        await this.paymentsService.handleInvoicePaymentFailed(event);
-        break;
+      // case 'invoice.paid':
+      //   await this.paymentsService.handleInvoicePaid(event);
+      //   break;
+      // case 'invoice.payment_failed':
+      //   await this.paymentsService.handleInvoicePaymentFailed(event);
+      //   break;
       case 'customer.subscription.created':
-        await this.paymentsService.handleSubscriptionCreated(event);
+        await this.subscriptionService.handleSubscriptionCreated(
+          event.data.object as Stripe.Subscription
+        );
         break;
       case 'customer.subscription.updated':
-        await this.paymentsService.handleSubscriptionUpdated(event);
+        await this.subscriptionService.handleSubscriptionUpdated(
+          event.data.object as Stripe.Subscription
+        );
         break;
       case 'customer.subscription.deleted':
-        await this.paymentsService.handleSubscriptionDeleted(event);
+        await this.subscriptionService.handleSubscriptionDeleted(
+          event.data.object as Stripe.Subscription
+        );
         break;
-      case 'checkout.session.completed':
-        await this.paymentsService.handleCheckoutSessionCompleted(event);
-        break;
+      // case 'checkout.session.completed':
+      //   await this.paymentsService.handleCheckoutSessionCompleted(event);
+      //   break;
       default:
         this.logger.warn(`Unhandled Stripe event type: ${event.type}`);
     }

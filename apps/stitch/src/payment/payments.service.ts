@@ -7,7 +7,6 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
 import type {
-  CreateCheckoutSessionDto,
   CreatePriceDto,
   CreateProductDto,
   CreateSubscriptionDto,
@@ -18,12 +17,15 @@ import type {
   PaymentProvider,
   Customer,
   Product,
-  CheckoutSession,
   Subscription,
   WebhookEvent,
   CreateCustomerDto,
 } from './payment-provider.interface';
-import { Price } from '@fubs/shared';
+import {
+  Price,
+  CreateCheckoutSessionDtoWithPlan,
+  CheckoutSession,
+} from '@fubs/shared';
 
 const getExpirationDate = (): Date =>
   new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 1 month from now
@@ -105,24 +107,17 @@ export class PaymentsService {
   // --- Checkout Management ---
 
   async createCheckoutSession(
-    dto: CreateCheckoutSessionDto
+    dto: CreateCheckoutSessionDtoWithPlan
   ): Promise<CheckoutSession> {
-    try {
-      const session = await this.payments.createCheckoutSession({
-        customerId: dto.stripeCustomerId,
-        priceId: dto.priceId,
-        successUrl: dto.successUrl,
-        cancelUrl: dto.cancelUrl,
-        metadata: dto.metadata,
-      });
-      this.logger.log(`Checkout session created: ${session.id}`);
-      return session;
-    } catch (error) {
-      this.logger.error(
-        `Failed to create checkout session: ${(error as Error).message}`
-      );
-      throw error;
-    }
+    const session = await this.payments.createCheckoutSession({
+      customer: dto.customer,
+      plan: dto.plan,
+      successUrl: dto.successUrl,
+      cancelUrl: dto.cancelUrl,
+      ownerId: dto.ownerId,
+    });
+    this.logger.log(`Checkout session created: ${session.id}`);
+    return session;
   }
 
   // --- Subscription Management ---
@@ -440,6 +435,7 @@ export class PaymentsService {
       subscription?: string;
       customer?: string;
     };
+    // this object (session) brings the expiration date on "expires_at" field
     this.logger.log(`Checkout session completed: ${session.id}`, session);
 
     try {

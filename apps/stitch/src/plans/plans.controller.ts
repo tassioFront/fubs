@@ -9,6 +9,7 @@ import {
   Patch,
   Delete,
   ParseUUIDPipe,
+  UseGuards,
 } from '@nestjs/common';
 
 import { PlansService } from './plans.service';
@@ -17,8 +18,11 @@ import {
   UpdatePlanDto,
   PlanOutputDto,
   PlanTypeParamDto,
+  CreateCheckoutSessionDto,
 } from './plan.dto';
+import { ApiTokenGuard } from '@fubs/shared';
 
+@UseGuards(ApiTokenGuard)
 @Controller('plans')
 export class PlansController {
   constructor(
@@ -29,6 +33,11 @@ export class PlansController {
   @Get()
   async getAllPlans(): Promise<PlanOutputDto[]> {
     return this.plansService.getAllPlans();
+  }
+
+  @Post('checkout-session')
+  async createCheckoutSession(@Body() dto: CreateCheckoutSessionDto) {
+    return this.plansService.createCheckoutSession(dto);
   }
 
   @Get('type/:type')
@@ -45,6 +54,13 @@ export class PlansController {
   ): Promise<PlanOutputDto> {
     return this.plansService.getPlanById(id);
   }
+
+  /*
+   * updatePlan, deletePlan and createPlan should include Payment provider product logic
+   * as in the seedPlans method, to keep DB and provider in sync.
+   *
+   * It also should include a admin guard validation once teammate users can edit it only.
+   */
 
   @Post()
   async createPlan(@Body() dto: CreatePlanDto): Promise<PlanOutputDto> {

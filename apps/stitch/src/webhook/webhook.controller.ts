@@ -14,8 +14,8 @@ import {
 import type { Request, Response } from 'express';
 import { PaymentsService } from '../payment/payments.service';
 import { WebhookService } from './webhook.service';
-import type { CreateCheckoutSessionDto } from '../common/stripe/stripe.entity';
 import type { CreateCustomerDto } from 'src/payment/payment-provider.interface';
+import Stripe from 'stripe';
 
 @Controller('webhook')
 export class WebhookController {
@@ -38,7 +38,9 @@ export class WebhookController {
         (req as unknown as { rawBody: Buffer }).rawBody,
         signature
       );
-      await this.webhookService.handleStripeEvent(event);
+      await this.webhookService.handleStripeEvent(
+        event as unknown as Stripe.Event
+      );
       return res.json({ received: true });
     } catch (err) {
       const isUnauthorized = err instanceof UnauthorizedException;
@@ -47,12 +49,6 @@ export class WebhookController {
       }
       throw err;
     }
-  }
-
-  @Post('test-checkout-url')
-  async createTestCheckoutUrl(@Body() dto: CreateCheckoutSessionDto) {
-    const session = await this.paymentsService.createCheckoutSession(dto);
-    return { url: (session as unknown as { url?: string }).url };
   }
 
   @Post('test-customer')

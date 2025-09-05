@@ -4,9 +4,10 @@ import { WebhookController } from './webhook.controller';
 import { WebhookService } from './webhook.service';
 import { PaymentsService } from '../payment/payments.service';
 import { PaymentModule } from '../payment/payment.module';
+import { SubscriptionModule } from '../subscription/subscription.module';
 
 @Module({
-  imports: [ConfigModule, PaymentModule],
+  imports: [ConfigModule, PaymentModule, SubscriptionModule],
   controllers: [WebhookController],
   providers: [WebhookService, PaymentsService],
   exports: [WebhookService],
