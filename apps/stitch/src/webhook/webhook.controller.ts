@@ -14,7 +14,6 @@ import {
 import type { Request, Response } from 'express';
 import { PaymentsService } from '../payment/payments.service';
 import { WebhookService } from './webhook.service';
-import type { CreateCheckoutSessionDto } from '../common/stripe/stripe.entity';
 import type { CreateCustomerDto } from 'src/payment/payment-provider.interface';
 
 @Controller('webhook')
@@ -47,12 +46,6 @@ export class WebhookController {
       }
       throw err;
     }
-  }
-
-  @Post('test-checkout-url')
-  async createTestCheckoutUrl(@Body() dto: CreateCheckoutSessionDto) {
-    const session = await this.paymentsService.createCheckoutSession(dto);
-    return { url: (session as unknown as { url?: string }).url };
   }
 
   @Post('test-customer')

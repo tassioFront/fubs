@@ -1,4 +1,8 @@
-import { Price } from '@fubs/shared';
+import {
+  Price,
+  CreateCheckoutSessionDtoWithPlan,
+  CheckoutSession,
+} from '@fubs/shared';
 
 export const PAYMENT_PROVIDER = Symbol('PAYMENT_PROVIDER');
 
@@ -13,15 +17,6 @@ export interface Product {
   id: string;
   name: string;
   description?: string;
-  metadata: Record<string, string>;
-}
-
-export interface CheckoutSession {
-  id: string;
-  customerId: string;
-  priceId: string;
-  status: 'open' | 'complete' | 'expired';
-  url?: string;
   metadata: Record<string, string>;
 }
 
@@ -80,14 +75,6 @@ export interface CreatePriceDto {
   };
 }
 
-export interface CreateCheckoutSessionDto {
-  customerId: string;
-  priceId: string;
-  successUrl: string;
-  cancelUrl: string;
-  metadata: Record<string, string>;
-}
-
 export interface CreateSubscriptionDto {
   customerId: string;
   priceId: string;
@@ -127,7 +114,7 @@ export interface PaymentProvider {
 
   // Checkout Management
   createCheckoutSession(
-    data: CreateCheckoutSessionDto
+    data: CreateCheckoutSessionDtoWithPlan
   ): Promise<CheckoutSession>;
   getCheckoutSession(sessionId: string): Promise<CheckoutSession>;
   listCheckoutSessionLineItems(
