@@ -1,4 +1,4 @@
-import { getAuthHeader } from '@fubs/shared/src/lib/utils/getToken';
+import { getInternalApiHeader } from '@fubs/shared/src/lib/utils/getToken';
 import { requestWithBody } from './request';
 import { WorkspaceMemberRole } from '@fubs/shared/src/lib/types/user';
 
@@ -24,7 +24,7 @@ interface UserRegisterParams {
 export async function registerUser(
   body: UserRegisterParams & { type: WorkspaceMemberRole }
 ) {
-  const headers = getAuthHeader({
+  const headers = getInternalApiHeader({
     serviceName: process.env.GARY_SERVICE_NAME as string,
   });
 
