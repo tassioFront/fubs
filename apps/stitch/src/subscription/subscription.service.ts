@@ -100,7 +100,7 @@ export class SubscriptionService {
         paymentProviderSubscriptionId: subscription.id,
         paymentProviderPriceId: priceId,
         status: SubscriptionStatus.ACTIVE,
-        expiresAt: data.current_period_end.toString(),
+        expiresAt: new Date(data.current_period_end * 1000).toISOString(),
       });
 
       // apply it when sugarfoot is ready for consuming the events

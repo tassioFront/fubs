@@ -25,6 +25,25 @@ export class WebhookController {
     private readonly webhookService: WebhookService
   ) {}
 
+  @Post('stripe-dev')
+  @HttpCode(200)
+  async handleStripeWebhookDev(@Req() req: Request, @Res() res: Response) {
+    /*
+     * Use this endpoint for local development with the Stripe CLI
+     * and testing webhooks without needing to validate signatures.
+     */
+    try {
+      await this.webhookService.handleStripeEvent(req.body as any);
+      return res.json({ received: true });
+    } catch (err) {
+      const isUnauthorized = err instanceof UnauthorizedException;
+      if (!isUnauthorized) {
+        this.logger.error('Unexpected error handling Stripe webhook', err);
+      }
+      throw err;
+    }
+  }
+
   @Post('stripe')
   @HttpCode(200)
   async handleStripeWebhook(
