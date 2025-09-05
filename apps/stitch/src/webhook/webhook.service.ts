@@ -3,6 +3,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { SubscriptionService } from '../subscription/subscription.service';
 // import type { WebhookEvent } from '../payment';
 import Stripe from 'stripe';
+import { WebhookEvent } from '../payment/payment-provider.interface';
 
 @Injectable()
 export class WebhookService {
@@ -13,7 +14,7 @@ export class WebhookService {
     private readonly subscriptionService: SubscriptionService
   ) {}
 
-  async handleStripeEvent(event: Stripe.Event): Promise<void> {
+  async handleStripeEvent(event: WebhookEvent): Promise<void> {
     switch (event.type) {
       // case 'invoice.paid':
       //   await this.paymentsService.handleInvoicePaid(event);
@@ -23,17 +24,17 @@ export class WebhookService {
       //   break;
       case 'customer.subscription.created':
         await this.subscriptionService.handleSubscriptionCreated(
-          event.data.object as Stripe.Subscription
+          event.data as Stripe.Subscription
         );
         break;
       case 'customer.subscription.updated':
         await this.subscriptionService.handleSubscriptionUpdated(
-          event.data.object as Stripe.Subscription
+          event.data as Stripe.Subscription
         );
         break;
       case 'customer.subscription.deleted':
         await this.subscriptionService.handleSubscriptionDeleted(
-          event.data.object as Stripe.Subscription
+          event.data as Stripe.Subscription
         );
         break;
       // case 'checkout.session.completed':
