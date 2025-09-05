@@ -19,18 +19,10 @@ import {
 import { TasksService } from './tasks.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 
-import { JwtAuthGuard } from '@fubs/shared';
+import { type AuthenticatedRequest, JwtAuthGuard } from '@fubs/shared';
 import { type UUID } from '@fubs/shared';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { WorkspaceMemberGuard } from '../auth/guards/workspace-member.guard';
-interface JwtUser {
-  id: string;
-}
-
-interface JwtRequest {
-  user: JwtUser;
-}
-
 @UseGuards(JwtAuthGuard)
 @ApiTags('tasks')
 @ApiBearerAuth()
@@ -47,7 +39,7 @@ export class TasksController {
   async create(
     @Param('projectId') projectId: string,
     @Body() createTaskDto: CreateTaskDto,
-    @Request() req: JwtRequest
+    @Request() req: AuthenticatedRequest
   ) {
     const userId = req.user.id;
     return await this.tasksService.create(
