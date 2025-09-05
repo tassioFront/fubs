@@ -35,6 +35,11 @@ export class PlansController {
     return this.plansService.getAllPlans();
   }
 
+  @Post('checkout-session')
+  async createCheckoutSession(@Body() dto: CreateCheckoutSessionDto) {
+    return this.plansService.createCheckoutSession(dto);
+  }
+
   @Get('type/:type')
   async getPlanByType(
     @Param('type')
@@ -49,6 +54,13 @@ export class PlansController {
   ): Promise<PlanOutputDto> {
     return this.plansService.getPlanById(id);
   }
+
+  /*
+   * updatePlan, deletePlan and createPlan should include Payment provider product logic
+   * as in the seedPlans method, to keep DB and provider in sync.
+   *
+   * It also should include a admin guard validation once teammate users can edit it only.
+   */
 
   @Post()
   async createPlan(@Body() dto: CreatePlanDto): Promise<PlanOutputDto> {
@@ -68,11 +80,6 @@ export class PlansController {
     @Param('id', new ParseUUIDPipe()) id: string
   ): Promise<{ message: string }> {
     return this.plansService.deletePlan(id);
-  }
-
-  @Post('checkout-session')
-  async createCheckoutSession(@Body() dto: CreateCheckoutSessionDto) {
-    return this.plansService.createCheckoutSession(dto);
   }
 
   // just for testing

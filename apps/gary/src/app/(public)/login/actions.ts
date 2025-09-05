@@ -38,5 +38,5 @@ export async function login(
     return { formError: 'Sorry. Please try again later.', email, password: '' };
   }
 
-  redirect('/dashboard');
+  redirect('/workspace');
 }

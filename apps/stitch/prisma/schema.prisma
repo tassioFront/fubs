@@ -24,19 +24,19 @@ enum SubscriptionStatus {
 
 
 model SubscriptionEntitlement {
-  id                   String   @id @default(uuid())
-  ownerId              String
-  planType             PlanType
-  stripeCustomerId     String?
-  stripeSubscriptionId String?  @unique
-  stripePriceId        String?
-  status               SubscriptionStatus @default(ACTIVE)
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
-  expiresAt            DateTime
+  id                          String   @id @default(uuid())
+  ownerId                     String
+  planType                    PlanType
+  paymentProviderCustomerId   String?
+  paymentProviderSubscriptionId String? @unique
+  paymentProviderPriceId      String?
+  status                      SubscriptionStatus @default(ACTIVE)
+  createdAt                   DateTime @default(now())
+  updatedAt                   DateTime @updatedAt
+  expiresAt                   DateTime
 
   @@index([ownerId])
-  @@index([stripeCustomerId])
+  @@index([paymentProviderCustomerId])
   @@index([status, expiresAt])
 }
 
@@ -93,10 +93,10 @@ model Customer {
   ownerId           String
   name              String
   email             String  @unique
-  stripeCustomerId  String? @unique
+  paymentProviderCustomerId  String? @unique
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
   @@index([ownerId])
-  @@index([stripeCustomerId])
+  @@index([paymentProviderCustomerId])
 }

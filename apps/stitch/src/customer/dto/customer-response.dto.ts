@@ -29,7 +29,7 @@ export class CustomerResponseDto {
     description: 'Customer Stripe Id',
     example: 'cus_123',
   })
-  stripeCustomerId: string | null;
+  paymentProviderCustomerId: string | null;
 
   constructor(partial: Partial<CustomerResponseDto>) {
     Object.assign(this, partial);

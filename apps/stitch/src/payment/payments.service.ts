@@ -435,6 +435,7 @@ export class PaymentsService {
       subscription?: string;
       customer?: string;
     };
+    // this object (session) brings the expiration date on "expires_at" field
     this.logger.log(`Checkout session completed: ${session.id}`, session);
 
     try {

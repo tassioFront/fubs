@@ -51,7 +51,7 @@ export class CustomerService {
         ownerId: createCustomerDto.ownerId,
         name: createCustomerDto.name,
         email: createCustomerDto.email,
-        stripeCustomerId: customer.id,
+        paymentProviderCustomerId: customer.id,
       },
     });
     return new CustomerResponseDto({
@@ -79,7 +79,23 @@ export class CustomerService {
       name: localCustomer.name,
       email: localCustomer.email,
       ownerId: localCustomer.ownerId,
-      stripeCustomerId: localCustomer.stripeCustomerId,
+      paymentProviderCustomerId: localCustomer.paymentProviderCustomerId,
+    });
+  }
+
+  async getCustomerIdFromPaymentProviderID(
+    paymentProviderCustomerId: string
+  ): Promise<CustomerResponseDto | null> {
+    const localCustomer = await this.prisma.customer.findFirst({
+      where: { paymentProviderCustomerId },
+    });
+    if (!localCustomer) return null;
+    return new CustomerResponseDto({
+      id: localCustomer.id,
+      name: localCustomer.name,
+      email: localCustomer.email,
+      ownerId: localCustomer.ownerId,
+      paymentProviderCustomerId: localCustomer.paymentProviderCustomerId,
     });
   }
 }

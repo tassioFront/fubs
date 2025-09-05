@@ -171,7 +171,7 @@ export class StripeAdapterService implements PaymentProvider {
     data: CreateCheckoutSessionDtoWithPlan
   ): Promise<CheckoutSession> {
     const session = await this.stripe.checkout.sessions.create({
-      customer: data.customer?.stripeCustomerId as string,
+      customer: data.customer?.paymentProviderCustomerId as string,
       line_items: [{ price: data.plan.stripePriceId, quantity: 1 }],
       mode: 'subscription',
       success_url: data.successUrl,
