@@ -15,7 +15,6 @@ import type { Request, Response } from 'express';
 import { PaymentsService } from '../payment/payments.service';
 import { WebhookService } from './webhook.service';
 import type { CreateCustomerDto } from 'src/payment/payment-provider.interface';
-import Stripe from 'stripe';
 
 @Controller('webhook')
 export class WebhookController {
@@ -38,9 +37,7 @@ export class WebhookController {
         (req as unknown as { rawBody: Buffer }).rawBody,
         signature
       );
-      await this.webhookService.handleStripeEvent(
-        event as unknown as Stripe.Event
-      );
+      await this.webhookService.handleStripeEvent(event);
       return res.json({ received: true });
     } catch (err) {
       const isUnauthorized = err instanceof UnauthorizedException;
