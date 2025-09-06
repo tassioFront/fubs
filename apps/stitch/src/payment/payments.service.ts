@@ -2,7 +2,6 @@ import {
   Inject,
   Injectable,
   Logger,
-  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
@@ -46,59 +45,40 @@ export class PaymentsService {
   }
 
   async getCustomer(customerId: string): Promise<Customer> {
-    try {
-      return await this.payments.getCustomer(customerId);
-    } catch (error) {
-      if ((error as { statusCode: number }).statusCode === 404) {
-        throw new NotFoundException(`Customer not found: ${customerId}`);
-      }
-      throw error;
-    }
+    return await this.payments.getCustomer(customerId);
   }
 
   async createPrice(createPriceDto: CreatePriceDto): Promise<Price> {
-    try {
-      const price = await this.payments.createPrice({
-        productId: createPriceDto.product,
-        unitAmount: createPriceDto.unitAmount,
-        currency: createPriceDto.currency,
-        recurring: createPriceDto.recurring,
-      });
-      this.logger.log(`Price created: ${price.id}`);
-      return price;
-    } catch (error) {
-      this.logger.error(`Failed to create price: ${(error as Error).message}`);
-      throw error;
-    }
+    const price = await this.payments.createPrice({
+      productId: createPriceDto.product,
+      unitAmount: createPriceDto.unitAmount,
+      currency: createPriceDto.currency,
+      recurring: createPriceDto.recurring,
+    });
+    this.logger.log(`Price created: ${price.id}`);
+    return price;
   }
 
   async createProduct(createProductDto: CreateProductDto): Promise<Product> {
-    try {
-      const product = await this.payments.createProduct({
-        name: createProductDto.name,
-        description: createProductDto.description,
-        metadata: {
-          ...createProductDto.metadata,
-          features: Array.isArray(createProductDto.metadata?.features)
-            ? JSON.stringify(createProductDto.metadata.features)
-            : String(createProductDto.metadata?.features ?? ''),
-          workspaceLimit: String(
-            (
-              createProductDto.metadata as unknown as {
-                workspaceLimit?: number | null;
-              }
-            )?.workspaceLimit ?? ''
-          ),
-        } as Record<string, string>,
-      });
-      this.logger.log(`Product created: ${product.id}`);
-      return product;
-    } catch (error) {
-      this.logger.error(
-        `Failed to create product: ${(error as Error).message}`
-      );
-      throw error;
-    }
+    const product = await this.payments.createProduct({
+      name: createProductDto.name,
+      description: createProductDto.description,
+      metadata: {
+        ...createProductDto.metadata,
+        features: Array.isArray(createProductDto.metadata?.features)
+          ? JSON.stringify(createProductDto.metadata.features)
+          : String(createProductDto.metadata?.features ?? ''),
+        workspaceLimit: String(
+          (
+            createProductDto.metadata as unknown as {
+              workspaceLimit?: number | null;
+            }
+          )?.workspaceLimit ?? ''
+        ),
+      } as Record<string, string>,
+    });
+    this.logger.log(`Product created: ${product.id}`);
+    return product;
   }
 
   // --- Checkout Management ---
@@ -118,99 +98,42 @@ export class PaymentsService {
   }
 
   // --- Subscription Management ---
-
   async createSubscription(dto: CreateSubscriptionDto): Promise<Subscription> {
-    try {
-      const subscription = await this.payments.createSubscription({
-        customerId: dto.stripeCustomerId,
-        priceId: dto.priceId,
-        metadata: { ...dto.metadata },
-      });
-      this.logger.log(`Subscription created: ${subscription.id}`);
-      return subscription;
-    } catch (error) {
-      this.logger.error(
-        `Failed to create subscription: ${(error as Error).message}`
-      );
-      throw error;
-    }
+    const subscription = await this.payments.createSubscription({
+      customerId: dto.stripeCustomerId,
+      priceId: dto.priceId,
+      metadata: { ...dto.metadata },
+    });
+    this.logger.log(`Subscription created: ${subscription.id}`);
+    return subscription;
   }
 
   async getSubscription(subscriptionId: string): Promise<Subscription> {
-    try {
-      const subscription = await this.payments.getSubscription(subscriptionId);
-      return subscription;
-    } catch (error) {
-      this.logger.error(
-        `Failed to get subscription ${subscriptionId}: ${
-          (error as Error).message
-        }`
-      );
-      throw error;
-    }
+    const subscription = await this.payments.getSubscription(subscriptionId);
+    return subscription;
   }
 
   async updateSubscription(
     subscriptionId: string,
     update: UpdateSubscriptionDto
   ): Promise<Subscription> {
-    try {
-      const subscription = await this.payments.updateSubscription(
-        subscriptionId,
-        {
-          priceId: update.priceId,
-          trialPeriodDays: update.trialPeriodDays,
-          metadata: (update.metadata ?? {}) as Record<string, string>,
-          pauseCollection: update.pauseCollection,
-        }
-      );
-      this.logger.log(`Subscription updated: ${subscription.id}`);
-      return subscription;
-    } catch (error) {
-      this.logger.error(
-        `Failed to update subscription ${subscriptionId}: ${
-          (error as Error).message
-        }`
-      );
-      throw error;
-    }
+    const subscription = await this.payments.updateSubscription(
+      subscriptionId,
+      {
+        priceId: update.priceId,
+        trialPeriodDays: update.trialPeriodDays,
+        metadata: (update.metadata ?? {}) as Record<string, string>,
+        pauseCollection: update.pauseCollection,
+      }
+    );
+    this.logger.log(`Subscription updated: ${subscription.id}`);
+    return subscription;
   }
 
   async cancelSubscription(subscriptionId: string): Promise<Subscription> {
-    try {
-      const subscription = await this.payments.cancelSubscription(
-        subscriptionId
-      );
-      this.logger.log(`Subscription cancelled: ${subscription.id}`);
-      return subscription;
-    } catch (error) {
-      this.logger.error(
-        `Failed to cancel subscription ${subscriptionId}: ${
-          (error as Error).message
-        }`
-      );
-      throw error;
-    }
-  }
-
-  async getSubscriptionsByOwnerId(ownerId: string): Promise<Subscription[]> {
-    try {
-      const subscriptions = await this.payments.searchSubscriptions(
-        `metadata['ownerId']:'${ownerId}'`,
-        100
-      );
-      this.logger.log(
-        `Found ${subscriptions.length} subscriptions for owner ${ownerId}`
-      );
-      return subscriptions;
-    } catch (error) {
-      this.logger.error(
-        `Failed to get subscriptions for owner ${ownerId}: ${
-          (error as Error).message
-        }`
-      );
-      throw error;
-    }
+    const subscription = await this.payments.cancelSubscription(subscriptionId);
+    this.logger.log(`Subscription cancelled: ${subscription.id}`);
+    return subscription;
   }
 
   // --- Webhook Event Handlers ---
