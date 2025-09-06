@@ -16,9 +16,11 @@ export class EventsService {
 
   constructor(@Inject(Names.stitch) private readonly client: ClientProxy) {}
 
-  publishSubscriptionCreated(payload: SubscriptionEventPayload): void {
+  async publishSubscriptionCreated(
+    payload: SubscriptionEventPayload
+  ): Promise<void> {
     try {
-      this.client.emit(Events.SUBSCRIPTION_CREATED, payload);
+      await this.client.emit(Events.SUBSCRIPTION_CREATED, payload);
       this.logger.log(
         `Published subscription.created event for subscription ${payload.id}`
       );
@@ -30,9 +32,11 @@ export class EventsService {
     }
   }
 
-  publishSubscriptionUpdated(payload: SubscriptionEventPayload): void {
+  async publishSubscriptionUpdated(
+    payload: SubscriptionEventPayload
+  ): Promise<void> {
     try {
-      this.client.emit(Events.SUBSCRIPTION_UPDATED, payload);
+      await this.client.emit(Events.SUBSCRIPTION_UPDATED, payload);
       this.logger.log(
         `Published subscription.updated event for subscription ${payload.id}`
       );
@@ -44,9 +48,11 @@ export class EventsService {
     }
   }
 
-  publishSubscriptionDeleted(payload: SubscriptionEventPayload): void {
+  async publishSubscriptionDeleted(
+    payload: SubscriptionEventPayload
+  ): Promise<void> {
     try {
-      this.client.emit(Events.SUBSCRIPTION_DELETED, payload);
+      await this.client.emit(Events.SUBSCRIPTION_DELETED, payload);
       this.logger.log(
         `Published subscription.deleted event for subscription ${payload.id}`
       );

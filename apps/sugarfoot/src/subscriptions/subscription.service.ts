@@ -94,11 +94,9 @@ export class SubscriptionService {
         subscriptionId: data.id,
       },
       data: {
-        ownerId: data.ownerId,
         planType: data.planType,
         status: this.mapStatusToLocal(data.status),
         expiresAt: data.expiresAt,
-        subscriptionId: data.id,
         updatedAt: new Date(),
       },
     });

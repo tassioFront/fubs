@@ -33,13 +33,13 @@ export class OutboxProcessorService {
 
         switch (event.type) {
           case Events.SUBSCRIPTION_CREATED:
-            this.eventsService.publishSubscriptionCreated(payload);
+            await this.eventsService.publishSubscriptionCreated(payload);
             break;
           case Events.SUBSCRIPTION_UPDATED:
-            this.eventsService.publishSubscriptionUpdated(payload);
+            await this.eventsService.publishSubscriptionUpdated(payload);
             break;
           case Events.SUBSCRIPTION_DELETED:
-            this.eventsService.publishSubscriptionDeleted(payload);
+            await this.eventsService.publishSubscriptionDeleted(payload);
             break;
           default:
             this.logger.warn(`Unknown event type: ${event.type}`);
