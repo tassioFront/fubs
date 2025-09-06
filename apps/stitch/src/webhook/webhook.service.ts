@@ -37,9 +37,6 @@ export class WebhookService {
           event.data as Stripe.Subscription
         );
         break;
-      // case 'checkout.session.completed':
-      //   await this.paymentsService.handleCheckoutSessionCompleted(event);
-      //   break;
       default:
         this.logger.warn(`Unhandled Stripe event type: ${event.type}`);
     }

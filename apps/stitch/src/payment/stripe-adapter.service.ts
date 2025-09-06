@@ -187,20 +187,6 @@ export class StripeAdapterService implements PaymentProvider {
     return this.mapCheckoutSession(session as Stripe.Checkout.Session);
   }
 
-  async listCheckoutSessionLineItems(
-    sessionId: string
-  ): Promise<CheckoutLineItemSummary[]> {
-    const { data } = await this.stripe.checkout.sessions.listLineItems(
-      sessionId
-    );
-    return data.map((item) => {
-      const priceId =
-        (item as unknown as { price?: { id?: string } }).price?.id ?? '';
-      const quantity = item.quantity ?? 1;
-      return { priceId, quantity };
-    });
-  }
-
   async createSubscription(
     data: CreateSubscriptionDto
   ): Promise<ProviderSubscription> {

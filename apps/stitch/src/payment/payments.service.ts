@@ -27,9 +27,6 @@ import {
   CheckoutSession,
 } from '@fubs/shared';
 
-const getExpirationDate = (): Date =>
-  new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 1 month from now
-
 @Injectable()
 export class PaymentsService {
   private readonly logger = new Logger(PaymentsService.name);
@@ -241,7 +238,7 @@ export class PaymentsService {
   }
 
   /**
-   * Handle invoice.paid event
+   * to-do: expand to handle other relevant events
    */
   async handleInvoicePaid(event: WebhookEvent): Promise<void> {
     const invoice = event.data as unknown as {
@@ -258,13 +255,6 @@ export class PaymentsService {
       const ownerId = invoice.metadata?.ownerId as string;
       this.logger.log(
         `Processing invoice payment for owner: ${ownerId} with price: ${priceId}`
-      );
-
-      await this.processPlanPayment(
-        invoice.customer as string,
-        priceId,
-        'invoice_paid',
-        ownerId
       );
     } catch (error) {
       this.logger.error(
@@ -315,252 +305,6 @@ export class PaymentsService {
           (error as Error).message
         }`
       );
-    }
-  }
-
-  /**
-   * Handle customer.subscription.created event
-   */
-  async handleSubscriptionCreated(event: WebhookEvent): Promise<void> {
-    const subscription = event.data as unknown as {
-      id: string;
-      items?: { data: Array<{ price?: { id?: string } }> };
-      customer?: string;
-    };
-    this.logger.log(`Subscription created: ${subscription.id}`, subscription);
-
-    try {
-      const priceId = subscription.items?.data?.[0]?.price?.id as string;
-
-      await this.processPlanPayment(
-        subscription.customer as string,
-        priceId,
-        'subscription_created',
-        '' // there is not metadata info when the subscription is created
-      );
-    } catch (error) {
-      this.logger.error(
-        `Failed to process subscription.created event: ${
-          (error as Error).message
-        }`
-      );
-    }
-  }
-
-  /**
-   * Handle customer.subscription.updated event
-   */
-  async handleSubscriptionUpdated(event: WebhookEvent): Promise<void> {
-    const subscription = event.data as unknown as {
-      id: string;
-      customer?: string;
-      status?: string;
-    };
-    this.logger.log(`Subscription updated: ${subscription.id}`);
-
-    try {
-      // Add event to outbox for plan sync
-      await this.prisma.outbox.create({
-        data: {
-          type: 'SUBSCRIPTION_UPDATED',
-          payload: JSON.stringify({
-            stripeCustomerId: subscription.customer,
-            subscriptionId: subscription.id,
-            status: subscription.status,
-            timestamp: new Date().toISOString(),
-          }),
-        },
-      });
-    } catch (error) {
-      this.logger.error(
-        `Failed to process subscription.updated event: ${
-          (error as Error).message
-        }`
-      );
-    }
-  }
-
-  /**
-   * Handle customer.subscription.deleted event
-   */
-  async handleSubscriptionDeleted(event: WebhookEvent): Promise<void> {
-    const subscription = event.data as unknown as {
-      id: string;
-      customer?: string;
-    };
-    this.logger.warn(`Subscription deleted: ${subscription.id}`);
-
-    try {
-      if (subscription.customer) {
-        // Mark orders as cancelled
-        // await this.prisma.order.updateMany({
-        //   where: {
-        //     stripeCustomerId: subscription.customer as string,
-        //     status: 'PAID',
-        //   },
-        //   data: {
-        //     status: 'CANCELLED',
-        //     updatedAt: new Date(),
-        //   },
-        // });
-
-        // Add event to outbox for access deactivation
-        await this.prisma.outbox.create({
-          data: {
-            type: 'SUBSCRIPTION_CANCELLED',
-            payload: JSON.stringify({
-              stripeCustomerId: subscription.customer,
-              subscriptionId: subscription.id,
-              timestamp: new Date().toISOString(),
-            }),
-          },
-        });
-      }
-    } catch (error) {
-      this.logger.error(
-        `Failed to process subscription.deleted event: ${
-          (error as Error).message
-        }`
-      );
-    }
-  }
-
-  /**
-   * Handle checkout.session.completed event
-   */
-  async handleCheckoutSessionCompleted(event: WebhookEvent): Promise<void> {
-    const session = event.data as {
-      id: string;
-      metadata?: Record<string, string>;
-      subscription?: string;
-      customer?: string;
-    };
-    // this object (session) brings the expiration date on "expires_at" field
-    this.logger.log(`Checkout session completed: ${session.id}`, session);
-
-    try {
-      // Get the line items to find the plan price
-      const lineItems = await this.payments.listCheckoutSessionLineItems(
-        session.id
-      );
-      const priceId = lineItems[0]?.priceId;
-      const ownerId = session.metadata?.ownerId as string;
-      const subscriptionId = session.subscription as string;
-
-      // the subscription must be updated to include the metadata
-      await this.updateSubscription(subscriptionId, {
-        metadata: {
-          ownerId,
-          expiresAt: getExpirationDate().toString(),
-        },
-      });
-      this.logger.log(
-        `Updated subscription ${subscriptionId} with ownerId metadata`
-      );
-
-      await this.processPlanPayment(
-        session.customer as string,
-        priceId,
-        'checkout_completed',
-        ownerId
-      );
-    } catch (error) {
-      this.logger.error(
-        `Failed to process checkout.session.completed event: ${
-          (error as Error).message
-        }`
-      );
-    }
-  }
-
-  /**
-   * Process plan payment completion
-   */
-  private async processPlanPayment(
-    stripeCustomerId: string,
-    stripePriceId: string,
-    eventType: string,
-    ownerId: string
-  ): Promise<void> {
-    try {
-      this.logger.log(
-        `Processing plan payment for customer: ${stripeCustomerId} and owner: ${ownerId}, price ID: ${stripePriceId}, event type: ${eventType}`
-      );
-      // Find the plan by Stripe price ID
-      const plan = await this.prisma.plan.findFirst({
-        where: { stripePriceId },
-      });
-
-      if (!plan) {
-        this.logger.warn(
-          `Plan not found for Stripe price ID: ${stripePriceId}`
-        );
-        return;
-      }
-
-      // // Find or create order record
-      // const existingOrder = await this.prisma.subscriptionEntitlement.findFirst(
-      //   {
-      //     where: {
-      //       stripeCustomerId,
-      //       planType: plan.type,
-      //       status: 'ACTIVE',
-      //     },
-      //   }
-      // );
-
-      // if (existingOrder) {
-      //   // Update existing order to PAID
-      //   await this.prisma.order.update({
-      //     where: { id: existingOrder.id },
-      //     data: {
-      //       status: 'PAID',
-      //       updatedAt: new Date(),
-      //     },
-      //   });
-      //   this.logger.log(
-      //     `Order ${existingOrder.id} marked as PAID for plan ${plan.type}`
-      //   );
-      // } else {
-      //   const expiresAt = getExpirationDate();
-      //   // Create new order record
-      //   const newOrder = await this.prisma.order.create({
-      //     data: {
-      //       ownerId, // This should be mapped to actual user ID
-      //       stripeCustomerId,
-      //       planType: plan.type,
-      //       amount: plan.priceCents,
-      //       currency: 'usd',
-      //       status: 'PAID',
-      //       expiresAt,
-      //     },
-      //   });
-      //   this.logger.log(
-      //     `New order ${newOrder.id} created for plan ${plan.type}`
-      //   );
-      // }
-
-      // Add event to outbox for workspace access activation
-      // await this.prisma.outbox.create({
-      //   data: {
-      //     type: 'PLAN_PURCHASED',
-      //     payload: JSON.stringify({
-      //       stripeCustomerId,
-      //       planType: plan.type,
-      //       eventType,
-      //       timestamp: new Date().toISOString(),
-      //     }),
-      //   },
-      // });
-
-      this.logger.log(
-        `Plan payment processed successfully for ${plan.type} plan`
-      );
-    } catch (error) {
-      this.logger.error(
-        `Failed to process plan payment: ${(error as Error).message}`
-      );
-      throw error;
     }
   }
 }

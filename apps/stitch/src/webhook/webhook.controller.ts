@@ -7,14 +7,10 @@ import {
   HttpCode,
   Logger,
   UnauthorizedException,
-  Body,
-  Get,
-  Param,
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { PaymentsService } from '../payment/payments.service';
 import { WebhookService } from './webhook.service';
-import type { CreateCustomerDto } from 'src/payment/payment-provider.interface';
 
 @Controller('webhook')
 export class WebhookController {
@@ -65,19 +61,5 @@ export class WebhookController {
       }
       throw err;
     }
-  }
-
-  @Post('test-customer')
-  async createTestCustomer(@Body() dto: CreateCustomerDto) {
-    const customer = await this.paymentsService.createCustomer(dto);
-    return { id: customer.id };
-  }
-
-  @Get('test-subscriptions/:ownerId')
-  async getTestSubscriptions(@Param('ownerId') ownerId: string) {
-    const subscriptions = await this.paymentsService.getSubscriptionsByOwnerId(
-      ownerId
-    );
-    return { subscriptions };
   }
 }

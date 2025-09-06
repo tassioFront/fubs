@@ -117,9 +117,6 @@ export interface PaymentProvider {
     data: CreateCheckoutSessionDtoWithPlan
   ): Promise<CheckoutSession>;
   getCheckoutSession(sessionId: string): Promise<CheckoutSession>;
-  listCheckoutSessionLineItems(
-    sessionId: string
-  ): Promise<CheckoutLineItemSummary[]>;
 
   // Subscription Management
   createSubscription(data: CreateSubscriptionDto): Promise<Subscription>;
