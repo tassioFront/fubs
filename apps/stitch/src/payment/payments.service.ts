@@ -10,7 +10,7 @@ import type {
   CreateProductDto,
   CreateSubscriptionDto,
   UpdateSubscriptionDto,
-} from '../common/stripe/stripe.entity';
+} from './stripe.entity';
 import { PAYMENT_PROVIDER } from './payment-provider.interface';
 import type {
   PaymentProvider,
