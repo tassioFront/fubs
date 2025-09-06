@@ -7,6 +7,7 @@ import { ProjectsModule } from '../projects/projects.module';
 import { AuthModule } from '../auth/auth.module';
 import { WorkspaceMembersModule } from '../workspaces/workspace-members.module';
 import { OutboxProcessorModule } from '../workspaces/outbox-processor.module';
+import { SubscriptionModule } from '../subscriptions/subscription.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { OutboxProcessorModule } from '../workspaces/outbox-processor.module';
     ProjectsModule,
     EventsModule,
     OutboxProcessorModule,
+    SubscriptionModule,
   ],
   controllers: [AppController],
   providers: [],
