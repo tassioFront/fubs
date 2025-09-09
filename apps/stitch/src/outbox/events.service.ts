@@ -8,6 +8,7 @@ interface SubscriptionEventPayload {
   planType: string;
   status: string;
   expiresAt: string;
+  workspaceLimit?: number;
 }
 
 @Injectable()

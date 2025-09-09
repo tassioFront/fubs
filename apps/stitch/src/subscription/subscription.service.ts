@@ -243,6 +243,7 @@ export class SubscriptionService {
               ownerId,
               status: SubscriptionStatus.ACTIVE,
               expiresAt: new Date(data.current_period_end * 1000).toISOString(),
+              workspaceLimit: plan.workspaceLimit,
             }),
           },
         });
@@ -308,17 +309,12 @@ export class SubscriptionService {
   }
 
   async handleSubscriptionUpdated(event: Stripe.Subscription): Promise<void> {
-    const subscription = event as {
-      id: string;
-      customer?: string;
-      status?: string;
-      metadata?: Record<string, string>;
-    };
-
+    const subscription = event;
     this.logger.log(`Processing subscription updated: ${subscription.id}`);
 
     try {
-      // Find local subscription
+      const data = subscription.items?.data[0];
+      const priceId = data?.price?.id;
       const localSubscription =
         await this.getSubscriptionByPaymentProviderSubscriptionId(
           subscription.id
@@ -329,6 +325,17 @@ export class SubscriptionService {
           `No local subscription found for payment provider subscription ID: ${subscription.id}`
         );
         throw new NotFoundException('Local subscription not found');
+      }
+
+      const plan = await this.prisma.plan.findFirst({
+        where: { stripePriceId: priceId },
+      });
+
+      if (!plan) {
+        this.logger.warn(
+          `Plan not found for payment provider price ID: ${priceId}`
+        );
+        throw new NotFoundException('Plan not found');
       }
 
       const localStatus = this.mapPaymentProviderStatusToLocal(
@@ -353,6 +360,7 @@ export class SubscriptionService {
               planType: localSubscription.planType,
               expiresAt: localSubscription.expiresAt,
               status: localStatus,
+              workspaceLimit: plan.workspaceLimit,
             }),
           },
         });

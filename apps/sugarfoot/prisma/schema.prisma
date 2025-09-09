@@ -112,6 +112,7 @@ model Subscription {
   subscriptionId                String
   ownerId                       String
   planType                      String
+  workspaceLimit                Int?
   status                        SubscriptionStatus
   expiresAt                     DateTime
   createdAt                     DateTime           @default(now())

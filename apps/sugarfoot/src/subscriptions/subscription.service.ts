@@ -62,6 +62,7 @@ export class SubscriptionService {
         status: this.mapStatusToLocal(data.status),
         expiresAt: data.expiresAt,
         subscriptionId: data.id,
+        workspaceLimit: data.workspaceLimit,
       },
     });
 
@@ -98,6 +99,7 @@ export class SubscriptionService {
         status: this.mapStatusToLocal(data.status),
         expiresAt: data.expiresAt,
         updatedAt: new Date(),
+        workspaceLimit: data.workspaceLimit,
       },
     });
 
