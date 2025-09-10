@@ -12,7 +12,7 @@ import { Names } from '@fubs/shared';
         options: {
           urls: [process.env.RABBITMQ_URL as string],
           queue: process.env.RABBITMQ_QUEUE as string,
-          queueOptions: { durable: false },
+          queueOptions: { durable: true },
         },
       },
     ]),

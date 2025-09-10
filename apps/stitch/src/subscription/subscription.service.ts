@@ -1,4 +1,9 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
 import {
   SubscriptionStatus,
@@ -12,6 +17,7 @@ import {
 } from './dto/subscription.dto';
 import Stripe from 'stripe';
 import { CustomerService } from 'src/customer/customer.service';
+import { Events } from '@fubs/shared';
 
 @Injectable()
 export class SubscriptionService {
@@ -190,6 +196,19 @@ export class SubscriptionService {
         return;
       }
 
+      const hasSubscription =
+        await this.getSubscriptionByPaymentProviderSubscriptionId(
+          subscription.id
+        );
+      if (hasSubscription) {
+        this.logger.log(
+          `Subscription already exists for payment provider subscription ID: ${subscription.id}`
+        );
+        throw new ConflictException(
+          `Subscription already exists for payment provider subscription ID: ${subscription.id}`
+        );
+      }
+
       const ownerId = customer.ownerId;
       const plan = await this.prisma.plan.findFirst({
         where: { stripePriceId: priceId },
@@ -202,29 +221,33 @@ export class SubscriptionService {
         throw new NotFoundException('Plan not found');
       }
 
-      await this.createSubscription({
-        ownerId,
-        planType: plan.type,
-        paymentProviderCustomerId: subscription.customer as string,
-        paymentProviderSubscriptionId: subscription.id,
-        paymentProviderPriceId: priceId,
-        status: SubscriptionStatus.ACTIVE,
-        expiresAt: new Date(data.current_period_end * 1000).toISOString(),
-      });
+      await this.prisma.$transaction(async (tx) => {
+        const newSubscription = await tx.subscriptionEntitlement.create({
+          data: {
+            ownerId,
+            planType: plan.type,
+            paymentProviderCustomerId: subscription.customer as string,
+            paymentProviderSubscriptionId: subscription.id,
+            paymentProviderPriceId: priceId,
+            status: SubscriptionStatus.ACTIVE,
+            expiresAt: new Date(data.current_period_end * 1000),
+          },
+        });
 
-      // apply it when sugarfoot is ready for consuming the events
-      // await this.prisma.outbox.create({
-      //   data: {
-      //     type: 'SUBSCRIPTION_CREATED',
-      //     payload: JSON.stringify({
-      //       paymentProviderSubscriptionId: subscription.id,
-      //       paymentProviderCustomerId: subscription.customer,
-      //       planType: plan.type,
-      //       ownerId,
-      //       timestamp: new Date().toISOString(),
-      //     }),
-      //   },
-      // });
+        await tx.outbox.create({
+          data: {
+            type: Events.SUBSCRIPTION_CREATED,
+            payload: JSON.stringify({
+              id: newSubscription.id,
+              planType: plan.type,
+              ownerId,
+              status: SubscriptionStatus.ACTIVE,
+              expiresAt: new Date(data.current_period_end * 1000).toISOString(),
+              workspaceLimit: plan.workspaceLimit,
+            }),
+          },
+        });
+      });
     } catch (error) {
       this.logger.error(
         `Failed to process subscription.created event: ${
@@ -253,20 +276,28 @@ export class SubscriptionService {
         throw new NotFoundException('Local subscription not found');
       }
 
-      await this.updateSubscription(localSubscription.id, {
-        status: SubscriptionStatus.CANCELED,
-      });
+      await this.prisma.$transaction(async (tx) => {
+        await tx.subscriptionEntitlement.update({
+          where: { id: localSubscription.id },
+          data: {
+            status: SubscriptionStatus.CANCELED,
+            updatedAt: new Date(),
+          },
+        });
 
-      // await this.prisma.outbox.create({
-      //   data: {
-      //     type: 'SUBSCRIPTION_CANCELLED',
-      //     payload: JSON.stringify({
-      //       paymentProviderCustomerId: subscription.customer,
-      //       paymentProviderSubscriptionId: subscription.id,
-      //       timestamp: new Date().toISOString(),
-      //     }),
-      //   },
-      // });
+        await tx.outbox.create({
+          data: {
+            type: Events.SUBSCRIPTION_DELETED,
+            payload: JSON.stringify({
+              id: localSubscription.id,
+              ownerId: localSubscription.ownerId,
+              planType: localSubscription.planType,
+              expiresAt: localSubscription.expiresAt,
+              status: SubscriptionStatus.CANCELED,
+            }),
+          },
+        });
+      });
     } catch (error) {
       this.logger.error(
         `Failed to process subscription.deleted event: ${
@@ -278,17 +309,12 @@ export class SubscriptionService {
   }
 
   async handleSubscriptionUpdated(event: Stripe.Subscription): Promise<void> {
-    const subscription = event as {
-      id: string;
-      customer?: string;
-      status?: string;
-      metadata?: Record<string, string>;
-    };
-
+    const subscription = event;
     this.logger.log(`Processing subscription updated: ${subscription.id}`);
 
     try {
-      // Find local subscription
+      const data = subscription.items?.data[0];
+      const priceId = data?.price?.id;
       const localSubscription =
         await this.getSubscriptionByPaymentProviderSubscriptionId(
           subscription.id
@@ -301,25 +327,44 @@ export class SubscriptionService {
         throw new NotFoundException('Local subscription not found');
       }
 
+      const plan = await this.prisma.plan.findFirst({
+        where: { stripePriceId: priceId },
+      });
+
+      if (!plan) {
+        this.logger.warn(
+          `Plan not found for payment provider price ID: ${priceId}`
+        );
+        throw new NotFoundException('Plan not found');
+      }
+
       const localStatus = this.mapPaymentProviderStatusToLocal(
         subscription.status
       );
 
-      await this.updateSubscription(localSubscription.id, {
-        status: localStatus,
-      });
+      await this.prisma.$transaction(async (tx) => {
+        await tx.subscriptionEntitlement.update({
+          where: { id: localSubscription.id },
+          data: {
+            status: localStatus,
+            updatedAt: new Date(),
+          },
+        });
 
-      // await this.prisma.outbox.create({
-      //   data: {
-      //     type: 'SUBSCRIPTION_UPDATED',
-      //     payload: JSON.stringify({
-      //       paymentProviderCustomerId: subscription.customer,
-      //       paymentProviderSubscriptionId: subscription.id,
-      //       status: subscription.status,
-      //       timestamp: new Date().toISOString(),
-      //     }),
-      //   },
-      // });
+        await tx.outbox.create({
+          data: {
+            type: Events.SUBSCRIPTION_UPDATED,
+            payload: JSON.stringify({
+              id: localSubscription.id,
+              ownerId: localSubscription.ownerId,
+              planType: localSubscription.planType,
+              expiresAt: localSubscription.expiresAt,
+              status: localStatus,
+              workspaceLimit: plan.workspaceLimit,
+            }),
+          },
+        });
+      });
     } catch (error) {
       this.logger.error(
         `Failed to process subscription.updated event: ${
