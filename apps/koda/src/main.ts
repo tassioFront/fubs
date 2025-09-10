@@ -17,8 +17,9 @@ async function bootstrap() {
       urls: [process.env.RABBITMQ_URL as string],
       queue: process.env.RABBITMQ_QUEUE as string,
       queueOptions: {
-        durable: false,
+        durable: true,
       },
+      noAck: false,
       socketOptions: {
         heartbeatIntervalInSeconds: 60,
         reconnectTimeInSeconds: 5,
@@ -32,9 +33,7 @@ async function bootstrap() {
 
   await app.listen(port);
 
-  Logger.log(
-    `🚀 Application is running on: http://localhost:${port}}`
-  );
+  Logger.log(`🚀 Application is running on: http://localhost:${port}}`);
 }
 
 bootstrap();

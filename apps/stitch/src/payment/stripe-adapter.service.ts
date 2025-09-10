@@ -13,7 +13,6 @@ import {
   CreatePriceDto,
   CreateSubscriptionDto,
   UpdateSubscriptionDto,
-  CheckoutLineItemSummary,
 } from './payment-provider.interface';
 import {
   Price,

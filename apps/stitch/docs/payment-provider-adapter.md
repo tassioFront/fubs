@@ -66,3 +66,43 @@ Each controller should use the relevant methods from `payment.service` to intera
 - SUBSCRIPTION_CREATED: when emitted, the subscription service should create a new subscription in the local database, referencing the provider's subscription ID, customer ID and Price ID.
 - SUBSCRIPTION_UPDATED: when emitted, the subscription service should update the local subscription record to reflect changes made in the payment provider (e.g., status, plan).
 - SUBSCRIPTION_DELETED: when emitted, the subscription service should mark the local subscription as cancelled or deleted, depending on business rules.
+
+## Event driven
+
+The subscription service should emit domain events: SubscriptionCreated, SubscriptionUpdated, SubscriptionCancelled using the Outbox pattern. Those events can be used to consumers to figure out the current state of the subscription.
+
+### Example payload for SubscriptionCreated event
+
+```json
+{
+  "id": "local-subscription-id",
+  "ownerId": "user-id",
+  "planType": "pro",
+  "status": "active",
+  "expiresAt": "2024-01-01T00:00:00.000Z"
+}
+```
+
+### Example payload for SubscriptionUpdated event
+
+```json
+{
+  "id": "local-subscription-id",
+  "ownerId": "user-id",
+  "planType": "pro",
+  "status": "past_due",
+  "expiresAt": "2024-02-01T00:00:00.000Z"
+}
+```
+
+### Example payload for SubscriptionCancelled event
+
+```json
+{
+  "id": "local-subscription-id",
+  "ownerId": "user-id",
+  "planType": "pro",
+  "status": "cancelled",
+  "expiresAt": "2024-01-15T00:00:00.000Z"
+}
+```

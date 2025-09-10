@@ -6,4 +6,7 @@ export enum Events {
   PROJECT_CREATED = 'project.created',
   PROJECT_UPDATED = 'project.updated',
   PROJECT_DELETED = 'project.deleted',
+  SUBSCRIPTION_CREATED = 'subscription.created',
+  SUBSCRIPTION_UPDATED = 'subscription.updated',
+  SUBSCRIPTION_DELETED = 'subscription.deleted',
 }

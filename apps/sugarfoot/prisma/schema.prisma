@@ -106,3 +106,32 @@ model Outbox {
   createdAt   DateTime @default(now())
   processedAt DateTime?
 }
+
+model Subscription {
+  id                            String             @id @default(uuid())
+  subscriptionId                String
+  ownerId                       String
+  planType                      String
+  workspaceLimit                Int?
+  status                        SubscriptionStatus
+  expiresAt                     DateTime
+  createdAt                     DateTime           @default(now())
+  updatedAt                     DateTime           @updatedAt
+
+  @@index([ownerId])
+  @@index([status])
+  @@index([subscriptionId])
+  @@unique([subscriptionId])
+  @@map("subscriptions")
+}
+
+enum SubscriptionStatus {
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  UNPAID
+  INCOMPLETE
+  INCOMPLETE_EXPIRED
+  PAUSED
+}
