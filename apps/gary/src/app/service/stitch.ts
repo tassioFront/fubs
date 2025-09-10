@@ -1,5 +1,9 @@
-import { getAuthHeader } from '@fubs/shared/src/lib/utils/getToken';
-import { PlanCompleted } from '@fubs/shared/src/lib/types/plan';
+import { getInternalApiHeader } from '@fubs/shared/src/lib/utils/getToken';
+import {
+  CreateCheckoutSessionDto,
+  PlanCompleted,
+  CheckoutSession,
+} from '@fubs/shared/src/lib/types/plan';
 import { request, requestWithBody } from './request';
 import {
   SaveCustomerParams,
@@ -11,7 +15,7 @@ const STITCH_SERVICE_URL = process.env.STITCH_SERVICE_URL;
 export async function saveCustomer(
   params: SaveCustomerParams
 ): Promise<SaveCustomerResponse> {
-  const headers = getAuthHeader({
+  const headers = getInternalApiHeader({
     serviceName: process.env.GARY_SERVICE_NAME as string,
   });
 
@@ -33,8 +37,15 @@ export async function saveCustomer(
 }
 
 export async function getPlans(): Promise<PlanCompleted[]> {
+  const headers = getInternalApiHeader({
+    serviceName: process.env.GARY_SERVICE_NAME as string,
+  });
+
   const response = await request({
     url: `${STITCH_SERVICE_URL}/plans`,
+    options: {
+      headers,
+    },
   });
 
   if (!response.ok) {
@@ -44,32 +55,14 @@ export async function getPlans(): Promise<PlanCompleted[]> {
   return response.json();
 }
 
-/// FUTURE - todo
-
-export interface Entitlement {
-  status: 'ACTIVE' | 'INACTIVE' | 'PENDING';
-  planType: 'FREE' | 'PAID';
-  expiresAt?: string;
-}
-export interface CheckoutSession {
-  id: string;
-  url: string;
-}
-
-export interface CreateCheckoutSessionParams {
-  priceId: string;
-  successUrl: string;
-  cancelUrl: string;
-  ownerId: string;
-}
 export async function createCheckoutSession(
-  params: CreateCheckoutSessionParams
+  params: Omit<CreateCheckoutSessionDto, 'customerId'>
 ): Promise<CheckoutSession> {
-  const headers = getAuthHeader({
+  const headers = getInternalApiHeader({
     serviceName: process.env.GARY_SERVICE_NAME as string,
   });
 
-  const response = await fetch(`${STITCH_SERVICE_URL}/checkout/session`, {
+  const response = await fetch(`${STITCH_SERVICE_URL}/plans/checkout-session`, {
     method: 'POST',
     headers,
     body: JSON.stringify(params),
@@ -78,45 +71,6 @@ export async function createCheckoutSession(
 
   if (!response.ok) {
     throw new Error(`Failed to create checkout session: ${response.status}`);
-  }
-
-  return response.json();
-}
-
-export async function getCheckoutSession(sessionId: string) {
-  const headers = getAuthHeader({
-    serviceName: process.env.GARY_SERVICE_NAME as string,
-  });
-
-  const response = await fetch(
-    `${STITCH_SERVICE_URL}/checkout/session/${sessionId}`,
-    {
-      method: 'GET',
-      headers,
-      cache: 'no-store',
-    }
-  );
-
-  if (!response.ok) {
-    throw new Error(`Failed to get checkout session: ${response.status}`);
-  }
-
-  return response.json();
-}
-
-export async function getEntitlement(): Promise<Entitlement> {
-  const headers = getAuthHeader({
-    serviceName: process.env.GARY_SERVICE_NAME as string,
-  });
-
-  const response = await fetch(`${STITCH_SERVICE_URL}/entitlements/me`, {
-    method: 'GET',
-    headers,
-    cache: 'no-store',
-  });
-
-  if (!response.ok) {
-    throw new Error(`Failed to get entitlement: ${response.status}`);
   }
 
   return response.json();

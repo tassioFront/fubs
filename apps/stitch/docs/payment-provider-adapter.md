@@ -24,25 +24,18 @@ To improve maintainability and scalability, payment-related entities should be s
 - **OrderController**: Uses `payment.service` methods for payment transactions and audit trails.
 - **WebhookController**: Uses `payment.service` methods for webhook processing and validation.
 
-### Example Structure
+### Example: Subscription
+
+### Structure
 
 ```
 apps/stitch/src/
-	customer/
-		customer.module.ts
-		customer.controller.ts
-	product/
-		product.module.ts
-		product.controller.ts
-	checkout/
-		checkout.module.ts
-		checkout.controller.ts
 	subscription/
 		subscription.module.ts
 		subscription.controller.ts
-	order/
-		order.module.ts
-		order.controller.ts
+		subscription.service.ts
+		dto/
+			subscription.dto.ts
 	payment/ // it will be moved to common folder later
 		payment-provider.interface.ts
 		stripe-adapter.service.ts
@@ -52,12 +45,64 @@ apps/stitch/src/
 
 Each controller should use the relevant methods from `payment.service` to interact with the payment provider, keeping business logic centralized and maintainable.
 
-## Step 1 - Customer
+### steps
 
-- create the customer folder
-- create the customer module in (it should inject the PaymentService as payment.module does)
-- create the customer controller
-- move the customer-related logic from payment.service.ts to customer.service.ts
-- create the necessary customer-related endpoints on customer.controller.ts
-- create the necessary customer-related DTOs (Data Transfer Objects) for request validation and type safety
-- create a local customer model on schema that stores business data and references the provider’s customer
+- create the subscription folder
+- create the subscription module in (it should inject the PaymentService as payment.module does)
+- create the subscription controller
+- move the subscription-related logic from webhook.service.ts to subscription.service.ts
+- the webhook.service.ts should use the subscription.service.ts methods for subscription-related webhook events
+- create the following subscription-related endpoints on subscription.controller.ts: get all subscriptions and get subscription by id
+- create the necessary subscription-related DTOs (Data Transfer Objects) for request validation and type safety
+- use the local subscription model on schema that stores business data and references the provider’s subscription
+- use the JwtAuthGuard guard to protect all subscription-related endpoints
+- remove processPlanPayment from payment.service, as it is no longer needed. Treat the subscription synchronization on the subscription.service.ts
+
+## Subscription context
+
+- subscription.service can NOT call stripe directly. It should use payment.service methods to interact with the payment provider if needed.
+- Subscription is a business entity that represents a recurring payment agreement between a customer and the service.
+- The subscription created, updated and deleted events comes from the payment provider via webhooks.
+- SUBSCRIPTION_CREATED: when emitted, the subscription service should create a new subscription in the local database, referencing the provider's subscription ID, customer ID and Price ID.
+- SUBSCRIPTION_UPDATED: when emitted, the subscription service should update the local subscription record to reflect changes made in the payment provider (e.g., status, plan).
+- SUBSCRIPTION_DELETED: when emitted, the subscription service should mark the local subscription as cancelled or deleted, depending on business rules.
+
+## Event driven
+
+The subscription service should emit domain events: SubscriptionCreated, SubscriptionUpdated, SubscriptionCancelled using the Outbox pattern. Those events can be used to consumers to figure out the current state of the subscription.
+
+### Example payload for SubscriptionCreated event
+
+```json
+{
+  "id": "local-subscription-id",
+  "ownerId": "user-id",
+  "planType": "pro",
+  "status": "active",
+  "expiresAt": "2024-01-01T00:00:00.000Z"
+}
+```
+
+### Example payload for SubscriptionUpdated event
+
+```json
+{
+  "id": "local-subscription-id",
+  "ownerId": "user-id",
+  "planType": "pro",
+  "status": "past_due",
+  "expiresAt": "2024-02-01T00:00:00.000Z"
+}
+```
+
+### Example payload for SubscriptionCancelled event
+
+```json
+{
+  "id": "local-subscription-id",
+  "ownerId": "user-id",
+  "planType": "pro",
+  "status": "cancelled",
+  "expiresAt": "2024-01-15T00:00:00.000Z"
+}
+```

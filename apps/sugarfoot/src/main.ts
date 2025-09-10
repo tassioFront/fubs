@@ -1,6 +1,7 @@
 import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { AppModule } from './app/app.module';
 import { validationPipeConfig } from './common/validation.config';
 import { AllExceptionsFilter } from '@fubs/shared';
@@ -8,6 +9,22 @@ import { AllExceptionsFilter } from '@fubs/shared';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableShutdownHooks();
+
+  app.connectMicroservice<MicroserviceOptions>({
+    transport: Transport.RMQ,
+    options: {
+      urls: [process.env.RABBITMQ_URL as string],
+      queue: process.env.RABBITMQ_QUEUE as string,
+      queueOptions: {
+        durable: true,
+      },
+      noAck: false,
+      socketOptions: {
+        heartbeatIntervalInSeconds: 60,
+        reconnectTimeInSeconds: 5,
+      },
+    },
+  });
 
   const globalPrefix = 'sugarfoot';
   app.setGlobalPrefix(globalPrefix);
@@ -30,6 +47,8 @@ async function bootstrap() {
     credentials: true,
   });
 
+  await app.startAllMicroservices();
+
   const port = process.env.PORT || 3000;
   await app.listen(port);
   Logger.log(
@@ -37,6 +56,11 @@ async function bootstrap() {
   );
   Logger.log(
     `📚 Swagger documentation: http://localhost:${port}/${globalPrefix}/api/docs`
+  );
+  Logger.log(
+    `📡 Microservice is listening for RabbitMQ events on queue: ${
+      process.env.RABBITMQ_QUEUE as string
+    }`
   );
 }
 

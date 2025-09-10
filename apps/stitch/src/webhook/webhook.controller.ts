@@ -7,15 +7,10 @@ import {
   HttpCode,
   Logger,
   UnauthorizedException,
-  Body,
-  Get,
-  Param,
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { PaymentsService } from '../payment/payments.service';
 import { WebhookService } from './webhook.service';
-import type { CreateCheckoutSessionDto } from '../common/stripe/stripe.entity';
-import type { CreateCustomerDto } from 'src/payment/payment-provider.interface';
 
 @Controller('webhook')
 export class WebhookController {
@@ -25,6 +20,25 @@ export class WebhookController {
     private readonly paymentsService: PaymentsService,
     private readonly webhookService: WebhookService
   ) {}
+
+  @Post('stripe-dev')
+  @HttpCode(200)
+  async handleStripeWebhookDev(@Req() req: Request, @Res() res: Response) {
+    /*
+     * Use this endpoint for local development with the Stripe CLI
+     * and testing webhooks without needing to validate signatures.
+     */
+    try {
+      await this.webhookService.handleStripeEvent(req.body as any);
+      return res.json({ received: true });
+    } catch (err) {
+      const isUnauthorized = err instanceof UnauthorizedException;
+      if (!isUnauthorized) {
+        this.logger.error('Unexpected error handling Stripe webhook', err);
+      }
+      throw err;
+    }
+  }
 
   @Post('stripe')
   @HttpCode(200)
@@ -47,25 +61,5 @@ export class WebhookController {
       }
       throw err;
     }
-  }
-
-  @Post('test-checkout-url')
-  async createTestCheckoutUrl(@Body() dto: CreateCheckoutSessionDto) {
-    const session = await this.paymentsService.createCheckoutSession(dto);
-    return { url: (session as unknown as { url?: string }).url };
-  }
-
-  @Post('test-customer')
-  async createTestCustomer(@Body() dto: CreateCustomerDto) {
-    const customer = await this.paymentsService.createCustomer(dto);
-    return { id: customer.id };
-  }
-
-  @Get('test-subscriptions/:ownerId')
-  async getTestSubscriptions(@Param('ownerId') ownerId: string) {
-    const subscriptions = await this.paymentsService.getSubscriptionsByOwnerId(
-      ownerId
-    );
-    return { subscriptions };
   }
 }

@@ -26,13 +26,15 @@ import { JwtAuthGuard } from '@fubs/shared';
 import type { AuthenticatedRequest } from '@fubs/shared';
 import { WorkspacePermissionsByRoleControlGuard } from '../auth/guards/workspace-permissions-by-role.guard';
 import { WorkspacePrivilegesGuard } from '../auth/guards/workspace-privileges.guard';
+import { SubscriptionStatusGuard } from '../common/guards/subscription-status.guard';
 
 @ApiTags('workspaces')
 @ApiBearerAuth()
 @UseGuards(
   JwtAuthGuard,
   WorkspacePermissionsByRoleControlGuard,
-  WorkspacePrivilegesGuard
+  WorkspacePrivilegesGuard,
+  SubscriptionStatusGuard
 )
 @Controller('workspaces')
 export class WorkspacesController {
@@ -44,7 +46,8 @@ export class WorkspacesController {
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiResponse({
     status: 403,
-    description: 'Access denied - require authentication',
+    description:
+      'Access denied - require authentication OR outdated subscription',
   })
   async create(
     @Body() createWorkspaceDto: CreateWorkspaceDto,
@@ -110,7 +113,8 @@ export class WorkspacesController {
   @ApiResponse({ status: 404, description: 'Workspace not found' })
   @ApiResponse({
     status: 403,
-    description: 'Insufficient permissions - user not workspace owner or admin',
+    description:
+      'Insufficient permissions - user not workspace owner or admin OR outdated subscription',
   })
   update(
     @Param('id', new ParseUUIDPipe()) id: string,
@@ -125,7 +129,8 @@ export class WorkspacesController {
   @ApiResponse({ status: 404, description: 'Workspace not found' })
   @ApiResponse({
     status: 403,
-    description: 'Insufficient permissions - user not workspace owner',
+    description:
+      'Insufficient permissions - user not workspace owner OR outdated subscription',
   })
   remove(@Param('id', new ParseUUIDPipe()) id: string) {
     return this.workspacesService.remove(id);

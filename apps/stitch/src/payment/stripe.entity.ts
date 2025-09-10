@@ -30,13 +30,11 @@ export interface CreateSubscriptionDto {
 }
 
 export interface CreateCheckoutSessionDto {
-  stripeCustomerId: string;
+  customerId: string;
   priceId: string;
   successUrl: string;
   cancelUrl: string;
-  metadata: {
-    ownerId: string;
-  };
+  ownerId: string;
 }
 
 export interface UpdateSubscriptionDto {
