@@ -3,8 +3,14 @@ export async function requestWithBody<T>(params: {
   options: RequestInit;
   body: T;
 }) {
+  const options = params.options ?? {};
   return fetch(params.url, {
-    ...params.options,
+    ...options,
+    method: options.method ?? 'POST',
+    headers: {
+      ...(options.headers ?? {}),
+      'Content-Type': 'application/json',
+    },
     body: JSON.stringify(params.body),
   });
 }

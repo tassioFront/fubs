@@ -85,14 +85,22 @@ export class TasksService {
   }
 
   async unassignTask(taskId: UUID, assignedUserId: UUID) {
+    const existingTask = await this.prisma.task.findUnique({
+      where: { id: taskId },
+      include: { assignedUser: true },
+    });
+
+    if (!existingTask) {
+      throw new NotFoundException('Task not found');
+    }
+
+    if (existingTask.assignedTo !== assignedUserId) {
+      throw new NotFoundException('Task is not assigned to the specified user');
+    }
+
     const task = await this.prisma.task.update({
-      where: {
-        id: taskId,
-        assignedTo: assignedUserId,
-      },
-      data: {
-        assignedTo: null,
-      },
+      where: { id: taskId },
+      data: { assignedTo: null },
       include: {
         project: true,
         createdByUser: true,
