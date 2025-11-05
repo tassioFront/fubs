@@ -53,6 +53,19 @@ export class TasksService {
     }
   }
 
+  async findById(taskId: UUID) {
+    return await this.prisma.task.findUnique({
+      where: {
+        id: taskId,
+      },
+      include: {
+        project: true,
+        createdByUser: true,
+        assignedUser: true,
+      },
+    });
+  }
+
   async findAllByProjectId(projectId: UUID) {
     return await this.prisma.task.findMany({
       where: {
